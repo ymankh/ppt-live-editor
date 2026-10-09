@@ -6,6 +6,8 @@ import { ColorField } from '@/components/common/PropertyInputs';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { strings } from "@/strings";
+
 export function ThemeEditor() {
   const current = useEditor((s) => s.document.theme);
   const [draft, setDraft] = useState(() => structuredClone(current));
@@ -13,24 +15,22 @@ export function ThemeEditor() {
   if (!editing)
     return (
       <Button
-        variant="outline"
+        variant={strings.common.outline}
         onClick={() => {
           setDraft(structuredClone(current));
           setEditing(true);
         }}
-      >
-        Create a custom theme
-      </Button>
+      >{strings.theme.createACustomTheme}</Button>
     );
   return (
-    <div className="space-y-3 border-t pt-4">
+    <div className={strings.theme.spaceY3BorderTPt4}>
       <Input
-        aria-label="Theme name"
+        aria-label={strings.theme.themeName}
         value={draft.name}
         onChange={(e) => setDraft({ ...draft, name: e.target.value })}
       />
-      <div className="grid grid-cols-2 gap-3">
-        {(["background", "text", "primary", "secondary"] as const).map(
+      <div className={strings.theme.gridGridCols2Gap3}>
+        {([strings.theme.background, strings.common.text, strings.theme.primary, strings.common.secondary] as const).map(
           (key) => (
             <ColorField
               key={key}
@@ -46,9 +46,9 @@ export function ThemeEditor() {
           ),
         )}
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className={strings.theme.gridGridCols2Gap3}>
         <Input
-          aria-label="Heading font"
+          aria-label={strings.theme.headingFont}
           value={draft.fonts.heading}
           onChange={(e) =>
             setDraft({
@@ -58,7 +58,7 @@ export function ThemeEditor() {
           }
         />
         <Input
-          aria-label="Body font"
+          aria-label={strings.theme.bodyFont}
           value={draft.fonts.body}
           onChange={(e) =>
             setDraft({
@@ -68,26 +68,22 @@ export function ThemeEditor() {
           }
         />
       </div>
-      <div className="flex gap-2">
+      <div className={strings.theme.flexGap2}>
         <Button
           onClick={() => {
             const theme = { ...draft, id: nanoid() };
             useEditor
               .getState()
-              .mutate("Apply custom theme", (doc) => applyTheme(doc, theme));
+              .mutate(strings.theme.applyCustomTheme, (doc) => applyTheme(doc, theme));
             localStorage.setItem(
-              `folio-custom-theme-${theme.id}`,
+              `${strings.theme.folioCustomTheme}${theme.id}`,
               JSON.stringify(theme),
             );
             setEditing(false);
-            toast.success("Custom theme saved");
+            toast.success(strings.theme.customThemeSaved);
           }}
-        >
-          Save & apply
-        </Button>
-        <Button variant="ghost" onClick={() => setEditing(false)}>
-          Cancel
-        </Button>
+        >{strings.theme.saveApply}</Button>
+        <Button variant={strings.common.ghost} onClick={() => setEditing(false)}>{strings.common.cancel}</Button>
       </div>
     </div>
   );

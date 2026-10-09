@@ -1,3 +1,5 @@
+
+import { strings } from "@/strings";
 export type Id = string;
 export interface TipTapDocument { type: string; attrs?: Record<string, string | number | boolean | null>; content?: TipTapDocument[]; marks?: { type: string; attrs?: Record<string, string | number | boolean | null> }[]; text?: string }
 export interface Point { x: number; y: number }
@@ -26,5 +28,5 @@ export type ElementOf<T extends ElementType> = Extract<SlideElement, { type: T }
 export interface Theme { id: Id; name: string; colors: { background: string; text: string; primary: string; secondary: string; accent: readonly string[] }; fonts: { heading: string; body: string } }
 export interface Slide { id: Id; elements: SlideElement[]; background: Background; notes: string; transition: Transition; layoutId?: string; skipped?: boolean }
 export interface Presentation { version: 1; id: Id; title: string; slideSize: { width: number; height: number }; theme: Theme; slides: Slide[]; createdAt: string; updatedAt: string }
-export const plainText = (node: TipTapDocument): string => node.text ?? node.content?.map(plainText).join(node.type === 'doc' ? '\n' : '') ?? '';
-export const textDocument = (text: string): TipTapDocument => ({ type: 'doc', content: text.split('\n').map(line => ({ type: 'paragraph', content: line ? [{ type: 'text', text: line }] : [] })) });
+export const plainText = (node: TipTapDocument): string => node.text ?? node.content?.map(plainText).join(node.type === strings.common.doc ? strings.common.newline : strings.common.empty) ?? strings.common.empty;
+export const textDocument = (text: string): TipTapDocument => ({ type: strings.common.doc, content: text.split(strings.common.newline).map(line => ({ type: strings.common.paragraph, content: line ? [{ type: strings.common.text, text: line }] : [] })) });

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { SlideRenderer } from '@/features/renderer/SlideRenderer';
 import type { Slide, Theme } from '@/types/model';
 import { useEditor } from '@/store/editor';
+import { strings } from "@/strings";
+
 
 export function SlidePreview({ slide, theme, maxWidth }: { slide: Slide; theme: Theme; maxWidth: number }) {
   const logicalSize=useEditor(state=>state.document.slideSize);
@@ -17,5 +19,5 @@ export function SlidePreview({ slide, theme, maxWidth }: { slide: Slide; theme: 
     observer.observe(node);
     return () => observer.disconnect();
   }, [maxWidth]);
-  return <div ref={host} style={{width:'100%'}}><SlideRenderer slide={slide} theme={theme} logicalSize={logicalSize} width={width}/></div>;
+  return <div ref={host} style={{width:strings.common.value100}}><SlideRenderer slide={slide} theme={theme} logicalSize={logicalSize} width={width}/></div>;
 }

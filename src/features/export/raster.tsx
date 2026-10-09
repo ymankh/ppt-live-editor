@@ -5,6 +5,8 @@ import { SlideRenderer } from '@/features/renderer/SlideRenderer';
 import type { Presentation, Slide } from '@/types/model';
 import { assetReferences, getAsset } from '@/features/persistence/repository';
 import { blobDataUrl, replaceAssets } from './assets';
+import { strings } from "@/strings";
+
 
 export interface RasterOptions { format?: 'png' | 'jpeg'; scale?: number }
 export async function rasterizeSlide(presentation: Presentation, slide: Slide, options: RasterOptions = {}): Promise<string> {
@@ -18,25 +20,25 @@ export async function rasterizeSlide(presentation: Presentation, slide: Slide, o
     resolvedSlide = structuredClone(slide);
     replaceAssets({ ...presentation, slides: [resolvedSlide] }, replacements);
   }
-  const host = document.createElement('div');
-  host.style.cssText = 'position:fixed;left:-30000px;top:0;pointer-events:none;';
+  const host = document.createElement(strings.export.div);
+  host.style.cssText = strings.export.positionFixedLeft30000pxTop0PointerEventsNone;
   const width = presentation.slideSize.width;
   const height = presentation.slideSize.height;
-  host.style.width = `${width}px`; host.style.height = `${height}px`;
+  host.style.width = `${width}${strings.common.px}`; host.style.height = `${height}${strings.common.px}`;
   document.body.append(host);
   const root = createRoot(host);
   try {
     flushSync(() => root.render(<SlideRenderer slide={resolvedSlide} theme={presentation.theme} logicalSize={presentation.slideSize} width={width} />));
     await document.fonts.ready;
-    await Promise.all([...host.querySelectorAll('img')].map(async image => {
+    await Promise.all([...host.querySelectorAll(strings.export.img)].map(async image => {
       if (!image.complete) await image.decode();
-      if (!image.naturalWidth) throw new Error('A slide image could not be loaded.');
+      if (!image.naturalWidth) throw new Error(strings.export.aSlideImageCouldNotBeLoaded);
     }));
     const { promise, resolve } = Promise.withResolvers<undefined>();
     requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)));
     await promise;
-    const render = options.format === 'jpeg' ? toJpeg : toPng;
-    return await render(host, { width, height, pixelRatio: options.scale ?? 1, cacheBust: false, skipAutoScale: true, backgroundColor: '#ffffff', quality: 0.95 });
+    const render = options.format === strings.export.jpeg ? toJpeg : toPng;
+    return await render(host, { width, height, pixelRatio: options.scale ?? 1, cacheBust: false, skipAutoScale: true, backgroundColor: strings.common.colorffffff, quality: 0.95 });
   } finally {
     root.unmount(); host.remove();
   }

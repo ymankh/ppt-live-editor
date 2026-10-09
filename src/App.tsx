@@ -6,6 +6,8 @@ import { Editor } from "@/features/editor/Editor";
 import { Home } from '@/features/home/Home';
 import { Player } from '@/features/presenter/Player';
 import { PresenterView } from '@/features/presenter/PresenterView';
+import { strings } from "@/strings";
+
 class ErrorBoundary extends Component<
   { children: ReactNode },
   { error: string | null }
@@ -17,17 +19,13 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.error)
       return (
-        <div className="p-12">
-          <h1 className="text-xl font-semibold">
-            Something interrupted your workspace.
-          </h1>
-          <p className="my-4 text-muted-foreground">{this.state.error}</p>
+        <div className={strings.app.p12}>
+          <h1 className={strings.app.textXlFontSemibold}>{strings.app.errorTitle}</h1>
+          <p className={strings.app.my4TextMutedForeground}>{this.state.error}</p>
           <button
-            className="rounded bg-primary p-3 text-primary-foreground"
+            className={strings.app.roundedBgPrimaryP3TextPrimaryForeground}
             onClick={() => location.reload()}
-          >
-            Reload presentation
-          </button>
+          >{strings.app.reload}</button>
         </div>
       );
     return this.props.children;
@@ -39,14 +37,14 @@ export default function App() {
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Editor />} />
-            <Route path="/projects" element={<Home />} />
-            <Route path="/edit/:projectId" element={<Editor />} />
-            <Route path="/present/:id" element={<Player />} />
-            <Route path="/presenter/:id" element={<PresenterView />} />
+            <Route path={strings.common.symbol_8a5edab2} element={<Editor />} />
+            <Route path={strings.common.projects} element={<Home />} />
+            <Route path={strings.app.editProjectId} element={<Editor />} />
+            <Route path={strings.app.presentId} element={<Player />} />
+            <Route path={strings.app.presenterId} element={<PresenterView />} />
           </Routes>
         </BrowserRouter>
-        <Toaster position="bottom-right" />
+        <Toaster position={strings.app.bottomRight} />
       </TooltipProvider>
     </ErrorBoundary>
   );

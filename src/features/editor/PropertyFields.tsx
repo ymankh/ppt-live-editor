@@ -3,6 +3,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Fill, Shadow, Stroke } from "@/types/model";
+import { strings } from "@/strings";
+
 
 export function FillControl({
   value,
@@ -14,60 +16,60 @@ export function FillControl({
   allowNone?: boolean;
 }) {
   const types: Fill["type"][] = allowNone
-    ? ["none", "solid", "gradient", "image"]
-    : ["solid", "gradient", "image"];
+    ? [strings.common.none, strings.common.solid, strings.common.gradient, strings.common.image]
+    : [strings.common.solid, strings.common.gradient, strings.common.image];
   return (
-    <div className="property-stack">
+    <div className={strings.editor.propertyStack}>
       <Choice
-        label="Fill type"
+        label={strings.editor.fillType}
         value={value.type}
         options={types}
         onChange={(type) => {
-          if (type === "none") onChange({ type });
-          if (type === "solid") onChange({ type, color: "#ed7355" });
-          if (type === "gradient")
+          if (type === strings.common.none) onChange({ type });
+          if (type === strings.common.solid) onChange({ type, color: strings.common.colored7355 });
+          if (type === strings.common.gradient)
             onChange({
               type,
               gradient: {
-                kind: "linear",
+                kind: strings.common.linear,
                 angle: 45,
                 stops: [
-                  { offset: 0, color: "#f9d8c7" },
-                  { offset: 1, color: "#ed7355" },
+                  { offset: 0, color: strings.editor.colorf9d8c7 },
+                  { offset: 1, color: strings.common.colored7355 },
                 ],
               },
             });
-          if (type === "image") onChange({ type, assetId: "", fit: "cover" });
+          if (type === strings.common.image) onChange({ type, assetId: strings.common.empty, fit: strings.common.cover });
         }}
       />
-      {value.type === "solid" && (
+      {value.type === strings.common.solid && (
         <ColorField
-          label="Color"
+          label={strings.editor.color_6b73191a}
           value={value.color}
           onChange={(color) => onChange({ ...value, color })}
         />
       )}
-      {value.type === "gradient" && (
+      {value.type === strings.common.gradient && (
         <>
           <Choice
-            label="Gradient"
+            label={strings.editor.gradient}
             value={value.gradient.kind}
-            options={["linear", "radial"]}
+            options={[strings.common.linear, strings.common.radial]}
             onChange={(kind) =>
               onChange({ ...value, gradient: { ...value.gradient, kind } })
             }
           />
           <NumberField
-            label="Angle"
+            label={strings.editor.angle}
             value={value.gradient.angle}
             onChange={(angle) =>
               onChange({ ...value, gradient: { ...value.gradient, angle } })
             }
           />
           {value.gradient.stops.map((stop, index) => (
-            <div className="gradient-stop" key={index}>
+            <div className={strings.editor.gradientStop} key={index}>
               <ColorField
-                label={`Stop ${index + 1}`}
+                label={`${strings.editor.stop}${index + 1}`}
                 value={stop.color}
                 onChange={(color) =>
                   onChange({
@@ -82,7 +84,7 @@ export function FillControl({
                 }
               />
               <NumberField
-                label="Position %"
+                label={strings.editor.position}
                 min={0}
                 max={100}
                 value={stop.offset * 100}
@@ -99,9 +101,9 @@ export function FillControl({
                 }
               />
               <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Remove gradient stop"
+                variant={strings.common.ghost}
+                size={strings.common.iconSm}
+                aria-label={strings.editor.removeGradientStop}
                 disabled={value.gradient.stops.length <= 2}
                 onClick={() =>
                   onChange({
@@ -118,8 +120,8 @@ export function FillControl({
             </div>
           ))}
           <Button
-            variant="outline"
-            size="sm"
+            variant={strings.common.outline}
+            size={strings.common.sm}
             onClick={() =>
               onChange({
                 ...value,
@@ -127,33 +129,31 @@ export function FillControl({
                   ...value.gradient,
                   stops: [
                     ...value.gradient.stops,
-                    { offset: 0.5, color: "#ffffff" },
+                    { offset: 0.5, color: strings.common.colorffffff },
                   ].sort((a, b) => a.offset - b.offset),
                 },
               })
             }
           >
-            <Plus size={13} />
-            Add color stop
-          </Button>
+            <Plus size={13} />{strings.editor.addColorStop}</Button>
         </>
       )}
-      {value.type === "image" && (
+      {value.type === strings.common.image && (
         <>
-          <label className="property-field">
-            <span>Image URL</span>
+          <label className={strings.common.propertyField}>
+            <span>{strings.editor.imageURL}</span>
             <Input
               value={value.assetId}
-              placeholder="https://…"
+              placeholder={strings.editor.https_ab04e20e}
               onChange={(event) =>
                 onChange({ ...value, assetId: event.target.value })
               }
             />
           </label>
           <Choice
-            label="Fit"
+            label={strings.editor.fit}
             value={value.fit}
-            options={["cover", "contain", "tile"]}
+            options={[strings.common.cover, strings.common.contain, strings.common.tile]}
             onChange={(fit) => onChange({ ...value, fit })}
           />
         </>
@@ -171,14 +171,14 @@ export function StrokeControl({
   required?: boolean;
 }) {
   return (
-    <div className="property-stack">
+    <div className={strings.editor.propertyStack}>
       {!required && (
         <Toggle
-          label="Outline"
+          label={strings.editor.outline}
           value={!!value}
           onChange={(enabled) =>
             onChange(
-              enabled ? { color: "#333333", width: 2, style: "solid" } : null,
+              enabled ? { color: strings.common.color333333, width: 2, style: strings.common.solid } : null,
             )
           }
         />
@@ -186,21 +186,21 @@ export function StrokeControl({
       {value && (
         <>
           <ColorField
-            label="Color"
+            label={strings.editor.color_6b73191a}
             value={value.color}
             onChange={(color) => onChange({ ...value, color })}
           />
-          <div className="property-grid">
+          <div className={strings.editor.propertyGrid}>
             <NumberField
-              label="Width"
+              label={strings.editor.width_3019947b}
               value={value.width}
               min={0}
               onChange={(width) => onChange({ ...value, width })}
             />
             <Choice
-              label="Style"
+              label={strings.editor.style_7e744141}
               value={value.style}
-              options={["solid", "dashed", "dotted"]}
+              options={[strings.common.solid, strings.common.dashed, strings.common.dotted]}
               onChange={(style) => onChange({ ...value, style })}
             />
           </div>
@@ -217,15 +217,15 @@ export function ShadowControl({
   onChange: (value: Shadow | null) => void;
 }) {
   return (
-    <div className="property-stack">
+    <div className={strings.editor.propertyStack}>
       <Toggle
-        label="Drop shadow"
+        label={strings.editor.dropShadow}
         value={!!value}
         onChange={(enabled) =>
           onChange(
             enabled
               ? {
-                  color: "#00000033",
+                  color: strings.editor.color00000033,
                   blur: 20,
                   offsetX: 0,
                   offsetY: 8,
@@ -238,17 +238,17 @@ export function ShadowControl({
       {value && (
         <>
           <ColorField
-            label="Color"
+            label={strings.editor.color_6b73191a}
             value={value.color}
             onChange={(color) => onChange({ ...value, color })}
           />
-          <div className="property-grid">
-            {(["blur", "offsetX", "offsetY", "spread"] as const).map((key) => (
+          <div className={strings.editor.propertyGrid}>
+            {([strings.common.blur, strings.editor.offsetX, strings.editor.offsetY, strings.editor.spread] as const).map((key) => (
               <NumberField
                 key={key}
                 label={key}
                 value={value[key]}
-                {...(key === "blur" ? { min: 0 } : {})}
+                {...(key === strings.common.blur ? { min: 0 } : {})}
                 onChange={(number) => onChange({ ...value, [key]: number })}
               />
             ))}

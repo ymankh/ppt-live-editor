@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Select,SelectContent,SelectItem,SelectTrigger,SelectValue } from '@/components/ui/select';
 import { HexColorPicker } from 'react-colorful';
 import { Popover,PopoverContent,PopoverTrigger } from '@/components/ui/popover';
+import { strings } from "@/strings";
+import { isString } from "@/lib/typeGuards";
+
 export function Section({
   title,
   children,
@@ -12,7 +15,7 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="property-section">
+    <section className={strings.inputs.propertySection}>
       <h3>{title}</h3>
       {children}
     </section>
@@ -42,11 +45,11 @@ export function NumberField({
     else setDraft(String(value));
   };
   return (
-    <label className="property-field">
+    <label className={strings.common.propertyField}>
       <span>{label}</span>
       <Input
         aria-label={label}
-        type="number"
+        type={strings.common.number}
         value={draft}
         min={min}
         max={max}
@@ -54,20 +57,20 @@ export function NumberField({
         onChange={(event) => setDraft(event.target.value)}
         onBlur={commit}
         onKeyDown={(event) => {
-          if (event.key === "Enter") event.currentTarget.blur();
-          if (event.key === "Escape") {
+          if (event.key === strings.common.enter) event.currentTarget.blur();
+          if (event.key === strings.common.escape) {
             setDraft(String(value));
             event.preventDefault();event.stopPropagation();
           }
           if (
             event.shiftKey &&
-            (event.key === "ArrowUp" || event.key === "ArrowDown")
+            (event.key === strings.common.arrowUp_12204d1d || event.key === strings.common.arrowDown_9660fb86)
           ) {
             event.preventDefault();
             setDraft(
               String(
                 (Number(draft) || 0) +
-                  (event.key === "ArrowUp" ? 1 : -1) * step * 10,
+                  (event.key === strings.common.arrowUp_12204d1d ? 1 : -1) * step * 10,
               ),
             );
           }
@@ -88,7 +91,7 @@ export function Choice<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <label className="property-field">
+    <label className={strings.common.propertyField}>
       <span>{label}</span>
       <Select
         value={value}
@@ -101,7 +104,7 @@ export function Choice<T extends string>({
         </SelectTrigger>
         <SelectContent>
           {options.map((option) =>
-            typeof option === "string" ? (
+            isString(option) ? (
               <SelectItem key={option} value={option}>
                 {option}
               </SelectItem>
@@ -128,45 +131,45 @@ export function ColorField({
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
   return (
-    <div className="property-field">
+    <div className={strings.common.propertyField}>
       <span>{label}</span>
-      <div className="color-field">
+      <div className={strings.inputs.colorField}>
         <Popover
           onOpenChange={(open) => {
             if (!open && draft !== value) onChange(draft);
           }}
         >
           <PopoverTrigger
-            aria-label={`${label} picker`}
+            aria-label={`${label}${strings.inputs.picker}`}
             style={{
               background: value,
               width: 23,
               height: 23,
               borderRadius: 4,
-              border: "1px solid #dedee3",
+              border: strings.inputs.value1pxSolidDedee3,
             }}
           />
-          <PopoverContent className="w-auto p-3">
+          <PopoverContent className={strings.inputs.wAutoP3}>
             <HexColorPicker color={draft} onChange={setDraft} />
-            <div className="flex gap-2 pt-3">
+            <div className={strings.inputs.flexGap2Pt3}>
               {[
-                "#ed795b",
-                "#f7eee6",
-                "#ffffff",
-                "#292b2b",
-                "#ded7ee",
-                "#d8e4d5",
+                strings.inputs.colored795b,
+                strings.common.colorf7eee6,
+                strings.common.colorffffff,
+                strings.inputs.color292b2b,
+                strings.inputs.colorded7ee,
+                strings.inputs.colord8e4d5,
               ].map((color) => (
                 <button
                   key={color}
-                  aria-label={`Use ${color}`}
+                  aria-label={`${strings.inputs.use}${color}`}
                   onClick={() => setDraft(color)}
                   style={{
                     background: color,
                     width: 24,
                     height: 24,
                     borderRadius: 5,
-                    border: "1px solid #ddd",
+                    border: strings.inputs.value1pxSolidDdd,
                   }}
                 />
               ))}
@@ -178,11 +181,11 @@ export function ColorField({
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onBlur={() => {
-            if (CSS.supports("color", draft)) onChange(draft);
+            if (CSS.supports(strings.common.color, draft)) onChange(draft);
             else setDraft(value);
           }}
           onKeyDown={(event) => {
-            if (event.key === "Enter") event.currentTarget.blur();
+            if (event.key === strings.common.enter) event.currentTarget.blur();
           }}
         />
       </div>
@@ -200,9 +203,9 @@ export function Toggle({
 }) {
   return (
     <Button
-      size="sm"
-      variant={value ? "secondary" : "outline"}
-      className={value ? "property-toggle active" : "property-toggle"}
+      size={strings.common.sm}
+      variant={value ? strings.common.secondary : strings.common.outline}
+      className={value ? strings.inputs.propertyToggleActive : strings.inputs.propertyToggle}
       aria-pressed={value}
       onClick={() => onChange(!value)}
     >

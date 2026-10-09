@@ -12,6 +12,9 @@ import { PropertiesPanel } from "./PropertiesPanel";
 import { insertImage } from "@/features/images/ingress";
 import { NotesEditor } from '@/features/text/NotesEditor';
 import { toast } from "sonner";
+import { strings } from "@/strings";
+import { isNumber, isObject } from "@/lib/typeGuards";
+
 export function Workspace({
   notes,
   setNotes,
@@ -21,22 +24,22 @@ export function Workspace({
 }) {
   const [layout]=useState(()=>{
     try {
-      const value:unknown=JSON.parse(localStorage.getItem('folio-panels')??'null');
-      if(!value||typeof value!=='object'||Array.isArray(value))return undefined;
+      const value:unknown=JSON.parse(localStorage.getItem(strings.editor.folioPanels)??strings.editor.null);
+      if(!value||!isObject(value)||Array.isArray(value))return undefined;
       const result:Record<string,number>={};
-      for(const [key,size] of Object.entries(value)){if(typeof size!=='number'||!Number.isFinite(size)||size<=0)return undefined;result[key]=size}
+      for(const [key,size] of Object.entries(value)){if(!isNumber(size)||!Number.isFinite(size)||size<=0)return undefined;result[key]=size}
       return result;
     }catch{return undefined}
   });
   const activeId = useEditor((s) => s.activeSlideId);
   const text = useEditor(
-    (s) => s.document.slides.find((x) => x.id === s.activeSlideId)?.notes ?? "",
+    (s) => s.document.slides.find((x) => x.id === s.activeSlideId)?.notes ?? strings.common.empty,
   );
   return (
     <main
-      className="editor-body"
+      className={strings.editor.editorBody}
       onDragOver={(event) => {
-        if (event.dataTransfer.types.includes("Files")) event.preventDefault();
+        if (event.dataTransfer.types.includes(strings.editor.files)) event.preventDefault();
       }}
       onDrop={(event) => {
         if (!event.dataTransfer.files.length) return;
@@ -44,40 +47,38 @@ export function Workspace({
         for (const file of Array.from(event.dataTransfer.files))
           void insertImage(file).catch((error:unknown) =>
             toast.error(
-              error instanceof Error ? error.message : "Image import failed",
+              error instanceof Error ? error.message : strings.common.imageImportFailed,
             ),
           );
       }}
     >
       <ResizablePanelGroup
-        orientation="horizontal"
+        orientation={strings.common.horizontal}
         {...(layout?{defaultLayout:layout}:{})}
         onLayoutChanged={(layout) =>
-          localStorage.setItem("folio-panels", JSON.stringify(layout))
+          localStorage.setItem(strings.editor.folioPanels, JSON.stringify(layout))
         }
       >
         <ResizablePanel
-          id="slides"
-          defaultSize="220px"
-          minSize="180px"
-          maxSize="300px"
+          id={strings.editor.slides}
+          defaultSize={strings.editor.value220px}
+          minSize={strings.editor.value180px}
+          maxSize={strings.editor.value300px}
         >
           <SlidePanel />
         </ResizablePanel>
         <ResizableHandle />
-        <ResizablePanel id="canvas" minSize="420px">
-          <section className="canvas-column" style={{ height: "100%" }}>
+        <ResizablePanel id={strings.editor.canvas} minSize={strings.editor.value420px}>
+          <section className={strings.editor.canvasColumn} style={{ height: strings.common.value100 }}>
             <CanvasContextMenu/>
             <div
-              className="speaker-notes"
+              className={strings.editor.speakerNotes}
               style={!notes ? { height: 38 } : undefined}
             >
-              <div className="notes-heading">
+              <div className={strings.editor.notesHeading}>
                 <button onClick={() => setNotes(!notes)}>
-                  {notes ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-                  Speaker notes
-                </button>
-                <span>Only visible to you while presenting</span>
+                  {notes ? <ChevronDown size={14} /> : <ChevronUp size={14} />}{strings.common.notes}</button>
+                <span>{strings.editor.notesHint}</span>
               </div>
               {notes&&<NotesEditor key={activeId} slideId={activeId} value={text}/>}
             </div>
@@ -85,10 +86,10 @@ export function Workspace({
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel
-          id="properties"
-          defaultSize="270px"
-          minSize="240px"
-          maxSize="350px"
+          id={strings.editor.properties_96adb924}
+          defaultSize={strings.editor.value270px}
+          minSize={strings.editor.value240px}
+          maxSize={strings.editor.value350px}
         >
           <PropertiesPanel />
         </ResizablePanel>

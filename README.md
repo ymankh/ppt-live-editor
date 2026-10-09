@@ -54,6 +54,20 @@ Rendering is shared in `src/features/renderer`. Pure geometry and unit conversio
 
 In **Design → Layers**, drag the grip on the right of a row to change stacking order; the first row is the frontmost element. Each completed drag creates one undo entry. For keyboard reordering, focus the grip, press Space to pick up, use Up/Down arrows, and press Space to drop or Escape to cancel.
 
+## Runtime strings
+
+`src/strings.ts` exports the single `strings` const object. Its values live in small `src/constants/strings/` modules grouped by feature; `strings.common` owns values shared across features. All application runtime string literals use this object, including UI/accessibility copy, errors, history labels, default slide content, discriminants, CSS classes, colors, routes, storage keys, and interpolated template fragments.
+
+```tsx
+import { strings } from '@/strings';
+
+<Input aria-label={strings.common.presentationTitle} />
+```
+
+Add new values to the relevant constants module and consume them through `strings`. Values use `as const` to retain their literal types. Mutable string state and string-default parameters are explicitly typed; `src/lib/typeGuards.ts` preserves TypeScript narrowing for runtime `typeof` checks.
+
+Import/export module specifiers (including dynamic imports), TypeScript type literals, and required directives such as `"use client"` remain syntactic literals. CSS, HTML, SVG, configuration files, and test fixtures are outside the application runtime-string migration. Empty template segments and formatting-only JSX whitespace carry no hardcoded string value.
+
 ## Keyboard
 
 Windows/Linux use Ctrl; macOS uses Command. Shortcuts are scoped away from editable inputs.
@@ -102,8 +116,8 @@ PDF and PNG/JPEG use the shared renderer and rasterize slides. PDF optionally in
 
 Fullscreen, clipboard, and presenter pop-ups require browser permission and a secure origin (localhost is supported). Presenter sync uses same-origin `BroadcastChannel`; static presenter previews show complete slides rather than the current animation build. Ink is temporary and clears on slide changes. Projects live in this browser profile; deleting site data deletes local projects.
 
-The current implementation does not provide complete PowerPoint feature parity. Table merge/split and row/column sizing are available in the spreadsheet dialog, but direct row/column dragging is not. Format painter, token-valued color storage, equal-spacing guides, full rich-text control coverage, image crop-handle mode, animation drag-order UI, and complete shortcut parity remain incomplete. Thumbnail artwork is viewport-virtualized and debounced. Project deletion safely garbage-collects unshared referenced assets; save-time reference counting is not implemented. Browser performance has not been benchmarked against the 100-element/60-fps target. Accessibility lint passes, but full accessibility conformance has not been certified. The strings module establishes a shared copy surface but not all labels have been migrated.
+The current implementation does not provide complete PowerPoint feature parity. Table merge/split and row/column sizing are available in the spreadsheet dialog, but direct row/column dragging is not. Format painter, token-valued color storage, equal-spacing guides, full rich-text control coverage, image crop-handle mode, animation drag-order UI, and complete shortcut parity remain incomplete. Thumbnail artwork is viewport-virtualized and debounced. Project deletion safely garbage-collects unshared referenced assets; save-time reference counting is not implemented. Browser performance has not been benchmarked against the 100-element/60-fps target. Accessibility lint passes, but full accessibility conformance has not been certified.
 
 ## Verification
 
-Typecheck, strict type-aware ESLint plus recommended accessibility rules, 46 Vitest tests, two Playwright workflows, and the production build pass. The authoring E2E exercises blank-project creation, TipTap text, pointer move/resize, undo/redo, slide drag reorder, archive download inspection, reload persistence, and presentation navigation. A production-browser smoke run exercised theme/grid toggles, export dialog, slideshow navigation/overview, and observed no console errors.
+The runtime-string migration passes typecheck, strict type-aware ESLint, 46 Vitest tests, and the production build. Four of five Playwright scenarios pass; the existing authoring scenario still times out opening the export dialog immediately after slide reordering. The layer drag/keyboard/persistence and panel-resize regressions pass. Browser smoke verification confirms unchanged settled editor text, theme switching, export-dialog display, and presentation navigation with no observed console errors. A production smoke creates a blank project, edits text, verifies the generated project ZIP's document content, and confirms persistence after reload. An AST audit finds no remaining application runtime string values outside the constants modules.

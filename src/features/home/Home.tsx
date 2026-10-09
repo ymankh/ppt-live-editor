@@ -25,9 +25,11 @@ import { toast } from "sonner";
 import { applyTheme } from '@/features/theme/applyTheme';
 import { textDocument } from '@/types/model';
 import "./home.css";
+import { strings } from "@/strings";
+
 export function Home() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState<string>(strings.common.empty);
   const navigate = useNavigate();
   useEffect(() => {
     void listProjects().then(setProjects);
@@ -36,96 +38,92 @@ export function Home() {
     const doc = createPresentation();
     doc.id = crypto.randomUUID();
     if (blank) {
-      doc.title = "Untitled presentation";
+      doc.title = strings.home.untitledPresentation;
       doc.slides = [
         {
           id: crypto.randomUUID(),
           elements: [],
-          background: { type: "solid", color: "#ffffff" },
-          notes: "",
-          transition: { effect: "none", duration: 400 },
+          background: { type: strings.common.solid, color: strings.common.colorffffff },
+          notes: strings.common.empty,
+          transition: { effect: strings.common.none, duration: 400 },
         },
       ];
     }
     if(!blank&&template>0){
       const theme=themes[template];if(theme)applyTheme(doc,theme);
-      doc.title=template===1?'A bold beginning':'The bigger picture';
-      const heading=doc.slides[0]?.elements.find(e=>e.type==='text'&&e.fontSize>=100);
-      if(heading?.type==='text')heading.content=textDocument(template===1?'Ideas that\nmove us.':'See things\ndifferently.');
+      doc.title=template===1?strings.home.aBoldBeginning:strings.home.theBiggerPicture;
+      const heading=doc.slides[0]?.elements.find(e=>e.type===strings.common.text&&e.fontSize>=100);
+      if(heading?.type===strings.common.text)heading.content=textDocument(template===1?strings.home.ideasThatMoveUs:strings.home.seeThingsDifferently);
     }
     await saveProject(doc);
     await useEditor.getState().loadProject(doc.id);
-    void navigate(`/edit/${doc.id}`);
+    void navigate(`${strings.common.edit}${doc.id}`);
   };
   const upload = async (file: File) => {
     try {
       const doc = await importProject(file);
       await saveProject(doc);
       await useEditor.getState().loadProject(doc.id);
-      void navigate(`/edit/${doc.id}`);
-      toast.success("Presentation imported");
+      void navigate(`${strings.common.edit}${doc.id}`);
+      toast.success(strings.home.presentationImported);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Import failed");
+      toast.error(error instanceof Error ? error.message : strings.home.importFailed);
     }
   };
   return (
-    <div className="home-page">
+    <div className={strings.home.homePage}>
       <header>
-        <a className="home-brand" href="/">
+        <a className={strings.home.homeBrand} href={strings.common.symbol_8a5edab2}>
           <span>
             <Presentation size={24} />
-          </span>
-          folio<span className="brand-dot">.</span>
+          </span>{strings.common.folio}<span className={strings.home.brandDot}>{strings.common.symbol_cdb4ee2a}</span>
         </a>
-        <span className="workspace-label">YOUR CREATIVE WORKSPACE</span>
-        <button className="avatar">JD</button>
+        <span className={strings.home.workspaceLabel}>{strings.home.yOURCREATIVEWORKSPACE}</span>
+        <button className={strings.common.avatar}>{strings.common.jD}</button>
       </header>
       <main>
-        <div className="home-intro">
+        <div className={strings.home.homeIntro}>
           <div>
-            <span className="eyebrow">A LITTLE SPACE FOR BIG IDEAS</span>
-            <h1>Your next chapter starts here.</h1>
-            <p>Bring your thinking to life. Make something worth sharing.</p>
+            <span className={strings.home.eyebrow}>{strings.home.aLITTLESPACEFORBIGIDEAS}</span>
+            <h1>{strings.home.yourNextChapterStartsHere}</h1>
+            <p>{strings.home.bringYourThinkingToLifeMakeSomethingWorthSharing}</p>
           </div>
           <button
-            className="present-action"
+            className={strings.common.presentAction}
             onClick={() => {
               void create(true);
             }}
           >
-            <Plus size={17} />
-            New presentation
-          </button>
+            <Plus size={17} />{strings.home.newPresentation}</button>
         </div>
-        <section className="template-section">
-          <div className="section-heading">
-            <h2>Start with a little inspiration</h2>
-            <span>
-              MADE TO MAKE YOUR OWN <Sparkles size={13} />
+        <section className={strings.home.templateSection}>
+          <div className={strings.home.sectionHeading}>
+            <h2>{strings.home.startWithALittleInspiration}</h2>
+            <span>{strings.home.mADETOMAKEYOUROWN}<Sparkles size={13} />
             </span>
           </div>
-          <div className="starter-grid">
+          <div className={strings.home.starterGrid}>
             {[
               {
-                name: "The next chapter",
-                label: "Strategy & vision",
-                color: "#f5e8de",
-                title: "The next\nchapter.",
-                tag: "A FRESH PERSPECTIVE",
+                name: strings.common.theNextChapter_5529f97e,
+                label: strings.home.strategyVision,
+                color: strings.home.colorf5e8de,
+                title: strings.common.theNextChapter,
+                tag: strings.home.aFRESHPERSPECTIVE,
               },
               {
-                name: "A bold beginning",
-                label: "Pitch & proposal",
-                color: "#dfe8e3",
-                title: "Ideas that\nmove us.",
-                tag: "YOUR NEXT BIG IDEA",
+                name: strings.home.aBoldBeginning,
+                label: strings.home.pitchProposal,
+                color: strings.home.colordfe8e3,
+                title: strings.home.ideasThatMoveUs,
+                tag: strings.home.yOURNEXTBIGIDEA,
               },
               {
-                name: "The bigger picture",
-                label: "Reports & insights",
-                color: "#e8e4f0",
-                title: "See things\ndifferently.",
-                tag: "LET’S CONNECT THE DOTS",
+                name: strings.home.theBiggerPicture,
+                label: strings.home.reportsInsights,
+                color: strings.home.colore8e4f0,
+                title: strings.home.seeThingsDifferently,
+                tag: strings.home.lETSCONNECTTHEDOTS,
               },
             ].map((t,template) => (
               <button
@@ -135,7 +133,7 @@ export function Home() {
                 }}
               >
                 <div
-                  className="template-preview"
+                  className={strings.home.templatePreview}
                   style={{ background: t.color }}
                 >
                   <span>{t.tag}</span>
@@ -151,26 +149,23 @@ export function Home() {
           </div>
         </section>
         <section>
-          <div className="section-heading">
-            <h2>
-              Your presentations{" "}
-              <span className="project-count">{projects.length}</span>
+          <div className={strings.home.sectionHeading}>
+            <h2>{strings.home.yourPresentations}{strings.common.space}
+              <span className={strings.home.projectCount}>{projects.length}</span>
             </h2>
-            <div className="project-controls">
-              <label className="search-projects">
+            <div className={strings.home.projectControls}>
+              <label className={strings.home.searchProjects}>
                 <Search size={15} />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Find a presentation…"
+                  placeholder={strings.home.findAPresentation}
                 />
               </label>
-              <label className="import-project">
-                <FileUp size={15} />
-                Import
-                <input
-                  type="file"
-                  accept=".pptjson,.pptx"
+              <label className={strings.home.importProject}>
+                <FileUp size={15} />{strings.home.import}<input
+                  type={strings.common.file}
+                  accept={strings.home.pptjsonPptx}
                   hidden
                   onChange={(e) => {
                     const f = e.target.files?.[0];
@@ -180,7 +175,7 @@ export function Home() {
               </label>
             </div>
           </div>
-          <div className="project-grid">
+          <div className={strings.home.projectGrid}>
             {projects
               .filter((p) =>
                 p.title.toLowerCase().includes(search.toLowerCase()),
@@ -188,9 +183,9 @@ export function Home() {
               .map((project) => (
                 <article key={project.id}>
                   <button
-                    className="project-preview"
+                    className={strings.home.projectPreview}
                     onClick={() => {
-                      void navigate(`/edit/${project.id}`);
+                      void navigate(`${strings.common.edit}${project.id}`);
                     }}
                   >
                     {project.preview && (
@@ -198,8 +193,8 @@ export function Home() {
                         style={{
                           width: 1920,
                           height: 1080,
-                          transform: "scale(.16)",
-                          transformOrigin: "top left",
+                          transform: strings.home.scale16,
+                          transformOrigin: strings.home.topLeft,
                         }}
                       >
                         <SlideRenderer
@@ -210,31 +205,31 @@ export function Home() {
                       </div>
                     )}
                   </button>
-                  <div className="project-meta">
+                  <div className={strings.home.projectMeta}>
                     <div>
                       <h3>{project.title}</h3>
                       <p>
-                        {project.slideCount} slides · Edited{" "}
+                        {project.slideCount}{strings.home.slidesEdited}{strings.common.space}
                         {new Date(project.updatedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <button aria-label={`Rename ${project.title}`} onClick={()=>{
-                      const title=window.prompt('Presentation title',project.title);if(!title?.trim())return;
+                    <button aria-label={`${strings.home.rename}${project.title}`} onClick={()=>{
+                      const title=window.prompt(strings.common.presentationTitle,project.title);if(!title?.trim())return;
                       void useEditor.getState().loadProject(project.id).then(async()=>{
-                        useEditor.getState().mutate('Rename presentation',draft=>{draft.title=title.trim()});
+                        useEditor.getState().mutate(strings.common.renamePresentation,draft=>{draft.title=title.trim()});
                         await useEditor.getState().saveProject();setProjects(await listProjects());
-                      }).catch((error:unknown)=>toast.error(error instanceof Error?error.message:'Rename failed'));
+                      }).catch((error:unknown)=>toast.error(error instanceof Error?error.message:strings.home.renameFailed));
                     }}><Pencil size={14}/></button>
-                    <button aria-label={`Duplicate ${project.title}`} onClick={()=>{
+                    <button aria-label={`${strings.home.duplicate}${project.title}`} onClick={()=>{
                       void useEditor.getState().loadProject(project.id).then(async()=>{
-                        const doc=structuredClone(useEditor.getState().document);doc.id=crypto.randomUUID();doc.title+=' (copy)';doc.createdAt=new Date().toISOString();
+                        const doc=structuredClone(useEditor.getState().document);doc.id=crypto.randomUUID();doc.title+=strings.home.copy;doc.createdAt=new Date().toISOString();
                         useEditor.getState().setDocument(doc);await useEditor.getState().saveProject();setProjects(await listProjects());
-                      }).catch((error:unknown)=>toast.error(error instanceof Error?error.message:'Duplicate failed'));
+                      }).catch((error:unknown)=>toast.error(error instanceof Error?error.message:strings.home.duplicateFailed));
                     }}><Copy size={14}/></button>
                     <button
-                      aria-label={`Delete ${project.title}`}
+                      aria-label={`${strings.home.delete}${project.title}`}
                       onClick={() => {
-                        if (window.confirm(`Delete “${project.title}”?`))
+                        if (window.confirm(`${strings.home.delete_fdd77e66}${project.title}${strings.home.symbol}`))
                           void deleteProject(project.id).then(() =>
                             setProjects((p) =>
                               p.filter((x) => x.id !== project.id),
@@ -248,7 +243,7 @@ export function Home() {
                 </article>
               ))}
             <button
-              className="blank-project"
+              className={strings.home.blankProject}
               onClick={() => {
                 void create(true);
               }}
@@ -256,15 +251,13 @@ export function Home() {
               <span>
                 <Plus size={24} />
               </span>
-              <b>A blank canvas</b>
-              <p>Every great idea starts somewhere.</p>
+              <b>{strings.home.aBlankCanvas}</b>
+              <p>{strings.home.everyGreatIdeaStartsSomewhere}</p>
             </button>
           </div>
         </section>
       </main>
-      <footer>
-        Thoughtfully made for your next big idea.
-        <span>FOLIO · PRESENTATION STUDIO</span>
+      <footer>{strings.home.thoughtfullyMadeForYourNextBigIdea}<span>{strings.home.fOLIOPRESENTATIONSTUDIO}</span>
       </footer>
     </div>
   );

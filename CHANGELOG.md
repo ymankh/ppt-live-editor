@@ -1,5 +1,11 @@
 # Changelog
 
+## Centralized runtime strings
+- Expanded `src/strings.ts` into the single const-object API for all application runtime strings, backed by feature-grouped modules under `src/constants/strings/`.
+- Migrated UI/accessibility copy, errors, history labels, default content, discriminants, CSS classes, routes, storage keys, colors, and template fragments; import/type/directive syntax remains literal.
+- Preserved JSX entities and inline whitespace, mutable-string inference, and runtime type narrowing.
+- Verified typecheck, lint, 46 unit tests, production build, browser behavior, and an AST audit with no remaining runtime string values outside the constants modules. Four E2E scenarios pass; the previously observed authoring/export-dialog timeout remains.
+
 ## Layer drag reordering
 - Replaced layer up/down buttons with sortable drag handles using the existing dnd-kit stack.
 - Drops update actual slide z-order through store mutations as a single undoable action; selection is preserved.

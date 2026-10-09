@@ -1,0 +1,16 @@
+export const inputsStrings = {
+  picker: " picker",
+  color292b2b: "#292b2b",
+  colord8e4d5: "#d8e4d5",
+  colorded7ee: "#ded7ee",
+  colored795b: "#ed795b",
+  value1pxSolidDdd: "1px solid #ddd",
+  value1pxSolidDedee3: "1px solid #dedee3",
+  colorField: "color-field",
+  flexGap2Pt3: "flex gap-2 pt-3",
+  propertySection: "property-section",
+  propertyToggle: "property-toggle",
+  propertyToggleActive: "property-toggle active",
+  use: "Use ",
+  wAutoP3: "w-auto p-3",
+} as const;

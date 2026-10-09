@@ -1,0 +1,16 @@
+export const themeStrings = {
+  applyCustomTheme: "Apply custom theme",
+  background: "background",
+  bodyFont: "Body font",
+  createACustomTheme: "Create a custom theme",
+  customThemeSaved: "Custom theme saved",
+  flexGap2: "flex gap-2",
+  folioCustomTheme: "folio-custom-theme-",
+  gridGridCols2Gap3: "grid grid-cols-2 gap-3",
+  headingFont: "Heading font",
+  primary: "primary",
+  saveApply: "Save & apply",
+  spaceY3BorderTPt4: "space-y-3 border-t pt-4",
+  themeName: "Theme name",
+  unsupportedElement: "Unsupported element ",
+} as const;

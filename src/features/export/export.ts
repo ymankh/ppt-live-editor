@@ -8,9 +8,11 @@ import { assetReferences } from '@/features/persistence/repository';
 import { presentationSchema } from './schema';
 import { rasterizeSlide } from './raster';
 import { importPptx } from './importPptx';
+import { strings } from "@/strings";
+
 export { exportPptx } from './pptx';
 
-const manifestSchema = z.object({ format: z.literal('folio-project'), version: z.literal(1),
+const manifestSchema = z.object({ format: z.literal(strings.export.folioProject_fe7173dd), version: z.literal(1),
   assets: z.record(z.string(), z.object({ path: z.string().regex(/^assets\/[a-zA-Z0-9._-]+$/), mime: z.string().regex(/^image\//) })) });
 const MAX_PROJECT_BYTES = 100 * 1024 * 1024;
 export async function exportProject(presentation: Presentation): Promise<void> {
@@ -21,36 +23,36 @@ export async function exportProject(presentation: Presentation): Promise<void> {
   const references = assetReferences(project);
   for (const [index, source] of references.entries()) {
     const blob = await fetchAsset(source);
-    const key = `asset-${index + 1}`;
-    const path = `assets/${key}`;
+    const key = `${strings.export.asset}${index + 1}`;
+    const path = `${strings.export.assets}${key}`;
     assets[key] = { path, mime: blob.type };
     replacements[source] = key;
     zip.file(path, blob);
   }
   replaceAssets(project, replacements);
-  zip.file('presentation.json', JSON.stringify(project));
-  zip.file('manifest.json', JSON.stringify({ format: 'folio-project', version: 1, assets }));
-  download(await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }), `${filename(project.title)}.pptjson`);
+  zip.file(strings.export.presentationJson, JSON.stringify(project));
+  zip.file(strings.export.manifestJson, JSON.stringify({ format: strings.export.folioProject_fe7173dd, version: 1, assets }));
+  download(await zip.generateAsync({ type: strings.export.blob, compression: strings.export.dEFLATE }), `${filename(project.title)}${strings.export.pptjson}`);
 }
 export async function importProject(file: File): Promise<Presentation> {
-  if (file.size > MAX_PROJECT_BYTES) throw new Error('Project files must be smaller than 100 MB.');
-  if (file.name.toLowerCase().endsWith('.pptx')) return presentationSchema.parse(await importPptx(file));
-  if (file.name.toLowerCase().endsWith('.json')) return presentationSchema.parse(JSON.parse(await file.text()) as unknown);
+  if (file.size > MAX_PROJECT_BYTES) throw new Error(strings.export.projectFilesMustBeSmallerThan100MB);
+  if (file.name.toLowerCase().endsWith(strings.export.pptx)) return presentationSchema.parse(await importPptx(file));
+  if (file.name.toLowerCase().endsWith(strings.export.json)) return presentationSchema.parse(JSON.parse(await file.text()) as unknown);
   const zip = await JSZip.loadAsync(file);
-  const json = zip.file('presentation.json');
-  const manifestFile = zip.file('manifest.json');
-  if (!json || !manifestFile) throw new Error('This is not a Folio project archive.');
-  const manifest = manifestSchema.parse(JSON.parse(await manifestFile.async('string')) as unknown);
-  const project = presentationSchema.parse(JSON.parse(await json.async('string')) as unknown);
+  const json = zip.file(strings.export.presentationJson);
+  const manifestFile = zip.file(strings.export.manifestJson);
+  if (!json || !manifestFile) throw new Error(strings.export.thisIsNotAFolioProjectArchive);
+  const manifest = manifestSchema.parse(JSON.parse(await manifestFile.async(strings.common.string)) as unknown);
+  const project = presentationSchema.parse(JSON.parse(await json.async(strings.common.string)) as unknown);
   const replacements: Record<string, string> = {};
   let totalBytes = 0;
   for (const reference of assetReferences(project)) {
     const asset = manifest.assets[reference];
     const entry = asset && zip.file(asset.path);
-    if (!asset || !entry) throw new Error(`Missing embedded asset: ${reference}`);
-    const bytes = await entry.async('arraybuffer');
+    if (!asset || !entry) throw new Error(`${strings.export.missingEmbeddedAsset}${reference}`);
+    const bytes = await entry.async(strings.export.arraybuffer);
     totalBytes += bytes.byteLength;
-    if (totalBytes > MAX_PROJECT_BYTES) throw new Error('Expanded project assets exceed 100 MB.');
+    if (totalBytes > MAX_PROJECT_BYTES) throw new Error(strings.export.expandedProjectAssetsExceed100MB);
     replacements[reference] = await blobDataUrl(new Blob([bytes], { type: asset.mime }));
   }
   replaceAssets(project, replacements);
@@ -62,21 +64,21 @@ export async function exportPdf(presentation: Presentation, options: PdfExportOp
   const { width, height } = presentation.slideSize;
   const pageWidth = options.notesPages ? 595.28 : width / 2;
   const pageHeight = options.notesPages ? 841.89 : height / 2;
-  const orientation = pageWidth >= pageHeight ? 'landscape' : 'portrait';
-  const pdf = new jsPDF({ orientation, unit: 'pt', format: [pageWidth, pageHeight] });
+  const orientation = pageWidth >= pageHeight ? strings.export.landscape : strings.export.portrait;
+  const pdf = new jsPDF({ orientation, unit: strings.export.pt, format: [pageWidth, pageHeight] });
   for (const [index, slide] of presentation.slides.entries()) {
     if (index > 0) pdf.addPage([pageWidth, pageHeight], orientation);
     const image = await rasterizeSlide(presentation, slide);
-    if (!options.notesPages) { pdf.addImage(image, 'PNG', 0, 0, pageWidth, pageHeight); continue; }
+    if (!options.notesPages) { pdf.addImage(image, strings.export.pNG, 0, 0, pageWidth, pageHeight); continue; }
     const margin = 36;
     const imageWidth = pageWidth - margin * 2;
     const imageHeight = Math.min(imageWidth * height / width, pageHeight * 0.45);
     const fittedWidth = imageHeight * width / height;
-    pdf.addImage(image, 'PNG', (pageWidth - fittedWidth) / 2, margin, fittedWidth, imageHeight);
+    pdf.addImage(image, strings.export.pNG, (pageWidth - fittedWidth) / 2, margin, fittedWidth, imageHeight);
     pdf.setFontSize(12);
-    pdf.text(`Slide ${index + 1} · Speaker notes`, margin, margin + imageHeight + 28);
+    pdf.text(`${strings.common.slide_ff1e0604}${index + 1}${strings.export.speakerNotes}`, margin, margin + imageHeight + 28);
     pdf.setFontSize(11);
-    const lines = pdf.splitTextToSize(notesText(slide.notes) || 'No speaker notes.', imageWidth) as string[];
+    const lines = pdf.splitTextToSize(notesText(slide.notes) || strings.export.noSpeakerNotes, imageWidth) as string[];
     let y = margin + imageHeight + 50;
     for (const line of lines) {
       if (y > pageHeight - margin) { pdf.addPage([pageWidth, pageHeight], orientation); y = margin; }
@@ -84,22 +86,22 @@ export async function exportPdf(presentation: Presentation, options: PdfExportOp
       y += 15;
     }
   }
-  pdf.setProperties({ title: presentation.title, creator: 'Folio' });
-  pdf.save(`${filename(presentation.title)}${options.notesPages ? '-notes' : ''}.pdf`);
+  pdf.setProperties({ title: presentation.title, creator: strings.export.appName });
+  pdf.save(`${filename(presentation.title)}${options.notesPages ? strings.export.notes : strings.common.empty}${strings.export.pdf}`);
 }
 export interface ImageExportOptions { format?: 'png' | 'jpeg'; scope?: 'all' | 'current'; currentSlideId?: string; scale?: number }
 /** Defaults to all slides as 1× PNGs. Current-slide export requires currentSlideId; JPEG uses an opaque white backing. */
 export async function exportImages(presentation: Presentation, options: ImageExportOptions = {}): Promise<void> {
-  const format = options.format ?? 'png';
+  const format = options.format ?? strings.export.png;
   const scale = options.scale ?? 1;
-  if (!Number.isFinite(scale) || scale <= 0 || scale > 4) throw new Error('Image scale must be greater than zero and at most 4.');
-  const selected = options.scope === 'current' ? presentation.slides.filter(slide => slide.id === options.currentSlideId) : presentation.slides;
-  if (!selected.length) throw new Error('Select a slide to export.');
+  if (!Number.isFinite(scale) || scale <= 0 || scale > 4) throw new Error(strings.export.imageScaleMustBeGreaterThanZeroAndAt);
+  const selected = options.scope === strings.export.current ? presentation.slides.filter(slide => slide.id === options.currentSlideId) : presentation.slides;
+  if (!selected.length) throw new Error(strings.export.selectASlideToExport);
   const zip = new JSZip();
   for (const slide of selected) {
     const index = presentation.slides.indexOf(slide);
     const image = await rasterizeSlide(presentation, slide, { format, scale });
-    zip.file(`slide-${String(index + 1).padStart(2, '0')}.${format === 'jpeg' ? 'jpg' : 'png'}`, image.slice(image.indexOf(',') + 1), { base64: true });
+    zip.file(`${strings.export.slide}${String(index + 1).padStart(2, strings.common.value0)}${strings.common.symbol_cdb4ee2a}${format === strings.export.jpeg ? strings.export.jpg : strings.export.png}`, image.slice(image.indexOf(strings.common.symbol_d03502c4) + 1), { base64: true });
   }
-  download(await zip.generateAsync({ type: 'blob' }), `${filename(presentation.title)}-images.zip`);
+  download(await zip.generateAsync({ type: strings.export.blob }), `${filename(presentation.title)}${strings.export.imagesZip}`);
 }

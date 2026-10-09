@@ -1,8 +1,10 @@
 import type { Point, ShapeKind } from '@/types/model';
+import { strings } from "@/strings";
+
 
 export interface Box { x: number; y: number; width: number; height: number; rotation: number }
 export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
-export const resizeHandles: ResizeHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+export const resizeHandles: ResizeHandle[] = [strings.geometry.nw, strings.geometry.n, strings.geometry.ne, strings.common.e, strings.geometry.se, strings.common.s, strings.geometry.sw, strings.common.w];
 export const degrees = (radians: number) => radians * 180 / Math.PI;
 export const radians = (angle: number) => angle * Math.PI / 180;
 export const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
@@ -31,7 +33,7 @@ export function selectionBounds(boxes: Box[]): Box | null {
 }
 export function resizeBox(box: Box, handle: ResizeHandle, delta: Point, preserveAspect = false, minimum = 8): Box {
   const local = rotatePoint(delta, { x: 0, y: 0 }, -box.rotation);
-  const west = handle.includes('w'), east = handle.includes('e'), north = handle.includes('n'), south = handle.includes('s');
+  const west = handle.includes(strings.common.w), east = handle.includes(strings.common.e), north = handle.includes(strings.geometry.n), south = handle.includes(strings.common.s);
   let width = Math.max(minimum, box.width + (east ? local.x : west ? -local.x : 0));
   let height = Math.max(minimum, box.height + (south ? local.y : north ? -local.y : 0));
   if (preserveAspect) {
@@ -62,8 +64,8 @@ export function snapTranslation(box: Box, delta: Point, targets: Box[], spacing:
   const moving = rotatedBounds({ ...box, x: box.x + delta.x, y: box.y + delta.y });
   const guides: SnapGuide[] = [];
   const snapped = { ...delta };
-  for (const axis of ['x', 'y'] as const) {
-    const length = axis === 'x' ? 'width' : 'height';
+  for (const axis of [strings.common.x, strings.common.y] as const) {
+    const length = axis === strings.common.x ? strings.common.width : strings.common.height;
     const anchors = [moving[axis], moving[axis] + moving[length] / 2, moving[axis] + moving[length]];
     let correction = tolerance + 1;
     let position: number | undefined;
@@ -87,7 +89,7 @@ export function snapTranslation(box: Box, delta: Point, targets: Box[], spacing:
   }
   return { delta: snapped, guides };
 }
-function polygon(points: Point[]): string { return points.map((p, i) => `${i ? 'L' : 'M'}${p.x},${p.y}`).join(' ') + ' Z'; }
+function polygon(points: Point[]): string { return points.map((p, i) => `${i ? strings.common.l : strings.common.m}${p.x}${strings.common.symbol_d03502c4}${p.y}`).join(strings.common.space) + strings.geometry.z; }
 function regularPolygon(sides: number, star = false): string {
   return polygon(Array.from({ length: star ? sides * 2 : sides }, (_, i) => {
     const angle = -Math.PI / 2 + i * Math.PI * 2 / (star ? sides * 2 : sides);
@@ -99,29 +101,29 @@ function regularPolygon(sides: number, star = false): string {
 export function shapePath(shape: ShapeKind, cornerRadius = 8): string {
   const r = Math.min(50, Math.max(0, cornerRadius));
   switch (shape) {
-    case 'rect': return 'M0 0 H100 V100 H0 Z';
-    case 'roundRect': return `M${r} 0 H${100-r} Q100 0 100 ${r} V${100-r} Q100 100 ${100-r} 100 H${r} Q0 100 0 ${100-r} V${r} Q0 0 ${r} 0 Z`;
-    case 'ellipse': return 'M50 0 A50 50 0 1 1 49.99 0 Z';
-    case 'triangle': return 'M50 0 L100 100 H0 Z';
-    case 'rightTriangle': return 'M0 0 L100 100 H0 Z';
-    case 'diamond': return 'M50 0 L100 50 50 100 0 50 Z';
-    case 'pentagon': return regularPolygon(5);
-    case 'hexagon': return regularPolygon(6);
-    case 'octagon': return regularPolygon(8);
-    case 'star5': return regularPolygon(5, true);
-    case 'star6': return regularPolygon(6, true);
-    case 'arrowRight': return 'M0 28 H60 V0 L100 50 60 100 V72 H0 Z';
-    case 'arrowLeft': return 'M100 28 H40 V0 L0 50 40 100 V72 H100 Z';
-    case 'arrowUp': return 'M28 100 V40 H0 L50 0 100 40 H72 V100 Z';
-    case 'arrowDown': return 'M28 0 V60 H0 L50 100 100 60 H72 V0 Z';
-    case 'arrowDouble': return 'M0 50 L28 0 V28 H72 V0 L100 50 72 100 V72 H28 V100 Z';
-    case 'chevron': return 'M0 0 H65 L100 50 65 100 H0 L35 50 Z';
-    case 'parallelogram': return 'M25 0 H100 L75 100 H0 Z';
-    case 'trapezoid': return 'M25 0 H75 L100 100 H0 Z';
-    case 'plus': return 'M33 0 H67 V33 H100 V67 H67 V100 H33 V67 H0 V33 H33 Z';
-    case 'heart': return 'M50 95 C35 80 0 58 0 28 C0 -3 40 -10 50 20 C60 -10 100 -3 100 28 C100 58 65 80 50 95 Z';
-    case 'cloud': return 'M24 82 C-8 82 -5 42 17 39 C10 12 42 1 58 19 C80 1 105 24 90 46 C111 65 94 87 74 82 Z';
-    case 'calloutRect': return 'M0 0 H100 V75 H45 L20 100 25 75 H0 Z';
-    case 'calloutEllipse': return 'M23 78 C-15 57 -3 0 50 0 C111 0 115 70 65 82 L20 100 Z';
+    case strings.common.rect: return strings.geometry.m00H100V100H0Z;
+    case strings.common.roundRect: return `${strings.common.m}${r}${strings.geometry.value0H}${100-r}${strings.geometry.q1000100}${r}${strings.common.v}${100-r}${strings.geometry.q100100}${100-r}${strings.geometry.value100H}${r}${strings.geometry.q01000}${100-r}${strings.common.v}${r}${strings.geometry.q00}${r}${strings.geometry.value0Z}`;
+    case strings.common.ellipse: return strings.geometry.m500A50500114999;
+    case strings.common.triangle: return strings.geometry.m500L100100H0Z;
+    case strings.common.rightTriangle: return strings.geometry.m00L100100H0Z;
+    case strings.common.diamond: return strings.geometry.m500L1005050100050Z;
+    case strings.common.pentagon: return regularPolygon(5);
+    case strings.common.hexagon: return regularPolygon(6);
+    case strings.common.octagon: return regularPolygon(8);
+    case strings.common.star5: return regularPolygon(5, true);
+    case strings.common.star6: return regularPolygon(6, true);
+    case strings.common.arrowRight: return strings.geometry.m028H60V0L1005060100V72;
+    case strings.common.arrowLeft: return strings.geometry.m10028H40V0L05040100V72;
+    case strings.common.arrowUp: return strings.geometry.m28100V40H0L50010040H72;
+    case strings.common.arrowDown: return strings.geometry.m280V60H0L5010010060H72;
+    case strings.common.arrowDouble: return strings.geometry.m050L280V28H72V0L10050;
+    case strings.common.chevron: return strings.geometry.m00H65L1005065100H0L35;
+    case strings.common.parallelogram: return strings.geometry.m250H100L75100H0Z;
+    case strings.common.trapezoid: return strings.geometry.m250H75L100100H0Z;
+    case strings.common.plus: return strings.geometry.m330H67V33H100V67H67V100H33;
+    case strings.common.heart: return strings.geometry.m5095C3580058028C0;
+    case strings.common.cloud: return strings.geometry.m2482C8825421739;
+    case strings.common.calloutRect: return strings.geometry.m00H100V75H45L201002575;
+    case strings.common.calloutEllipse: return strings.geometry.m2378C155730500;
   }
 }

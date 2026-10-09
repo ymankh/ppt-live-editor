@@ -12,6 +12,8 @@ import { createSlide, layouts } from '@/lib/defaults';
 import { useEditor } from '@/store/editor';
 import type { Slide, Theme } from '@/types/model';
 import '../editor/panels.css';
+import { strings } from "@/strings";
+
 
 const layoutPreviews = layouts.map(layout => ({ ...layout, slide: createSlide(layout.id) }));
 
@@ -26,7 +28,7 @@ const SlideThumbnail = memo(function SlideThumbnail({ slide, theme }: { slide: S
     if (!target) return;
     const observer = new IntersectionObserver(entries => {
       setVisible(entries.some(entry => entry.isIntersecting));
-    }, { rootMargin: '250px 0px' });
+    }, { rootMargin: strings.slides.value250px0px });
     observer.observe(target);
     return () => observer.disconnect();
   }, []);
@@ -41,7 +43,7 @@ const SlideThumbnail = memo(function SlideThumbnail({ slide, theme }: { slide: S
     const timer = window.setTimeout(() => setPreview({ slide, theme }), 120);
     return () => window.clearTimeout(timer);
   }, [slide, theme]);
-  return <div ref={node} className="slide-thumbnail-scale" style={{aspectRatio:`${logicalSize.width} / ${logicalSize.height}`}}>{visible&&width>0&&<SlideRenderer slide={preview.slide} theme={preview.theme} logicalSize={logicalSize} width={width}/>}</div>;
+  return <div ref={node} className={strings.slides.slideThumbnailScale} style={{aspectRatio:`${logicalSize.width}${strings.common.symbol}${logicalSize.height}`}}>{visible&&width>0&&<SlideRenderer slide={preview.slide} theme={preview.theme} logicalSize={logicalSize} width={width}/>}</div>;
 });
 
 function SortableSlide({ slide, theme, index, selected, onSelect, onDuplicate, onDelete, canDelete }: {
@@ -49,16 +51,16 @@ function SortableSlide({ slide, theme, index, selected, onSelect, onDuplicate, o
   onDuplicate: () => void; onDelete: () => void; canDelete: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: slide.id });
-  return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? .45 : 1 }} className={`slide-item ${selected ? 'is-selected' : ''}`}>
-    <span className="slide-number">{index + 1}</span>
-    <ContextMenu><ContextMenuTrigger render={<div />} className="slide-context">
-      <button type="button" className="slide-thumbnail" onClick={onSelect} aria-label={`Slide ${index + 1}`} aria-pressed={selected}>
+  return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? .45 : 1 }} className={`${strings.slides.slideItem}${selected ? strings.common.isSelected : strings.common.empty}`}>
+    <span className={strings.slides.slideNumber}>{index + 1}</span>
+    <ContextMenu><ContextMenuTrigger render={<div />} className={strings.slides.slideContext}>
+      <button type={strings.common.button} className={strings.slides.slideThumbnail} onClick={onSelect} aria-label={`${strings.common.slide_ff1e0604}${index + 1}`} aria-pressed={selected}>
         <SlideThumbnail slide={slide} theme={theme} />
       </button>
     </ContextMenuTrigger>
-      <ContextMenuContent><ContextMenuItem onClick={onDuplicate}><Copy size={14} />Duplicate slide{selected ? 's' : ''}</ContextMenuItem><ContextMenuItem variant="destructive" disabled={!canDelete} onClick={onDelete}><Trash2 size={14} />Delete slide{selected ? 's' : ''}</ContextMenuItem></ContextMenuContent>
+      <ContextMenuContent><ContextMenuItem onClick={onDuplicate}><Copy size={14} />{strings.slides.duplicateSlide}{selected ? strings.common.s : strings.common.empty}</ContextMenuItem><ContextMenuItem variant={strings.common.destructive} disabled={!canDelete} onClick={onDelete}><Trash2 size={14} />{strings.slides.deleteSlide}{selected ? strings.common.s : strings.common.empty}</ContextMenuItem></ContextMenuContent>
     </ContextMenu>
-    <button type="button" className="slide-drag-handle" aria-label={`Reorder slide ${index + 1}`} {...attributes} {...listeners}><GripVertical size={13} /></button>
+    <button type={strings.common.button} className={strings.slides.slideDragHandle} aria-label={`${strings.slides.reorderSlide}${index + 1}`} {...attributes} {...listeners}><GripVertical size={13} /></button>
   </div>;
 }
 
@@ -98,12 +100,12 @@ export function SlidePanel() {
           groups.set(element.groupId, group);
           element.groupId = group;
         }
-        if (element.type === 'table') element.rows.forEach(row => { row.id = nanoid(); row.cells.forEach(cell => { cell.id = nanoid(); }); });
-        if (element.type === 'chart') element.series.forEach(series => { series.id = nanoid(); });
+        if (element.type === strings.common.table) element.rows.forEach(row => { row.id = nanoid(); row.cells.forEach(cell => { cell.id = nanoid(); }); });
+        if (element.type === strings.common.chart) element.series.forEach(series => { series.id = nanoid(); });
       });
       return { source: slide.id, copy };
     });
-    editor.mutate('Duplicate slides', draft => {
+    editor.mutate(strings.slides.duplicateSlides, draft => {
       copies.forEach(({ source, copy }) => { const index = draft.slides.findIndex(s => s.id === source); draft.slides.splice(index + 1, 0, copy); });
     });
     const firstCopy = copies[0];
@@ -115,7 +117,7 @@ export function SlidePanel() {
     if (ids.length >= slides.length) return;
     const index = slides.findIndex(slide => slide.id === id);
     const remaining = slides.filter(slide => !ids.includes(slide.id));
-    editor.mutate('Delete slides', draft => { draft.slides = draft.slides.filter(slide => !ids.includes(slide.id)); });
+    editor.mutate(strings.slides.deleteSlides, draft => { draft.slides = draft.slides.filter(slide => !ids.includes(slide.id)); });
     setSelectedIds([]);
     const nextSlide = remaining[Math.min(index, remaining.length - 1)];
     if (ids.includes(editor.activeSlideId) && nextSlide) editor.setActiveSlide(nextSlide.id);
@@ -124,7 +126,7 @@ export function SlidePanel() {
     if (!over || active.id === over.id) return;
     const movingIds = currentIds.includes(String(active.id)) ? currentIds : [String(active.id)];
     if (movingIds.includes(String(over.id))) return;
-    editor.mutate('Reorder slides', draft => {
+    editor.mutate(strings.slides.reorderSlides, draft => {
       const moving = draft.slides.filter(slide => movingIds.includes(slide.id));
       const targetIndex = draft.slides.findIndex(slide => slide.id === over.id);
       const sourceIndex = draft.slides.findIndex(slide => slide.id === active.id);
@@ -134,14 +136,14 @@ export function SlidePanel() {
       draft.slides = remaining;
     });
   };
-  return <aside className="slide-panel" aria-label="Slides">
-    <div className="panel-header"><h2>Slides <span className="slide-count">{slides.length}</span></h2><Button variant="ghost" size="icon-sm" title="Choose a slide layout" aria-label="Choose slide layout" onClick={() => setLayoutOpen(true)}><Plus size={17} /></Button></div>
-    <div className="slide-list"><DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorder}><SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
+  return <aside className={strings.slides.slidePanel} aria-label={strings.common.slides}>
+    <div className={strings.common.panelHeader}><h2>{strings.slides.slides}<span className={strings.slides.slideCount}>{slides.length}</span></h2><Button variant={strings.common.ghost} size={strings.common.iconSm} title={strings.slides.chooseASlideLayout} aria-label={strings.slides.chooseSlideLayout} onClick={() => setLayoutOpen(true)}><Plus size={17} /></Button></div>
+    <div className={strings.slides.slideList}><DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorder}><SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
       {slides.map((slide, index) => <SortableSlide key={slide.id} slide={slide} theme={editor.document.theme} index={index} selected={currentIds.includes(slide.id)} onSelect={event => selectSlide(event, slide.id)} onDuplicate={() => duplicate(slide.id)} onDelete={() => remove(slide.id)} canDelete={(currentIds.includes(slide.id) ? currentIds.length : 1) < slides.length} />)}
     </SortableContext></DndContext></div>
-    <div className="slide-panel-footer"><Button variant="outline" className="add-slide-button" onClick={() => { editor.addSlide(); setSelectedIds([]); }}><Plus size={16} />Add slide</Button><Button variant="ghost" size="icon" aria-label="Slide layouts" title="Slide layouts" onClick={() => setLayoutOpen(true)}><LayoutTemplate size={17} /></Button></div>
-    <Dialog open={layoutOpen} onOpenChange={setLayoutOpen}><DialogContent className="layout-dialog"><DialogHeader><DialogTitle>A fresh canvas</DialogTitle><DialogDescription>Choose a layout to start your next slide.</DialogDescription></DialogHeader>
-      <div className="layout-dialog-grid">{layoutPreviews.map(layout => <button className="layout-option" key={layout.id} onClick={() => { editor.addSlide(layout.id); setSelectedIds([]); setLayoutOpen(false); }}><div className="layout-preview"><div><SlideRenderer slide={layout.slide} theme={editor.document.theme} width={1920} /></div></div><span>{layout.name}</span></button>)}</div>
+    <div className={strings.slides.slidePanelFooter}><Button variant={strings.common.outline} className={strings.slides.addSlideButton} onClick={() => { editor.addSlide(); setSelectedIds([]); }}><Plus size={16} />{strings.common.addSlide}</Button><Button variant={strings.common.ghost} size={strings.common.icon} aria-label={strings.slides.slideLayouts} title={strings.slides.slideLayouts} onClick={() => setLayoutOpen(true)}><LayoutTemplate size={17} /></Button></div>
+    <Dialog open={layoutOpen} onOpenChange={setLayoutOpen}><DialogContent className={strings.slides.layoutDialog}><DialogHeader><DialogTitle>{strings.slides.aFreshCanvas}</DialogTitle><DialogDescription>{strings.slides.chooseALayoutToStartYourNextSlide}</DialogDescription></DialogHeader>
+      <div className={strings.slides.layoutDialogGrid}>{layoutPreviews.map(layout => <button className={strings.slides.layoutOption} key={layout.id} onClick={() => { editor.addSlide(layout.id); setSelectedIds([]); setLayoutOpen(false); }}><div className={strings.slides.layoutPreview}><div><SlideRenderer slide={layout.slide} theme={editor.document.theme} width={1920} /></div></div><span>{layout.name}</span></button>)}</div>
     </DialogContent></Dialog>
   </aside>;
 }

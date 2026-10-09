@@ -1,0 +1,18 @@
+export const storeStrings = {
+  arrangeElements: "Arrange elements",
+  deleteElements: "Delete elements",
+  distributeElements: "Distribute elements",
+  duplicateElements: "Duplicate elements",
+  editElement: "Edit element",
+  flipElements: "Flip elements",
+  flipH: "flipH",
+  flipV: "flipV",
+  insert: "Insert ",
+  matchElementSize: "Match element size",
+  openPresentation: "Open presentation",
+  presentationNotFound: "Presentation not found",
+  saveFailed: "Save failed",
+  saving: "Saving",
+  undefined: "undefined",
+  unsaved: "Unsaved",
+} as const;
