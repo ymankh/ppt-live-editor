@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
-import { ArrowDown, ArrowUp, Eye, EyeOff, LockKeyhole, Maximize, Plus, SlidersHorizontal, Trash2, UnlockKeyhole } from 'lucide-react';
+import { Maximize, Plus, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,7 @@ import { useEditor } from '@/store/editor';
 import { plainText, textDocument, type AnimationEffect, type Background, type ChartElement, type ShapeKind, type SlideElement, type TableCell, type TableElement } from '@/types/model';
 import { FillControl,ShadowControl,StrokeControl } from './PropertyFields';
 import { Choice,ColorField,NumberField,Section,Toggle } from '@/components/common/PropertyInputs';
+import { LayersPanel } from './LayersPanel';
 import './panels.css';
 
 const palette = [{ name: 'Peach', color: '#f6d9c9' }, { name: 'Cream', color: '#f5f1e8' }, { name: 'White', color: '#ffffff' }, { name: 'Charcoal', color: '#282b29' }, { name: 'Lavender', color: '#ddd7ef' }, { name: 'Sage', color: '#d6dfcf' }];
@@ -151,16 +152,6 @@ export function PropertiesPanel() {
     draft.slides.find(item => item.id === slide.id)?.elements.forEach(item => { if (editor.selection.includes(item.id) && !item.locked) item[key] = value; });
   });
   const setBackground = (background: Background) => editor.mutate('Change slide background', draft => { const target = draft.slides.find(item => item.id === slide.id); if (target) target.background = background; });
-  const reorderLayer = (id: string, direction: number) => editor.mutate('Reorder layer', draft => {
-    const target = draft.slides.find(item => item.id === slide.id);
-    if (!target) return;
-    const index = target.elements.findIndex(item => item.id === id);
-    const next = index + direction;
-    if (next < 0 || next >= target.elements.length) return;
-    const [item] = target.elements.splice(index, 1);
-    if (!item) return;
-    target.elements.splice(next, 0, item);
-  });
   return <aside className="properties-panel" aria-label="Design properties">
     <div className="panel-header"><h2>Design</h2><SlidersHorizontal size={16} className="panel-muted" /></div>
     <Tabs value={tab} onValueChange={value => setTab(String(value))} className="properties-tabs"><TabsList variant="line" className="properties-tab-list"><TabsTrigger value="slide">Slide</TabsTrigger><TabsTrigger value="style">Style</TabsTrigger><TabsTrigger value="layers">Layers</TabsTrigger></TabsList>
@@ -188,7 +179,7 @@ export function PropertiesPanel() {
         }} />{element.link?.kind === 'url' && <Input aria-label="Link URL" value={element.link.href} onChange={event => set({ link: { kind: 'url', href: event.target.value } })} />}{element.link?.kind === 'slide' && <Choice label="Destination" value={element.link.slideId} options={editor.document.slides.map((item, index) => ({ value: item.id, label: `Slide ${index + 1}` }))} onChange={slideId => set({ link: { kind: 'slide', slideId } })} />}</Section>
         <Section title="Animations">{element.animations.map(animation => <div className="animation-editor" key={animation.id}><Choice label="Category" value={animation.category} options={['entrance', 'emphasis', 'exit']} onChange={category => set({ animations: element.animations.map(item => item.id === animation.id ? { ...item, category } : item) })} /><Choice label="Effect" value={animation.effect} options={effects} onChange={effect => set({ animations: element.animations.map(item => item.id === animation.id ? { ...item, effect } : item) })} /><Choice label="Trigger" value={animation.trigger} options={['onClick', 'withPrevious', 'afterPrevious']} onChange={trigger => set({ animations: element.animations.map(item => item.id === animation.id ? { ...item, trigger } : item) })} /><div className="property-grid">{(['duration', 'delay'] as const).map(key => <NumberField key={key} label={`${key} (s)`} min={0} step={.1} value={animation[key]} onChange={value => set({ animations: element.animations.map(item => item.id === animation.id ? { ...item, [key]: value } : item) })} />)}</div><Button size="sm" variant="destructive" onClick={() => set({ animations: element.animations.filter(item => item.id !== animation.id) })}>Remove animation</Button></div>)}<Button size="sm" variant="outline" onClick={() => set({ animations: [...element.animations, { id: nanoid(), category: 'entrance', effect: 'fadeIn', trigger: 'onClick', duration: .5, delay: 0 }] })}><Plus size={12} />Add animation</Button></Section>
       </> : <div className="properties-empty"><SlidersHorizontal size={26} /><strong>Make it your own</strong><span>Select an element to edit its position, color, and style.</span></div>}</TabsContent>
-      <TabsContent value="layers"><Section title={`${slide.elements.length} layers`}><p className="property-note">Topmost objects appear first.</p><div className="layer-list">{[...slide.elements].reverse().map((item, index) => <div className={`layer-row ${editor.selection.includes(item.id) ? 'selected' : ''}`} key={item.id}><button className="layer-type" aria-label={`Select ${item.name}`} onClick={event => editor.select(event.ctrlKey || event.metaKey ? editor.selection.includes(item.id) ? editor.selection.filter(id => id !== item.id) : [...editor.selection, item.id] : [item.id])}>{item.type === 'text' ? 'T' : item.type === 'shape' ? '◇' : item.type === 'image' ? '▧' : item.type === 'line' ? '╱' : '▦'}</button><Input aria-label="Layer name" value={item.name} onFocus={() => editor.select([item.id])} onChange={event => editor.updateElement(item.id, { name: event.target.value })} /><Button variant="ghost" size="icon-xs" aria-label={item.hidden ? 'Show layer' : 'Hide layer'} onClick={() => editor.updateElement(item.id, { hidden: !item.hidden })}>{item.hidden ? <EyeOff size={13} /> : <Eye size={13} />}</Button><Button variant="ghost" size="icon-xs" aria-label={item.locked ? 'Unlock layer' : 'Lock layer'} onClick={() => editor.updateElement(item.id, { locked: !item.locked })}>{item.locked ? <LockKeyhole size={13} /> : <UnlockKeyhole size={13} />}</Button><div className="layer-reorder"><button aria-label="Move layer up" disabled={index === 0} onClick={() => reorderLayer(item.id, 1)}><ArrowUp size={11} /></button><button aria-label="Move layer down" disabled={index === slide.elements.length - 1} onClick={() => reorderLayer(item.id, -1)}><ArrowDown size={11} /></button></div></div>)}</div>{!slide.elements.length && <p className="property-note">This slide is empty. Add an element from the toolbar.</p>}</Section></TabsContent>
+      <TabsContent value="layers"><LayersPanel slide={slide} /></TabsContent>
       </div>
     </Tabs>
     <div className="design-footer"><span className="design-status-dot" />Every detail, considered.</div>

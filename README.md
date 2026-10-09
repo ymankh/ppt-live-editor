@@ -52,6 +52,8 @@ Domain definitions are in `src/types/model.ts`. Elements are a discriminated uni
 
 Rendering is shared in `src/features/renderer`. Pure geometry and unit conversion are in `src/lib`. Pointer geometry stays transient until commit. The command registry drives editor menus, the command palette, and generated shortcut help. Generated shadcn components are isolated in `src/components/ui`.
 
+In **Design → Layers**, drag the grip on the right of a row to change stacking order; the first row is the frontmost element. Each completed drag creates one undo entry. For keyboard reordering, focus the grip, press Space to pick up, use Up/Down arrows, and press Space to drop or Escape to cancel.
+
 ## Keyboard
 
 Windows/Linux use Ctrl; macOS uses Command. Shortcuts are scoped away from editable inputs.

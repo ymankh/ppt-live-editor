@@ -1,5 +1,11 @@
 # Changelog
 
+## Layer drag reordering
+- Replaced layer up/down buttons with sortable drag handles using the existing dnd-kit stack.
+- Drops update actual slide z-order through store mutations as a single undoable action; selection is preserved.
+- Added keyboard pickup, movement, drop, and cancellation; editor shortcuts respect events consumed by drag sensors.
+- Browser regressions cover canvas stacking order, undo/redo, persistence, and keyboard cancellation.
+
 ## Panel resize correction
 - Sidebars now fill the width and height of their resizable panels instead of retaining fixed content widths.
 - Slide thumbnails resize with the sidebar using measured container width and the shared renderer.

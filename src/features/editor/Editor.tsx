@@ -67,6 +67,7 @@ export function Editor() {
   }, [dark]);
   useEffect(() => {
     const handle = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
       const target = event.target;
       if (
         target instanceof HTMLElement &&

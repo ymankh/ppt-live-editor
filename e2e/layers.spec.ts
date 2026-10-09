@@ -1,0 +1,72 @@
+import { test, expect, type Page } from '@playwright/test';
+
+const layerOrder = async (page: Page) => Promise.all((await page.locator('.layer-row').all()).map(row => row.getAttribute('data-layer-id')));
+const canvasOrder = async (page: Page) => Promise.all((await page.locator('.canvas-slide-frame .renderer-element').all()).map(element => element.getAttribute('data-element-id')));
+
+test('dragging a layer updates z-order in one undo step and persists after reload', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/');
+  await page.getByRole('tab', { name: 'Layers', exact: true }).click();
+  const original = await layerOrder(page);
+  const last = original.at(-1);
+  if (!last) throw new Error('Missing layer fixture');
+  const rows = page.locator('.layer-row');
+  const handle = rows.last().locator('.layer-drag-handle');
+  const from = await handle.boundingBox();
+  const to = await rows.first().boundingBox();
+  if (!from || !to) throw new Error('Missing layer bounds');
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 });
+  await page.mouse.up();
+  const reordered = [last, ...original.slice(0, -1)];
+  await expect.poll(() => layerOrder(page)).toEqual(reordered);
+  await expect.poll(() => canvasOrder(page)).toEqual([...reordered].reverse());
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect.poll(() => layerOrder(page)).toEqual(original);
+  await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect.poll(() => canvasOrder(page)).toEqual([...reordered].reverse());
+  await page.keyboard.press('Control+s');
+  await expect(page.locator('.saved-tag')).toContainText('saved');
+  await page.reload();
+  await page.getByRole('tab', { name: 'Layers', exact: true }).click();
+  await expect.poll(() => layerOrder(page)).toEqual(reordered);
+});
+
+test('keyboard dragging reorders layers and Escape cancels without losing selection', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('tab', { name: 'Layers', exact: true }).click();
+  const original = await layerOrder(page);
+  const firstId = original[0];
+  const secondId = original[1];
+  if (!firstId || !secondId) throw new Error('Missing layer fixture');
+  const row = page.locator(`[data-layer-id="${firstId}"]`);
+  await row.locator('.layer-type').click();
+  const handle = row.locator('.layer-drag-handle');
+  await handle.focus();
+  await page.keyboard.press('Space');
+  await expect(handle).toHaveAttribute('aria-pressed', 'true');
+  // The keyboard sensor attaches document listeners after activation.
+  await page.evaluate('(() => { const { promise, resolve } = Promise.withResolvers(); requestAnimationFrame(() => requestAnimationFrame(resolve)); return promise; })()');
+  await page.keyboard.press('ArrowDown');
+  await expect(row).toHaveCSS('transform', /matrix\(1, 0, 0, 1, 0, [1-9]/);
+  await page.keyboard.press('Space');
+  const reordered = [secondId, firstId, ...original.slice(2)];
+  await expect.poll(() => layerOrder(page)).toEqual(reordered);
+  await expect.poll(() => canvasOrder(page)).toEqual([...reordered].reverse());
+  await expect(row).toHaveClass(/selected/);
+  await handle.focus();
+  await page.keyboard.press('Space');
+  await expect(handle).toHaveAttribute('aria-pressed', 'true');
+  await page.evaluate('(() => { const { promise, resolve } = Promise.withResolvers(); requestAnimationFrame(() => requestAnimationFrame(resolve)); return promise; })()');
+  await page.keyboard.press('ArrowDown');
+  await expect(row).toHaveCSS('transform', /matrix\(1, 0, 0, 1, 0, [1-9]/);
+  await page.keyboard.press('Escape');
+  await expect(handle).not.toHaveAttribute('aria-pressed', 'true');
+  expect(await layerOrder(page)).toEqual(reordered);
+  await expect(row).toHaveClass(/selected/);
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect.poll(() => layerOrder(page)).toEqual(original);
+  await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
+});
