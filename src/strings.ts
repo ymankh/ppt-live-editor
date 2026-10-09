@@ -1,0 +1,15 @@
+export const strings = {
+ appName: 'Folio',
+ presentationTitle: 'Presentation title',
+ saved: 'All changes saved',
+ saving: 'Saving…',
+ unsaved: 'Unsaved changes',
+ notes: 'Speaker notes',
+ notesHint: 'Only visible to you while presenting',
+ notesPlaceholder: 'Add a little context. Your audience won’t see this.',
+ export: 'Export',
+ present: 'Present',
+ commandPalette: 'Command palette',
+ errorTitle: 'Something interrupted your workspace.',
+ reload: 'Reload presentation',
+} as const;

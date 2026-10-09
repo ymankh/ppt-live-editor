@@ -1,0 +1,23 @@
+import { test, expect } from '@playwright/test';
+test('editor supports slides, history, persistence and presenting',async({page})=>{
+ await page.goto('/');
+ await expect(page.getByRole('textbox',{name:'Presentation title'})).toHaveValue('The next chapter');
+ await page.getByRole('textbox',{name:'Presentation title'}).fill('A new perspective');
+ await page.getByRole('textbox',{name:'Presentation title'}).blur();
+ await page.keyboard.press('Control+m');
+ await expect(page.locator('.status-bar')).toContainText('of 7');
+ await page.keyboard.press('Control+z');
+ await expect(page.locator('.status-bar')).toContainText('of 6');
+ await page.keyboard.press('Control+Shift+z');
+ await expect(page.locator('.status-bar')).toContainText('of 7');
+ await page.keyboard.press('Control+s');
+ await expect(page.locator('.saved-tag')).toContainText('saved');
+ await page.reload();
+ await expect(page.getByRole('textbox',{name:'Presentation title'})).toHaveValue('A new perspective');
+ await page.getByRole('button',{name:'Present',exact:true}).click();
+ await expect(page).toHaveURL(/\/present\//);
+ await page.keyboard.press('Home');
+ await page.keyboard.press('ArrowRight');
+ await page.keyboard.press('Escape');
+ await expect(page.getByRole('textbox',{name:'Presentation title'})).toBeVisible();
+});

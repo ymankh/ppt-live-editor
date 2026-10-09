@@ -1,0 +1,6 @@
+packages:
+  - '.'
+verifyDepsBeforeRun: false
+allowBuilds:
+  core-js: true
+  pnpm: true
