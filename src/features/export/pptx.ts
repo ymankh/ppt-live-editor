@@ -1,3 +1,4 @@
+import { notesText } from '@/features/text/notes';
 import pptxgen from 'pptxgenjs';
 import type { Fill, Presentation, ShapeKind, Stroke, TipTapDocument } from '@/types/model';
 import { plainText } from '@/types/model';
@@ -57,7 +58,7 @@ export async function exportPptx(presentation: Presentation): Promise<void> {
   for (const source of presentation.slides) {
     const slide = pptx.addSlide();
     slide.hidden = source.skipped ?? false;
-    slide.addNotes(source.notes);
+    slide.addNotes(notesText(source.notes));
     if (source.background.type === 'image') slide.addImage({ data: await imageData(source.background.assetId), x: 0, y: 0, w: inch(presentation.slideSize.width), h: inch(presentation.slideSize.height) });
     else slide.background = { color: hex(source.background.type === 'solid' ? source.background.color : source.background.gradient.stops[0]?.color ?? '#ffffff') };
     for (const element of source.elements) {

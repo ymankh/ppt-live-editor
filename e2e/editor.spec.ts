@@ -16,6 +16,7 @@ test('editor supports slides, history, persistence and presenting',async({page})
  await expect(page.getByRole('textbox',{name:'Presentation title'})).toHaveValue('A new perspective');
  await page.getByRole('button',{name:'Present',exact:true}).click();
  await expect(page).toHaveURL(/\/present\//);
+ await expect(page.locator('.player-controls')).toBeVisible();
  await page.keyboard.press('Home');
  await page.keyboard.press('ArrowRight');
  await page.keyboard.press('Escape');

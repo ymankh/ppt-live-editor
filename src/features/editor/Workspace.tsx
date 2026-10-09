@@ -10,6 +10,7 @@ import { CanvasContextMenu } from '@/features/canvas/CanvasContextMenu';
 import { SlidePanel } from "@/features/slides/SlidePanel";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { insertImage } from "@/features/images/ingress";
+import { NotesEditor } from '@/features/text/NotesEditor';
 import { toast } from "sonner";
 export function Workspace({
   notes,
@@ -78,19 +79,7 @@ export function Workspace({
                 </button>
                 <span>Only visible to you while presenting</span>
               </div>
-              {notes && (
-                <textarea
-                  aria-label="Speaker notes"
-                  placeholder="Add a little context. Your audience won’t see this."
-                  value={text}
-                  onChange={(e) =>
-                    useEditor.getState().mutate("Edit notes", (d) => {
-                      const slide = d.slides.find((s) => s.id === activeId);
-                      if (slide) slide.notes = e.target.value;
-                    })
-                  }
-                />
-              )}
+              {notes&&<NotesEditor key={activeId} slideId={activeId} value={text}/>}
             </div>
           </section>
         </ResizablePanel>

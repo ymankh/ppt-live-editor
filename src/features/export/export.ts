@@ -1,3 +1,4 @@
+import { notesText } from '@/features/text/notes';
 import JSZip from 'jszip';
 import { jsPDF } from 'jspdf';
 import { z } from 'zod';
@@ -75,7 +76,7 @@ export async function exportPdf(presentation: Presentation, options: PdfExportOp
     pdf.setFontSize(12);
     pdf.text(`Slide ${index + 1} · Speaker notes`, margin, margin + imageHeight + 28);
     pdf.setFontSize(11);
-    const lines = pdf.splitTextToSize(slide.notes || 'No speaker notes.', imageWidth) as string[];
+    const lines = pdf.splitTextToSize(notesText(slide.notes) || 'No speaker notes.', imageWidth) as string[];
     let y = margin + imageHeight + 50;
     for (const line of lines) {
       if (y > pageHeight - margin) { pdf.addPage([pageWidth, pageHeight], orientation); y = margin; }

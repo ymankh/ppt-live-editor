@@ -9,7 +9,7 @@ test('create, edit, transform, reorder, export and restore a project',async({pag
  await page.locator('.canvas-slide-frame').click({position:{x:100,y:100}});
  const text=page.locator('.canvas-slide-frame .renderer-rich-text').first();
  await text.dblclick();
- await page.locator('[contenteditable="true"]').fill('An idea worth sharing');
+ await page.locator('.canvas-slide-frame [contenteditable="true"]').fill('An idea worth sharing');
  await page.locator('.canvas-topbar').click();
  await expect(text).toContainText('An idea worth sharing');
  await text.click();
@@ -25,8 +25,11 @@ test('create, edit, transform, reorder, export and restore a project',async({pag
  await page.keyboard.press('Control+Shift+z');await expect.poll(async()=>Number(await width.inputValue())).toBeCloseTo(resizedWidth,1);
  await page.keyboard.press('Control+m');await page.keyboard.press('Control+m');
  await expect(page.locator('.status-bar')).toContainText('Slide 3 of 3');
- await page.getByRole('button',{name:'Reorder slide 3',exact:true}).focus();
- await page.keyboard.press('Space');await page.keyboard.press('ArrowUp');await page.keyboard.press('Space');
+ const drag=await page.getByRole('button',{name:'Reorder slide 3',exact:true}).boundingBox();
+ const target=await page.getByRole('button',{name:'Slide 2',exact:true}).boundingBox();
+ if(!drag||!target)throw new Error('Missing sortable slide bounds');
+ await page.mouse.move(drag.x+drag.width/2,drag.y+drag.height/2);await page.mouse.down();
+ await page.mouse.move(target.x+target.width/2,target.y+target.height/2,{steps:16});await page.mouse.up();
  await expect(page.locator('.status-bar')).toContainText('Slide 2 of 3');
  await page.getByRole('button',{name:'Export',exact:true}).click();
  await page.getByRole('radio',{name:/Folio project/}).click();
@@ -35,5 +38,5 @@ test('create, edit, transform, reorder, export and restore a project',async({pag
  const path=await download.path();if(!path)throw new Error('Missing exported archive');const zip=await JSZip.loadAsync(await readFile(path));const json=zip.file('presentation.json');if(!json)throw new Error('Missing document in archive');expect(await json.async('string')).toContain('An idea worth sharing');
  await page.keyboard.press('Control+s');await expect(page.locator('.saved-tag')).toContainText('saved');await page.reload();
  await page.getByRole('button',{name:'Slide 1',exact:true}).click();await expect(page.locator('.canvas-slide-frame')).toContainText('An idea worth sharing');
- await page.getByRole('button',{name:'Present',exact:true}).click();await expect(page).toHaveURL(/\/present\//);await page.keyboard.press('ArrowRight');await expect(page.locator('.player-controls')).toContainText('2 / 3');
+ await page.getByRole('button',{name:'Present',exact:true}).click();await expect(page).toHaveURL(/\/present\//);await expect(page.locator('.player-controls')).toBeVisible();await page.keyboard.press('ArrowRight');await expect(page.locator('.player-controls')).toContainText('2 / 3');
 });

@@ -1,3 +1,4 @@
+import { NotesContent } from '@/features/text/NotesEditor';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ArrowLeft, ArrowRight, ExternalLink, Pause, RotateCcw, X } from 'lucide-react';
@@ -69,7 +70,7 @@ export function PresenterView() {
       <section className="presenter-current"><div className="presenter-section-label">CURRENT SLIDE <span>{index + 1} / {slides.length}{step ? ` · Build ${step}` : ''}</span></div>
         <div className="presenter-slide">{slide ? <SlidePreview slide={slide} theme={presentation.theme} maxWidth={800} /> : <p>No playable slides</p>}{blackout && <div className="presenter-preview-blackout" style={{ background: blackout }}>{blackout === 'black' ? 'Audience screen is black' : 'Audience screen is white'}</div>}</div>
         <div className="presenter-navigation"><Button variant="outline" onClick={() => send('previous')}><ArrowLeft size={16} />Previous</Button><span>Use ← → to navigate</span><Button className="bg-[#ed7355] text-white hover:bg-[#dc6446]" onClick={() => send('next')}>Next<ArrowRight size={16} /></Button></div>
-        <div className="presenter-notes"><div className="presenter-section-label">SPEAKER NOTES</div><p>{slide?.notes || 'No notes for this slide. Add speaker notes in the editor to keep your talking points close.'}</p></div>
+        <div className="presenter-notes"><div className="presenter-section-label">SPEAKER NOTES</div><NotesContent value={slide?.notes||'No notes for this slide. Add speaker notes in the editor to keep your talking points close.'}/></div>
       </section>
       <aside className="presenter-sidebar"><section><div className="presenter-section-label">UP NEXT</div><div className="presenter-next">{nextSlide ? <SlidePreview slide={nextSlide} theme={presentation.theme} maxWidth={360} /> : <div className="presenter-finish">You’ve reached the final slide.<br /><strong>Make it memorable.</strong></div>}</div></section>
         <section className="presenter-time"><div className="presenter-section-label">ELAPSED TIME<span>{new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div><strong>{timerText}</strong><div>
