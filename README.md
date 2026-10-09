@@ -48,7 +48,7 @@ flowchart TD
   Imports[Validated archive / PPTX import] --> Store
 ```
 
-Domain definitions are in `src/types/model.ts`. Elements are a discriminated union on `type`; coordinates use a 1920 × 1080 logical slide space. Elements are a flat z-ordered array; `groupId` associates group members. Rich text is recursive typed TipTap JSON. Image `assetId` accepts an embedded data URL, remote URL, or repository asset key. Notes are consistently plain text.
+Domain definitions are in `src/types/model.ts`. Elements are a discriminated union on `type`; coordinates use a 1920 × 1080 logical slide space by default, with custom dimensions shared by editor, player, and raster export. Elements are a flat z-ordered array; `groupId` associates group members. Rich text is recursive typed TipTap JSON. Image `assetId` accepts an embedded data URL, remote URL, or repository asset key. Notes accept legacy plain text and sanitized basic HTML produced by TipTap; export converts them to plain text.
 
 Rendering is shared in `src/features/renderer`. Pure geometry and unit conversion are in `src/lib`. Pointer geometry stays transient until commit. The command registry drives editor menus, the command palette, and generated shortcut help. Generated shadcn components are isolated in `src/components/ui`.
 
@@ -94,10 +94,14 @@ PPTX uses native editable text, shapes, lines, images, tables, and charts, and i
 
 Basic PPTX import handles positioned text, common shapes, connectors, images, tables, cached chart data, backgrounds, and notes. It does not reconstruct master/layout inheritance, grouped objects, advanced geometry, media/OLE, detailed theme/rich-text metadata, or animations.
 
-PDF and PNG use the shared renderer and rasterize slides. All slides, including skipped ones, are exported. Notes and playback builds are not included. Font and remote-image availability affect export.
+PDF and PNG/JPEG use the shared renderer and rasterize slides. PDF optionally includes printable, paginated notes pages. Image export supports the current slide or all slides and 1×–4× resolution. Skipped slides are included in all-slide exports; playback builds are not. Font and remote-image availability affect export.
 
 ## Browser behavior and current boundaries
 
 Fullscreen, clipboard, and presenter pop-ups require browser permission and a secure origin (localhost is supported). Presenter sync uses same-origin `BroadcastChannel`; static presenter previews show complete slides rather than the current animation build. Ink is temporary and clears on slide changes. Projects live in this browser profile; deleting site data deletes local projects.
 
-The current implementation does not provide complete PowerPoint feature parity. Advanced table span/drag editing, format painter, token-valued color storage, equal-spacing guides, virtualized thumbnail rendering, printable notes-page PDF, JPEG/scale export options, and storage reference-count garbage collection are not yet represented as complete workflows. Browser performance and full accessibility conformance have not been benchmarked or certified. The strings module establishes a shared copy surface but not all labels have been migrated.
+The current implementation does not provide complete PowerPoint feature parity. Table merge/split and row/column sizing are available in the spreadsheet dialog, but direct row/column dragging is not. Format painter, token-valued color storage, equal-spacing guides, full rich-text control coverage, image crop-handle mode, animation drag-order UI, and complete shortcut parity remain incomplete. Thumbnail artwork is viewport-virtualized and debounced. Project deletion safely garbage-collects unshared referenced assets; save-time reference counting is not implemented. Browser performance has not been benchmarked against the 100-element/60-fps target. Accessibility lint passes, but full accessibility conformance has not been certified. The strings module establishes a shared copy surface but not all labels have been migrated.
+
+## Verification
+
+Typecheck, strict type-aware ESLint plus recommended accessibility rules, 46 Vitest tests, two Playwright workflows, and the production build pass. The authoring E2E exercises blank-project creation, TipTap text, pointer move/resize, undo/redo, slide drag reorder, archive download inspection, reload persistence, and presentation navigation. A production-browser smoke run exercised theme/grid toggles, export dialog, slideshow navigation/overview, and observed no console errors.
