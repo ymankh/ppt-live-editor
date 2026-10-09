@@ -1,5 +1,10 @@
 # Changelog
 
+## Panel resize correction
+- Sidebars now fill the width and height of their resizable panels instead of retaining fixed content widths.
+- Slide thumbnails resize with the sidebar using measured container width and the shared renderer.
+- Added a browser regression covering both sidebar dividers, thumbnail expansion, full-height content, and persisted sizes after reload.
+
 ## 2026-10-09 — Folio presentation workspace
 
 ### 0 — Application foundation

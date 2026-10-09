@@ -1,6 +1,6 @@
-.slide-panel, .properties-panel { background: #fff; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; color: #333431; }
-.slide-panel { width: 220px; border-right: 1px solid #e8e6e2; }
-.properties-panel { width: 280px; border-left: 1px solid #e8e6e2; }
+.slide-panel, .properties-panel { background: #fff; display: flex; flex-direction: column; width: 100%; height: 100%; min-width: 0; min-height: 0; color: #333431; }
+.slide-panel { border-right: 1px solid #e8e6e2; }
+.properties-panel { border-left: 1px solid #e8e6e2; }
 .panel-header { height: 59px; min-height: 59px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; }
 .panel-header h2 { font-size: 13px; font-weight: 600; margin: 0; display: flex; gap: 9px; align-items: center; }
 .panel-muted { color: #95958e; }
@@ -8,9 +8,9 @@
 .slide-list { flex: 1; min-height: 0; overflow: auto; padding: 6px 13px 20px 7px; scrollbar-width: thin; scrollbar-color: #ddd9d4 transparent; }
 .slide-item { position: relative; display: flex; gap: 6px; align-items: flex-start; margin-bottom: 18px; }
 .slide-number { min-width: 13px; padding-top: 8px; text-align: center; font-size: 10px; color: #a19f98; }
-.slide-context { width: 184px; }
-.slide-thumbnail { display: block; width: 184px; height: 105px; overflow: hidden; position: relative; border: 1px solid #e2dfd8; border-radius: 5px; background: #fff; padding: 0; cursor: pointer; box-shadow: 0 1px 3px #302c2110; }
-.slide-thumbnail-scale { transform: scale(.095); transform-origin: top left; width: 1920px; height: 1080px; pointer-events: none; }
+.slide-context { flex: 1; min-width: 0; }
+.slide-thumbnail { display: block; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; position: relative; border: 1px solid #e2dfd8; border-radius: 5px; background: #fff; padding: 0; cursor: pointer; box-shadow: 0 1px 3px #302c2110; }
+.slide-thumbnail-scale { width: 100%; height: 100%; pointer-events: none; }
 .slide-item.is-selected .slide-thumbnail { border: 2px solid #ed7355; box-shadow: 0 0 0 2px #ed735510; }
 .slide-item.is-selected .slide-number { color: #ed7355; font-weight: 600; }
 .slide-drag-handle { position: absolute; top: 43px; left: -4px; padding: 1px; background: white; border: 0; color: #a8a49e; opacity: 0; cursor: grab; touch-action: none; }

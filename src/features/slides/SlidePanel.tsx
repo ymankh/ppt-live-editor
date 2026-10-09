@@ -19,6 +19,7 @@ const SlideThumbnail = memo(function SlideThumbnail({ slide, theme }: { slide: S
   const logicalSize=useEditor(state=>state.document.slideSize);
   const node = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [width,setWidth]=useState(0);
   const [preview, setPreview] = useState({ slide, theme });
   useEffect(() => {
     const target = node.current;
@@ -29,11 +30,18 @@ const SlideThumbnail = memo(function SlideThumbnail({ slide, theme }: { slide: S
     observer.observe(target);
     return () => observer.disconnect();
   }, []);
+  useEffect(()=>{
+    const target=node.current;if(!target)return;
+    const observer=new ResizeObserver(entries=>{
+      const entry=entries[0];if(entry)setWidth(entry.contentRect.width);
+    });
+    observer.observe(target);return()=>observer.disconnect();
+  },[]);
   useEffect(() => {
     const timer = window.setTimeout(() => setPreview({ slide, theme }), 120);
     return () => window.clearTimeout(timer);
   }, [slide, theme]);
-  return <div ref={node} className="slide-thumbnail-scale">{visible&&<SlideRenderer slide={preview.slide} theme={preview.theme} logicalSize={logicalSize} width={1920}/>}</div>;
+  return <div ref={node} className="slide-thumbnail-scale" style={{aspectRatio:`${logicalSize.width} / ${logicalSize.height}`}}>{visible&&width>0&&<SlideRenderer slide={preview.slide} theme={preview.theme} logicalSize={logicalSize} width={width}/>}</div>;
 });
 
 function SortableSlide({ slide, theme, index, selected, onSelect, onDuplicate, onDelete, canDelete }: {
