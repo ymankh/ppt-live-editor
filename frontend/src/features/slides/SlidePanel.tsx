@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { nanoid } from 'nanoid';
-import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type Modifier } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Copy, GripVertical, LayoutTemplate, Plus, Trash2 } from 'lucide-react';
@@ -16,6 +16,7 @@ import { strings } from "@/strings";
 
 
 const layoutPreviews = layouts.map(layout => ({ ...layout, slide: createSlide(layout.id) }));
+const slideDragModifiers: Modifier[] = [({ transform }) => ({ ...transform, x: 0 })];
 
 const SlideThumbnail = memo(function SlideThumbnail({ slide, theme }: { slide: Slide; theme: Theme }) {
   const logicalSize=useEditor(state=>state.document.slideSize);
@@ -138,7 +139,7 @@ export function SlidePanel() {
   };
   return <aside className={strings.slides.slidePanel} aria-label={strings.common.slides}>
     <div className={strings.common.panelHeader}><h2>{strings.slides.slides}<span className={strings.slides.slideCount}>{slides.length}</span></h2><Button variant={strings.common.ghost} size={strings.common.iconSm} title={strings.slides.chooseASlideLayout} aria-label={strings.slides.chooseSlideLayout} onClick={() => setLayoutOpen(true)}><Plus size={17} /></Button></div>
-    <div className={strings.slides.slideList}><DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorder}><SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
+    <div className={strings.slides.slideList}><DndContext sensors={sensors} modifiers={slideDragModifiers} collisionDetection={closestCenter} onDragEnd={reorder}><SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
       {slides.map((slide, index) => <SortableSlide key={slide.id} slide={slide} theme={editor.document.theme} index={index} selected={currentIds.includes(slide.id)} onSelect={event => selectSlide(event, slide.id)} onDuplicate={() => duplicate(slide.id)} onDelete={() => remove(slide.id)} canDelete={(currentIds.includes(slide.id) ? currentIds.length : 1) < slides.length} />)}
     </SortableContext></DndContext></div>
     <div className={strings.slides.slidePanelFooter}><Button variant={strings.common.outline} className={strings.slides.addSlideButton} onClick={() => { editor.addSlide(); setSelectedIds([]); }}><Plus size={16} />{strings.common.addSlide}</Button><Button variant={strings.common.ghost} size={strings.common.icon} aria-label={strings.slides.slideLayouts} title={strings.slides.slideLayouts} onClick={() => setLayoutOpen(true)}><LayoutTemplate size={17} /></Button></div>

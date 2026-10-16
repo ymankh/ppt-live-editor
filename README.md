@@ -90,7 +90,7 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 
 ## Workspace
 
-- Three resizable columns: sortable slide thumbnails, logical DOM/SVG canvas, and contextual inspector.
+- Three resizable columns: sortable slide thumbnails, logical DOM/SVG canvas, and contextual inspector. Slide reordering is constrained to up/down movement so sideways dragging cannot expand the slide list.
 - Eight layouts and six presentation themes. Solid, gradient, and image backgrounds; editable transitions, speaker notes, and skipped slides.
 - Text, 25 SVG shape kinds, straight/elbow/curved lines, images, tables, and seven chart types.
 - Double-click text or table cells for TipTap editing. The inspector edits geometry, fill, outlines, shadows, image filters/crops, chart data, links, and animation settings.
