@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import {
-  ChevronDown,
   Cloud,
   Download,
   Moon,
@@ -220,7 +219,7 @@ export function Editor() {
               void navigate(`${strings.common.present}${document.id}${strings.editor.slide}${index}`);
             }}
           >
-            <Play size={15} fill={strings.editor.currentColor} />{strings.editor.present}<ChevronDown size={14} />
+            <Play size={15} fill={strings.editor.currentColor} />{strings.editor.present}
           </button>
         </div>
       </header>
