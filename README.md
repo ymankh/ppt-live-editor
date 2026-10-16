@@ -98,6 +98,7 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 - Eight layouts and six presentation themes. Solid, gradient, and image backgrounds; editable transitions, speaker notes, and skipped slides.
 - Text, 25 SVG shape kinds, straight/elbow/curved lines, images, tables, and seven chart types.
 - Double-click text or table cells for TipTap editing. The inspector edits geometry, fill, outlines, shadows, image filters/crops, chart data, links, and animation settings.
+- Text sizing is manual in the editor; the nonfunctional Auto fit selector is not exposed. Existing auto-fit document values are retained for import/export compatibility and PowerPoint export.
 - Pointer-based move, rotation, eight resize handles, shift-selection, marquee selection, grouping, snap guides, keyboard nudging, pan, fit, and zoom.
 - Layers support naming, visibility, locking, selection, and z-order controls. Locked layers can be unlocked from Design → Layers; other element edits remain blocked until unlocking.
 - Document actions use Immer patches. Undo/redo stores up to 200 entries and restores selection; pointer interactions commit a single document edit.

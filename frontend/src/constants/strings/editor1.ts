@@ -91,7 +91,6 @@ export const editorStrings1 = {
   arrangePopover: "arrange-popover",
   arrowLine: "Arrow line",
   aspectBadge: "aspect-badge",
-  autoFit: "Auto fit",
   background_ea2b8a87: "Background",
   backgroundPalette: "background-palette",
   backspace: "Backspace",
