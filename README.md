@@ -96,7 +96,7 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 - Text, 25 SVG shape kinds, straight/elbow/curved lines, images, tables, and seven chart types.
 - Double-click text or table cells for TipTap editing. The inspector edits geometry, fill, outlines, shadows, image filters/crops, chart data, links, and animation settings.
 - Pointer-based move, rotation, eight resize handles, shift-selection, marquee selection, grouping, snap guides, keyboard nudging, pan, fit, and zoom.
-- Layers support naming, visibility, locking, selection, and z-order controls.
+- Layers support naming, visibility, locking, selection, and z-order controls. Locked layers can be unlocked from Design → Layers; other element edits remain blocked until unlocking.
 - Document actions use Immer patches. Undo/redo stores up to 200 entries and restores selection; pointer interactions commit a single document edit.
 - API-backed SQLite autosave with serialized, debounced writes, startup restoration, and explicit save. Backend failures show failed-save status rather than falling back to local projects.
 - Project archive, PowerPoint, PDF, and PNG exports. Project archive and basic PowerPoint import from the project library.

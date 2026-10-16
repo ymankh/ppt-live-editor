@@ -126,6 +126,35 @@ describe('editor patch history', () => {
   });
 });
 
+describe('element locking', () => {
+  it('locks and unlocks a layer through element updates with reversible history', () => {
+    const state = useEditor.getState(), element = firstElement();
+    state.updateElement(element.id, { locked: true });
+    expect(firstElement().locked).toBe(true);
+    state.updateElement(element.id, { locked: false });
+    expect(firstElement().locked).toBe(false);
+    expect(useEditor.getState().past).toHaveLength(2);
+    state.undo();
+    expect(firstElement().locked).toBe(true);
+    state.redo();
+    expect(firstElement().locked).toBe(false);
+    state.updateElement(element.id, { x: element.x + 10 });
+    expect(firstElement().x).toBe(element.x + 10);
+  });
+
+  it('protects locked geometry and other properties even when an update unlocks the layer', () => {
+    const state = useEditor.getState(), element = firstElement();
+    const patch = { x: element.x + 10, y: element.y + 20, width: element.width + 30, height: element.height + 40, rotation: element.rotation + 45, name: 'Changed layer', hidden: !element.hidden };
+    state.updateElement(element.id, { locked: true });
+    state.updateElement(element.id, patch);
+    expect(firstElement()).toEqual({ ...element, locked: true });
+    expect(useEditor.getState().past).toHaveLength(1);
+    state.updateElement(element.id, { ...patch, locked: false });
+    expect(firstElement()).toEqual({ ...element, locked: false });
+    expect(useEditor.getState().past).toHaveLength(2);
+  });
+});
+
 describe('selection transforms', () => {
   it('pastes in place with new nested IDs and reversible selection', () => {
     const table = createElement('table');

@@ -156,7 +156,12 @@ export const useEditor = create<EditorState>()(immer((set, get) => ({
   updateElement(id, patch) {
     get().mutate(strings.store.editElement, draft => {
       const element = draft.slides.find(slide => slide.id === get().activeSlideId)?.elements.find(item => item.id === id);
-      if (element && !element.locked) Object.assign(element, patch, { id: element.id, type: element.type });
+      if (!element) return;
+      if (element.locked) {
+        if (patch.locked === false) element.locked = false;
+        return;
+      }
+      Object.assign(element, patch, { id: element.id, type: element.type });
     });
   },
   deleteSelection() {
