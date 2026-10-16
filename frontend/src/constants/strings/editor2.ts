@@ -147,7 +147,6 @@ export const editorStrings2 = {
   thisSlideIsEmptyAddAnElementFromThe: "This slide is empty. Add an element from the toolbar.",
   timesNewRoman: "Times New Roman",
   title: "Title",
-  titleChevron: "title-chevron",
   titleLine: "title-line",
   toggleDarkMode: "Toggle dark mode",
   toggleSpeakerNotes: "Toggle speaker notes",

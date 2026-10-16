@@ -135,9 +135,6 @@ export function Editor() {
                 })
               }
             />
-            <span className={strings.editor.titleChevron}>
-              <ChevronDown size={14} />
-            </span>
             <span className={strings.editor.savedTag}>
               <Cloud size={14} />
               {saveStatus === strings.common.saved ? strings.editor.saved : saveStatus}
