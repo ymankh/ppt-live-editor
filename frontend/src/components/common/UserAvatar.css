@@ -1,0 +1,19 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: #f0e7db;
+  color: #8e7560;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 6px;
+  border: 3px solid #fff;
+  outline: 1px solid #ede7df;
+}
+
+.dark .avatar {
+  border-color: #24252b;
+}

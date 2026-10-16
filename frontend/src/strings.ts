@@ -20,6 +20,7 @@ import { textStrings } from './constants/strings/text';
 import { themeStrings } from './constants/strings/theme';
 import { uiStrings1 } from './constants/strings/ui1';
 import { uiStrings2 } from './constants/strings/ui2';
+import { userStrings } from './constants/strings/users';
 
 /** Runtime strings only; module specifiers, type literals, and directives remain syntax. */
 export const strings = {
@@ -42,4 +43,5 @@ export const strings = {
   text: textStrings,
   theme: themeStrings,
   ui: { ...uiStrings1, ...uiStrings2 },
+  users: userStrings,
 } as const;

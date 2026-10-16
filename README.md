@@ -72,6 +72,7 @@ Without Aspire, Vite dev and preview proxy `/api` to `http://localhost:5080`; se
 | Method | Route | Behavior |
 |---|---|---|
 | GET | `/api/health` | Process health (`{"status":"ok"}`) |
+| GET | `/api/users/me` | Current user identity (`id`, `displayName`, `initials`) for both avatars |
 | GET | `/api/projects` | Summaries, newest update first |
 | GET | `/api/projects/latest/document` | Most recently updated full presentation, or 404 |
 | GET | `/api/projects/{id}` | Full presentation, or 404 |
@@ -83,6 +84,8 @@ Without Aspire, Vite dev and preview proxy `/api` to `http://localhost:5080`; se
 URL-encode resource IDs. The latest-document route has two segments so a project named `latest` remains retrievable. Project PUT preserves the presentation JSON, checks the version-1 envelope, timestamps, positive slide dimensions, slide/element containers and asset references, and rejects malformed JSON or a route/body ID mismatch with 400. The editor's existing Zod schema remains the full import validation boundary. Both PUT routes accept `If-None-Match: *` for create-only migration and return 412 if the resource already exists. Requests are limited to 100 MiB. Errors use HTTP status codes and ProblemDetails.
 
 The database defaults to `backend/Folio.Api/App_Data/folio.db`. Override `Database:Path` in configuration or set `Database__Path` in the API process environment; relative paths resolve against the API content root. Back up the database using SQLite-aware tooling, or stop the API before copying the database and any WAL files. Project writes and asset ownership changes are transactional. Deleting a project preserves shared assets and pending uploads; assets removed from a document during editing are not automatically collected.
+
+The editor and project library display the backend identity from `/api/users/me`. The injectable `ICurrentUserProvider` currently returns one hardcoded local user, Jordan Doe (`JD`, ID `local-jordan-doe`), without authentication or a user database. Replace its DI registration to integrate an external identity system without changing the frontend contract. Avatars are informational, not account-menu buttons; loading and failed requests do not fabricate an identity.
 
 On first project access, the frontend imports existing `chapter-editor` IndexedDB projects and their referenced stored blobs. Create-only writes never replace existing server projects or assets. Migration is marked complete only after every upload succeeds; failures remain retryable on the next access. Browser originals are retained for recovery, not used as an offline fallback. Settings, theme preferences and panel sizes remain browser-local. All browser profiles connected to the same API now share the same project library.
 

@@ -12,6 +12,7 @@ import {
   Undo2,
 } from "lucide-react";
 import { useEditor } from "@/store/editor";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { Workspace } from "./Workspace";
 import { StatusBar } from './StatusBar';
 import { Toolbar } from "./Toolbar";
@@ -195,7 +196,7 @@ export function Editor() {
           </Menubar>
         </div>
         <div className={strings.editor.headerActions}>
-          <button className={strings.common.avatar} title={strings.editor.personalWorkspace}>{strings.common.jD}</button>
+          <UserAvatar />
           <button
             className={strings.editor.headerIcon}
             aria-label={strings.editor.toggleDarkMode}

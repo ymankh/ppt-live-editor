@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEditor } from "@/store/editor";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { createPresentation, themes } from "@/lib/defaults";
 import {
   listProjects,
@@ -85,7 +86,7 @@ export function Home() {
           </span>{strings.common.folio}<span className={strings.home.brandDot}>{strings.common.symbol_cdb4ee2a}</span>
         </a>
         <span className={strings.home.workspaceLabel}>{strings.home.yOURCREATIVEWORKSPACE}</span>
-        <button className={strings.common.avatar}>{strings.common.jD}</button>
+        <UserAvatar />
       </header>
       <main>
         <div className={strings.home.homeIntro}>

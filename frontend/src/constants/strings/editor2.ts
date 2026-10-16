@@ -45,7 +45,6 @@ export const editorStrings2 = {
   path: "Path",
   peach: "Peach",
   pentagon: "Pentagon",
-  personalWorkspace: "Personal workspace",
   plus: "Plus",
   pOSITIONORDER: "POSITION & ORDER",
   position: "Position %",

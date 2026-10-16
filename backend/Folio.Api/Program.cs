@@ -1,4 +1,5 @@
 using Folio.Api.Persistence;
+using Folio.Api.Users;
 
 const long maximumRequestBytes = 100L * 1024 * 1024;
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddProblemDetails();
 if (builder.Environment.IsDevelopment())
     builder.Services.AddOpenApi();
 builder.Services.AddSingleton<FolioRepository>();
+builder.Services.AddScoped<ICurrentUserProvider, LocalCurrentUserProvider>();
 
 var app = builder.Build();
 app.Services.GetRequiredService<FolioRepository>().Initialize();

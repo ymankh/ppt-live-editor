@@ -158,7 +158,6 @@ export const commonStrings1 = {
   isSelected: "is-selected",
   italic: "italic",
   italic_9bf37cb5: "Italic",
-  jD: "JD",
   keydown: "keydown",
   keyup: "keyup",
   l: "L",
