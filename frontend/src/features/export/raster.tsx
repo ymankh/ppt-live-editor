@@ -3,8 +3,8 @@ import { flushSync } from 'react-dom';
 import { toJpeg, toPng } from 'html-to-image';
 import { SlideRenderer } from '@/features/renderer/SlideRenderer';
 import type { Presentation, Slide } from '@/types/model';
-import { assetReferences, getAsset } from '@/features/persistence/repository';
-import { blobDataUrl, replaceAssets } from './assets';
+import { assetReferences } from '@/features/persistence/repository';
+import { blobDataUrl, fetchAsset, replaceAssets } from './assets';
 import { strings } from "@/strings";
 
 
@@ -12,8 +12,7 @@ export interface RasterOptions { format?: 'png' | 'jpeg'; scale?: number }
 export async function rasterizeSlide(presentation: Presentation, slide: Slide, options: RasterOptions = {}): Promise<string> {
   const replacements: Record<string, string> = {};
   for (const reference of assetReferences({ ...presentation, slides: [slide] })) {
-    const stored = await getAsset(reference);
-    if (stored) replacements[reference] = await blobDataUrl(stored);
+    replacements[reference] = await blobDataUrl(await fetchAsset(reference));
   }
   let resolvedSlide = slide;
   if (Object.keys(replacements).length) {
@@ -38,7 +37,8 @@ export async function rasterizeSlide(presentation: Presentation, slide: Slide, o
     requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)));
     await promise;
     const render = options.format === strings.export.jpeg ? toJpeg : toPng;
-    return await render(host, { width, height, pixelRatio: options.scale ?? 1, cacheBust: false, skipAutoScale: true, backgroundColor: strings.common.colorffffff, quality: 0.95 });
+    // The SVG clone must not retain the live staging container's off-screen position.
+    return await render(host, { width, height, pixelRatio: options.scale ?? 1, cacheBust: false, skipAutoScale: true, backgroundColor: strings.common.colorffffff, quality: 0.95, style: { position: strings.export.rasterCapturePosition, left: strings.common.value0, top: strings.common.value0 } });
   } finally {
     root.unmount(); host.remove();
   }

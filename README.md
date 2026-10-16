@@ -195,6 +195,8 @@ Basic PPTX import handles positioned text, common shapes, connectors, images, ta
 
 PDF and PNG/JPEG use the shared renderer and rasterize slides. PDF optionally includes printable, paginated notes pages. Image export supports the current slide or all slides and 1×–4× resolution. Skipped slides are included in all-slide exports; playback builds are not. Font and remote-image availability affect export.
 
+Raster exports reset off-screen staging to static positioning in the captured clone, preventing blank PDF/image output. Referenced images are embedded as data URLs before capture using the shared asset loader; remote images still require CORS. The browser regression verifies actual background/artwork pixels, and PDF smoke verification renders the generated slide-only and speaker-notes documents.
+
 ## Browser behavior and current boundaries
 
 Fullscreen, clipboard, and presenter pop-ups require browser permission and a secure origin (localhost is supported). Presenter sync uses same-origin `BroadcastChannel`; static presenter previews show complete slides rather than the current animation build. Ink is temporary and clears on slide changes. Projects and stored assets live in the API database; clearing browser site data deletes local preferences and retained migration originals, not server projects.
