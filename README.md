@@ -100,7 +100,7 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 - API-backed SQLite autosave with serialized, debounced writes, startup restoration, and explicit save. Backend failures show failed-save status rather than falling back to local projects.
 - Project archive, PowerPoint, PDF, and PNG exports. Project archive and basic PowerPoint import from the project library.
 - Fullscreen presentation playback, animation builds, transitions, slide overview, black/white screen, SVG ink and laser, and a synchronized presenter window.
-- System-aware dark theme with a persistent manual override.
+- System-aware dark theme with a persistent manual override and a uniform full-width editing toolbar background.
 
 ## Architecture
 

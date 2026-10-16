@@ -125,7 +125,8 @@
 .data-error { color: #c34b35; font-size: 12px; margin: 0; }
 
 /* Application chrome follows the UI theme; slide artwork keeps its own colors. */
-.dark .slide-panel, .dark .properties-panel, .dark .editor-toolbar { background: #202220; color: #e1e2dc; border-color: #373a35; }
+.dark .slide-panel, .dark .properties-panel { background: #202220; color: #e1e2dc; border-color: #373a35; }
+.dark .editor-toolbar { background: #24252b; color: #e1e2dc; border-color: #383940; }
 .dark .slide-count { background: #343731; color: #b4b7ad; }
 .dark .panel-muted, .dark .slide-number, .dark .panel-kicker { color: #9ba094; }
 .dark .slide-list, .dark .properties-scroll, .dark .canvas-workspace { scrollbar-color: #4b5047 transparent; }
