@@ -32,32 +32,38 @@ export function Home() {
   const [search, setSearch] = useState<string>(strings.common.empty);
   const navigate = useNavigate();
   useEffect(() => {
-    void listProjects().then(setProjects);
+    void listProjects().then(setProjects).catch((error: unknown) =>
+      toast.error(error instanceof Error ? error.message : strings.persistence.libraryLoadFailed),
+    );
   }, []);
   const create = async (blank: boolean, template=0) => {
-    const doc = createPresentation();
-    doc.id = crypto.randomUUID();
-    if (blank) {
-      doc.title = strings.home.untitledPresentation;
-      doc.slides = [
-        {
-          id: crypto.randomUUID(),
-          elements: [],
-          background: { type: strings.common.solid, color: strings.common.colorffffff },
-          notes: strings.common.empty,
-          transition: { effect: strings.common.none, duration: 400 },
-        },
-      ];
+    try {
+      const doc = createPresentation();
+      doc.id = crypto.randomUUID();
+      if (blank) {
+        doc.title = strings.home.untitledPresentation;
+        doc.slides = [
+          {
+            id: crypto.randomUUID(),
+            elements: [],
+            background: { type: strings.common.solid, color: strings.common.colorffffff },
+            notes: strings.common.empty,
+            transition: { effect: strings.common.none, duration: 400 },
+          },
+        ];
+      }
+      if(!blank&&template>0){
+        const theme=themes[template];if(theme)applyTheme(doc,theme);
+        doc.title=template===1?strings.home.aBoldBeginning:strings.home.theBiggerPicture;
+        const heading=doc.slides[0]?.elements.find(e=>e.type===strings.common.text&&e.fontSize>=100);
+        if(heading?.type===strings.common.text)heading.content=textDocument(template===1?strings.home.ideasThatMoveUs:strings.home.seeThingsDifferently);
+      }
+      await saveProject(doc);
+      await useEditor.getState().loadProject(doc.id);
+      void navigate(`${strings.common.edit}${doc.id}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : strings.persistence.createFailed);
     }
-    if(!blank&&template>0){
-      const theme=themes[template];if(theme)applyTheme(doc,theme);
-      doc.title=template===1?strings.home.aBoldBeginning:strings.home.theBiggerPicture;
-      const heading=doc.slides[0]?.elements.find(e=>e.type===strings.common.text&&e.fontSize>=100);
-      if(heading?.type===strings.common.text)heading.content=textDocument(template===1?strings.home.ideasThatMoveUs:strings.home.seeThingsDifferently);
-    }
-    await saveProject(doc);
-    await useEditor.getState().loadProject(doc.id);
-    void navigate(`${strings.common.edit}${doc.id}`);
   };
   const upload = async (file: File) => {
     try {
@@ -234,6 +240,8 @@ export function Home() {
                             setProjects((p) =>
                               p.filter((x) => x.id !== project.id),
                             ),
+                          ).catch((error: unknown) =>
+                            toast.error(error instanceof Error ? error.message : strings.persistence.deleteFailed),
                           );
                       }}
                     >

@@ -1,4 +1,4 @@
-import { test,expect } from '@playwright/test';
+import { test, expect } from './fixtures.js';
 import { readFile } from 'node:fs/promises';
 import JSZip from 'jszip';
 test('create, edit, transform, reorder, export and restore a project',async({page})=>{

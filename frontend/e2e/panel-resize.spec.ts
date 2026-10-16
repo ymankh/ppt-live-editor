@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.js';
 
 test('sidebars and thumbnails fill their panels after resizing and reload', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });

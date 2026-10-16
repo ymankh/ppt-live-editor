@@ -33,6 +33,7 @@ import {
   MenubarShortcut,
 } from "@/components/ui/menubar";
 import "./editor.css";
+import { toast } from "sonner";
 import { strings } from "@/strings";
 
 export function Editor() {
@@ -58,10 +59,14 @@ export function Editor() {
   const index = document.slides.findIndex((s) => s.id === activeId);
   useEffect(() => {
     if (projectId && projectId !== document.id)
-      void useEditor.getState().loadProject(projectId);
+      void useEditor.getState().loadProject(projectId).catch((error: unknown) =>
+        toast.error(error instanceof Error ? error.message : strings.persistence.projectLoadFailed),
+      );
   }, [projectId, document.id]);
   useEffect(() => {
-    if (!projectId) void useEditor.getState().restoreProject();
+    if (!projectId) void useEditor.getState().restoreProject().catch((error: unknown) =>
+      toast.error(error instanceof Error ? error.message : strings.persistence.restoreFailed),
+    );
   }, [projectId]);
   useEffect(() => {
     window.document.documentElement.classList.toggle(strings.common.dark, dark);

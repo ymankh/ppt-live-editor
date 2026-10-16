@@ -6,6 +6,7 @@ import { RichText } from './RichText';
 import { ChartRenderer } from './ChartRenderer';
 import './renderer.css';
 import { strings } from "@/strings";
+import { assetUrl } from '@/features/persistence/repository';
 
 
 export interface SlideRendererProps { slide: Slide; theme: Theme; width?: number; interactive?: boolean; logicalSize?:{width:number;height:number} }
@@ -13,7 +14,7 @@ export function fillStyle(fill: Fill): CSSProperties {
   switch (fill.type) {
     case strings.common.none: return { background: strings.renderer.transparent };
     case strings.common.solid: return { background: fill.color };
-    case strings.common.image: return { backgroundImage: `${strings.renderer.url}${JSON.stringify(fill.assetId)}${strings.common.symbol_ba5ec51d}`, backgroundSize: fill.fit === strings.common.tile ? strings.renderer.auto : fill.fit, backgroundRepeat: fill.fit === strings.common.tile ? strings.renderer.repeat : strings.renderer.noRepeat, backgroundPosition: strings.common.center };
+    case strings.common.image: return { backgroundImage: `${strings.renderer.url}${JSON.stringify(assetUrl(fill.assetId))}${strings.common.symbol_ba5ec51d}`, backgroundSize: fill.fit === strings.common.tile ? strings.renderer.auto : fill.fit, backgroundRepeat: fill.fit === strings.common.tile ? strings.renderer.repeat : strings.renderer.noRepeat, backgroundPosition: strings.common.center };
     case strings.common.gradient: {
       const stops = fill.gradient.stops.map(s => `${s.color}${strings.common.space}${s.offset * 100}${strings.common.symbol_bbf3f11c}`).join(strings.renderer.symbol);
       return { background: fill.gradient.kind === strings.common.radial ? `${strings.renderer.radialGradientCircle}${stops}${strings.common.symbol_ba5ec51d}` : `${strings.renderer.linearGradient}${fill.gradient.angle}${strings.renderer.deg}${stops}${strings.common.symbol_ba5ec51d}` };
@@ -30,7 +31,7 @@ function SvgFill({ fill, id }: { fill: Fill; id: string }) {
     const angle = fill.gradient.angle * Math.PI / 180;
     return <linearGradient id={id} x1={`${50 - Math.sin(angle) * 50}${strings.common.symbol_bbf3f11c}`} y1={`${50 + Math.cos(angle) * 50}${strings.common.symbol_bbf3f11c}`} x2={`${50 + Math.sin(angle) * 50}${strings.common.symbol_bbf3f11c}`} y2={`${50 - Math.cos(angle) * 50}${strings.common.symbol_bbf3f11c}`}>{stops}</linearGradient>;
   }
-  if (fill.type === strings.common.image) return <pattern id={id} width={strings.common.value1} height={strings.common.value1} patternContentUnits={strings.renderer.objectBoundingBox}><image href={fill.assetId} width={strings.common.value1} height={strings.common.value1} preserveAspectRatio={fill.fit === strings.common.contain ? strings.renderer.xMidYMidMeet : strings.renderer.xMidYMidSlice} /></pattern>;
+  if (fill.type === strings.common.image) return <pattern id={id} width={strings.common.value1} height={strings.common.value1} patternContentUnits={strings.renderer.objectBoundingBox}><image href={assetUrl(fill.assetId)} width={strings.common.value1} height={strings.common.value1} preserveAspectRatio={fill.fit === strings.common.contain ? strings.renderer.xMidYMidMeet : strings.renderer.xMidYMidSlice} /></pattern>;
   return null;
 }
 function ArrowMarker({ head, id, color }: { head: ArrowHead; id: string; color: string }) {
@@ -70,7 +71,7 @@ function ElementContent({ element, theme, interactive }: { element: SlideElement
     case strings.common.image: {
       const cropWidth = Math.max(0.001, element.crop.width), cropHeight = Math.max(0.001, element.crop.height);
       return <div className={strings.renderer.rendererImageFrame} style={{ ...decorationStyle(element.stroke, element.shadow), borderRadius: element.clipShape === strings.common.ellipse ? strings.common.value50 : element.cornerRadius, overflow: strings.common.hidden }}>
-        <img draggable={false} src={element.assetId} alt={element.name} style={{ width: `${100 / cropWidth}${strings.common.symbol_bbf3f11c}`, height: `${100 / cropHeight}${strings.common.symbol_bbf3f11c}`, maxWidth: strings.common.none, position: strings.renderer.absolute, left: `${-element.crop.x / cropWidth * 100}${strings.common.symbol_bbf3f11c}`, top: `${-element.crop.y / cropHeight * 100}${strings.common.symbol_bbf3f11c}`, objectFit: strings.common.cover, transform: `${strings.common.scale}${element.flipH ? -1 : 1}${strings.renderer.symbol}${element.flipV ? -1 : 1}${strings.common.symbol_ba5ec51d}`, filter: `${strings.renderer.brightness}${element.filters.brightness}${strings.renderer.contrast}${element.filters.contrast}${strings.renderer.saturate}${element.filters.saturation}${strings.renderer.blur}${element.filters.blur}${strings.renderer.pxGrayscale}${element.filters.grayscale}${strings.common.symbol_ba5ec51d}` }} />
+        <img draggable={false} src={assetUrl(element.assetId)} alt={element.name} style={{ width: `${100 / cropWidth}${strings.common.symbol_bbf3f11c}`, height: `${100 / cropHeight}${strings.common.symbol_bbf3f11c}`, maxWidth: strings.common.none, position: strings.renderer.absolute, left: `${-element.crop.x / cropWidth * 100}${strings.common.symbol_bbf3f11c}`, top: `${-element.crop.y / cropHeight * 100}${strings.common.symbol_bbf3f11c}`, objectFit: strings.common.cover, transform: `${strings.common.scale}${element.flipH ? -1 : 1}${strings.renderer.symbol}${element.flipV ? -1 : 1}${strings.common.symbol_ba5ec51d}`, filter: `${strings.renderer.brightness}${element.filters.brightness}${strings.renderer.contrast}${element.filters.contrast}${strings.renderer.saturate}${element.filters.saturation}${strings.renderer.blur}${element.filters.blur}${strings.renderer.pxGrayscale}${element.filters.grayscale}${strings.common.symbol_ba5ec51d}` }} />
       </div>;
     }
     case strings.common.chart:return <ChartRenderer element={element} theme={theme}/>;

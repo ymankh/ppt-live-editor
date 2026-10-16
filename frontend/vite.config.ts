@@ -15,6 +15,22 @@ export default defineConfig({
       codeSplitting:{groups:[{name:'vendor',test:/node_modules/,maxSize:350000}]}
     }}
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.FOLIO_API_URL ?? 'http://localhost:5080',
+        changeOrigin: true,
+      },
+    },
+  },
+  preview: {
+    proxy: {
+      '/api': {
+        target: process.env.FOLIO_API_URL ?? 'http://localhost:5080',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),

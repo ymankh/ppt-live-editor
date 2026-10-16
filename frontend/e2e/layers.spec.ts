@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures.js';
 
 const layerOrder = async (page: Page) => Promise.all((await page.locator('.layer-row').all()).map(row => row.getAttribute('data-layer-id')));
 const canvasOrder = async (page: Page) => Promise.all((await page.locator('.canvas-slide-frame .renderer-element').all()).map(element => element.getAttribute('data-element-id')));

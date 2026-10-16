@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.js';
 test('editor supports slides, history, persistence and presenting',async({page})=>{
  await page.goto('/');
  await expect(page.getByRole('textbox',{name:'Presentation title'})).toHaveValue('The next chapter');

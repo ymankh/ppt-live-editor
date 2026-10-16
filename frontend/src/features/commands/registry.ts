@@ -1,5 +1,6 @@
 import { useEditor } from "@/store/editor";
 import { useView } from '@/store/view';
+import { toast } from 'sonner';
 import { strings } from "@/strings";
 
 export interface Command {
@@ -247,7 +248,7 @@ export const commands: Command[] = [
     shortcut: strings.commands.ctrlS,
     menu: strings.common.file_50009ce1,
     run: () => {
-      void s().saveProject();
+      void s().saveProject().catch((error: unknown) => toast.error(error instanceof Error ? error.message : strings.store.saveFailed));
     },
   },
   {id:strings.commands.selectTool,label:strings.commands.selectionTool,shortcut:strings.commands.v,menu:strings.common.insert,run:()=>s().setTool(strings.common.select)},
