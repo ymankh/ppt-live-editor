@@ -43,6 +43,8 @@ export function Editor() {
   const saveStatus = useEditor((s) => s.saveStatus);
   const past = useEditor((s) => s.past);
   const future = useEditor((s) => s.future);
+  // Recompute menu command availability when the selection changes.
+  useEditor((s) => s.selection);
   const [exportOpen, setExportOpen] = useState(false);
   const [palette, setPalette] = useState(false);
   const [help, setHelp] = useState(false);

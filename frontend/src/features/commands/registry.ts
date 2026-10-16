@@ -270,6 +270,7 @@ export function isEnabled(command: Command): boolean {
   const state=s();
   if(command.id===strings.common.undo)return state.past.length>0;
   if(command.id===strings.common.redo)return state.future.length>0;
+  if(command.id===strings.commands.flipH||command.id===strings.commands.flipV)return state.document.slides.find(slide=>slide.id===state.activeSlideId)?.elements.some(element=>state.selection.includes(element.id)&&!element.locked&&(element.type===strings.common.shape||element.type===strings.common.image))??false;
   if(command.id===strings.common.group||command.id.startsWith(strings.commands.match))return state.selection.length>1;
   if(command.id.startsWith(strings.commands.distribute))return state.selection.length>2;
   return !command.selection || state.selection.length > 0;
