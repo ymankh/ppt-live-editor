@@ -102,6 +102,7 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 - Shape image fills expose Cover and Contain only. Tile remains available for supported slide-background and text fills; older tiled shape fills retain their existing Cover-style rendering.
 - Chart controls disable unsupported options: Values for scatter, Grid for pie/donut, and Stacked except for bar, horizontal bar, and area. Switching types preserves the saved option values.
 - Flip commands enable only when the selection includes an unlocked shape or image; mixed selections flip only those supported elements. Arrange availability refreshes immediately when selection changes.
+- Project-library Import is a keyboard-focusable button; Enter or Space opens the same file picker used by mouse activation.
 - Text sizing is manual in the editor; the nonfunctional Auto fit selector is not exposed. Existing auto-fit document values are retained for import/export compatibility and PowerPoint export.
 - Pointer-based move, rotation, eight resize handles, shift-selection, marquee selection, grouping, snap guides, keyboard nudging, pan, fit, and zoom.
 - Layers support naming, visibility, locking, selection, and z-order controls. Locked layers can be unlocked from Design → Layers; other element edits remain blocked until unlocking.

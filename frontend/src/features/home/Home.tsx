@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   ArrowRight,
@@ -31,6 +31,7 @@ import { strings } from "@/strings";
 export function Home() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [search, setSearch] = useState<string>(strings.common.empty);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   useEffect(() => {
     void listProjects().then(setProjects).catch((error: unknown) =>
@@ -169,17 +170,23 @@ export function Home() {
                   placeholder={strings.home.findAPresentation}
                 />
               </label>
-              <label className={strings.home.importProject}>
-                <FileUp size={15} />{strings.home.import}<input
-                  type={strings.common.file}
-                  accept={strings.home.pptjsonPptx}
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void upload(f);
-                  }}
-                />
-              </label>
+              <button
+                type="button"
+                className={strings.home.importProject}
+                onClick={() => importInputRef.current?.click()}
+              >
+                <FileUp size={15} />{strings.home.import}
+              </button>
+              <input
+                ref={importInputRef}
+                type={strings.common.file}
+                accept={strings.home.pptjsonPptx}
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void upload(f);
+                }}
+              />
             </div>
           </div>
           <div className={strings.home.projectGrid}>
