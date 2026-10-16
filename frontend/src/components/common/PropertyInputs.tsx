@@ -196,10 +196,12 @@ export function Toggle({
   label,
   value,
   onChange,
+  disabled = false,
 }: {
   label: string;
   value: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <Button
@@ -207,6 +209,7 @@ export function Toggle({
       variant={value ? strings.common.secondary : strings.common.outline}
       className={value ? strings.inputs.propertyToggleActive : strings.inputs.propertyToggle}
       aria-pressed={value}
+      disabled={disabled}
       onClick={() => onChange(!value)}
     >
       {label}
