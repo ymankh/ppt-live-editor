@@ -10,10 +10,12 @@ export function FillControl({
   value,
   onChange,
   allowNone = true,
+  allowTile = true,
 }: {
   value: Fill;
   onChange: (value: Fill) => void;
   allowNone?: boolean;
+  allowTile?: boolean;
 }) {
   const types: Fill["type"][] = allowNone
     ? [strings.common.none, strings.common.solid, strings.common.gradient, strings.common.image]
@@ -152,8 +154,8 @@ export function FillControl({
           </label>
           <Choice
             label={strings.editor.fit}
-            value={value.fit}
-            options={[strings.common.cover, strings.common.contain, strings.common.tile]}
+            value={!allowTile && value.fit === strings.common.tile ? strings.common.cover : value.fit}
+            options={allowTile ? [strings.common.cover, strings.common.contain, strings.common.tile] : [strings.common.cover, strings.common.contain]}
             onChange={(fit) => onChange({ ...value, fit })}
           />
         </>
