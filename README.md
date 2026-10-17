@@ -94,6 +94,7 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 ## Workspace
 
 - Three resizable columns: sortable slide thumbnails, logical DOM/SVG canvas, and contextual inspector. Slide reordering is constrained to up/down movement so sideways dragging cannot expand the slide list.
+- The canvas extends directly to speaker notes without a separate instruction/hint bar.
 - Rename the presentation directly in the header title field; use the presentation icon to return to the project library. Present starts playback directly without a dropdown menu.
 - Eight layouts and six presentation themes. Solid, gradient, and image backgrounds; editable transitions, speaker notes, and skipped slides.
 - Text, 25 SVG shape kinds, straight/elbow/curved lines, images, tables, and seven chart types.

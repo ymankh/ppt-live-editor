@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { Maximize2, Minus, Plus, MousePointer2 } from 'lucide-react';
+import { Maximize2, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEditor } from '@/store/editor';
 import { useView } from '@/store/view';
@@ -149,6 +149,5 @@ export function SlideCanvas() {
         </div>
       </div>
     </div>
-    <div className={strings.canvas.canvasHint}><MousePointer2 size={12} /><span>{selection.length ? strings.canvas.dragToMoveShiftToConstrainDoubleClickTo : strings.canvas.clickToSelectDragToSelectMultipleDoubleClick}</span><span className={strings.canvas.canvasHintRight}>{selected.length ? `${selected.length}${strings.canvas.selected}` : strings.canvas.makeRoomForYourNextBigIdea}</span></div>
   </section>;
 }
