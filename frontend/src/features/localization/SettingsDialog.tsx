@@ -3,6 +3,7 @@ import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useLocale, useTranslation } from './locale';
+import { FontSettings } from '@/features/fonts/FontSettings';
 
 export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const t = useTranslation();
@@ -11,7 +12,7 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const languageId = useId();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('Settings')}</DialogTitle>
           <DialogDescription>{t('Choose the language used for the app interface.')}</DialogDescription>
@@ -29,6 +30,7 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           </select>
           <p className="text-sm text-muted-foreground">{t('Language changes only the interface, not your presentation.')}</p>
         </div>
+        <FontSettings />
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>{t('Done')}</Button>
         </DialogFooter>

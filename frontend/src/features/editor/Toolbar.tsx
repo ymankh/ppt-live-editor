@@ -1,4 +1,5 @@
 import { useTranslation } from '@/features/localization/locale';
+import { useAvailableFontFamilies } from '@/features/fonts/registry';
 import { useRef, useState } from 'react';
 import { nanoid } from 'nanoid';
 import { AlignCenter, AlignLeft, AlignRight, Bold, ChevronDown, ImagePlus, Italic, Layers, Minus, MousePointer2, Shapes, Table2, ChartNoAxesColumn, Type } from 'lucide-react';
@@ -30,7 +31,6 @@ const shapes: { name: string; kind: ShapeKind; symbol: string }[] = [
   { name: strings.editor.heart, kind: strings.common.heart, symbol: strings.editor.symbol_de95b5b0 }, { name: strings.editor.cloud, kind: strings.common.cloud, symbol: strings.editor.symbol_3705f04b },
   { name: strings.editor.callout, kind: strings.common.calloutRect, symbol: strings.editor.symbol_c77c3829 }, { name: strings.editor.ovalCallout, kind: strings.common.calloutEllipse, symbol: strings.editor.symbol_fad17ba4 },
 ];
-const fonts = [strings.common.geist, strings.editor.inter, strings.editor.arial, strings.editor.georgia, strings.editor.timesNewRoman, strings.editor.courierNew, strings.editor.verdana];
 const arrangements = [
   [strings.common.front, strings.common.bringToFront], [strings.common.forward, strings.common.bringForward], [strings.common.backward, strings.common.sendBackward], [strings.common.back, strings.common.sendToBack],
   [strings.common.left, strings.common.alignLeft], [strings.common.center, strings.editor.alignCenter], [strings.common.right, strings.editor.alignRight],
@@ -39,6 +39,7 @@ const arrangements = [
 
 export function Toolbar() {
   const t = useTranslation();
+  const fonts = useAvailableFontFamilies();
   const editor = useEditor();
   const fileInput = useRef<HTMLInputElement>(null);
   const [imageError, setImageError] = useState<string>(strings.common.empty);

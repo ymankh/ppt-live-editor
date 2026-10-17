@@ -45,6 +45,12 @@ public sealed class FolioRepository
                 PRIMARY KEY (project_id, asset_id)
             );
             CREATE INDEX IF NOT EXISTS project_assets_asset ON project_assets(asset_id);
+            CREATE TABLE IF NOT EXISTS fonts (
+                id TEXT PRIMARY KEY NOT NULL,
+                family TEXT NOT NULL COLLATE NOCASE UNIQUE,
+                content_type TEXT NOT NULL,
+                content BLOB NOT NULL
+            );
             """;
         command.ExecuteNonQuery();
     }
@@ -156,6 +162,39 @@ public sealed class FolioRepository
         return reader.Read() ? new StoredAsset(reader.GetString(0), (byte[])reader.GetValue(1)) : null;
     }
 
+    public IReadOnlyList<FontRecord> ListFonts()
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT id, family FROM fonts ORDER BY family COLLATE NOCASE, id";
+        using var reader = command.ExecuteReader();
+        var fonts = new List<FontRecord>();
+        while (reader.Read()) fonts.Add(new FontRecord(reader.GetString(0), reader.GetString(1)));
+        return fonts;
+    }
+
+    public bool AddFont(string id, string family, string contentType, byte[] content)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "INSERT INTO fonts(id, family, content_type, content) VALUES($id, $family, $type, $content) ON CONFLICT(family) DO NOTHING";
+        command.Parameters.AddWithValue("$id", id);
+        command.Parameters.AddWithValue("$family", family);
+        command.Parameters.AddWithValue("$type", contentType);
+        command.Parameters.Add("$content", SqliteType.Blob).Value = content;
+        return command.ExecuteNonQuery() != 0;
+    }
+
+    public StoredAsset? GetFont(string id)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT content_type, content FROM fonts WHERE id = $id";
+        command.Parameters.AddWithValue("$id", id);
+        using var reader = command.ExecuteReader();
+        return reader.Read() ? new StoredAsset(reader.GetString(0), (byte[])reader.GetValue(1)) : null;
+    }
+
     private SqliteConnection Open()
     {
         var connection = new SqliteConnection(connectionString);
@@ -176,3 +215,4 @@ public sealed class FolioRepository
 }
 
 public sealed record StoredAsset(string ContentType, byte[] Content);
+public sealed record FontRecord(string Id, string Family);

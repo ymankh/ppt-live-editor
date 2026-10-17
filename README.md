@@ -80,6 +80,9 @@ Without Aspire, Vite dev and preview proxy `/api` to `http://localhost:5080`; se
 | DELETE | `/api/projects/{id}` | Idempotent deletion; 204, with exclusive asset collection |
 | PUT | `/api/assets/{id}` | Store raw bytes with the request's Content-Type; 204 |
 | GET | `/api/assets/{id}` | Raw bytes and stored Content-Type, or 404 |
+| GET | `/api/fonts` | Uploaded font IDs and family names |
+| POST / PUT | `/api/fonts?family={name}` | Store validated TTF/OTF/WOFF/WOFF2 bytes, up to 20 MiB; duplicate family returns 409 |
+| GET | `/api/fonts/{id}/content` | Uploaded font bytes for browser registration |
 
 URL-encode resource IDs. The latest-document route has two segments so a project named `latest` remains retrievable. Project PUT preserves the presentation JSON, checks the version-1 envelope, timestamps, positive slide dimensions, slide/element containers and asset references, and rejects malformed JSON or a route/body ID mismatch with 400. The editor's existing Zod schema remains the full import validation boundary. Both PUT routes accept `If-None-Match: *` for create-only migration and return 412 if the resource already exists. Requests are limited to 100 MiB. Errors use HTTP status codes and ProblemDetails.
 
@@ -118,6 +121,10 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 Open **Settings** (the gear icon in the editor or project library), then select **English** or **العربية**. The interface switches immediately and remembers the choice in browser-local `folio-locale` storage. Arabic uses an RTL interface; presentation artwork, coordinates, numeric dimensions, and existing document content are not mirrored or translated.
 
 Text boxes, shape/table text, titles, and speaker notes accept Arabic and mixed Arabic/English content. Paragraph direction follows the first strong character independently of interface language. A bundled, SIL-OFL-licensed Amiri font provides Arabic glyphs without an external font request.
+
+## Font library
+
+In **Settings → Font library**, enter the exact font-family name and upload a TTF, OTF, WOFF, or WOFF2 file (maximum 20 MiB). The browser validates and registers the file, and the backend stores its metadata and bytes separately from project assets. Uploaded families appear in font selectors and reload on later visits; all clients connected to the same backend share this library. Upload only fonts you are licensed to use and share.
 
 ## Architecture
 
