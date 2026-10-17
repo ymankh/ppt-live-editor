@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   Cloud,
   Download,
@@ -33,10 +33,9 @@ import {
   MenubarShortcut,
 } from "@/components/ui/menubar";
 import "./editor.css";
-import { toast } from "sonner";
 import { strings } from "@/strings";
 import { SettingsButton } from '@/features/localization/SettingsDialog';
-import { translate, useLocale, useTranslation } from '@/features/localization/locale';
+import { useTranslation } from '@/features/localization/locale';
 
 export function Editor() {
   const t = useTranslation();
@@ -60,19 +59,7 @@ export function Editor() {
         matchMedia(strings.editor.prefersColorSchemeDark).matches),
   );
   const navigate = useNavigate();
-  const { projectId } = useParams();
   const index = document.slides.findIndex((s) => s.id === activeId);
-  useEffect(() => {
-    if (projectId && projectId !== document.id)
-      void useEditor.getState().loadProject(projectId).catch((error: unknown) =>
-        toast.error(error instanceof Error ? error.message : translate(strings.persistence.projectLoadFailed, useLocale.getState().locale)),
-      );
-  }, [projectId, document.id]);
-  useEffect(() => {
-    if (!projectId) void useEditor.getState().restoreProject().catch((error: unknown) =>
-      toast.error(error instanceof Error ? error.message : translate(strings.persistence.restoreFailed, useLocale.getState().locale)),
-    );
-  }, [projectId]);
   useEffect(() => {
     window.document.documentElement.classList.toggle(strings.common.dark, dark);
     localStorage.setItem(strings.editor.folioTheme, dark ? strings.common.dark : strings.common.light);

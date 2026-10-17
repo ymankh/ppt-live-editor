@@ -9,6 +9,7 @@ import { Player } from '@/features/presenter/Player';
 import { PresenterView } from '@/features/presenter/PresenterView';
 import { strings } from "@/strings";
 import { useLocale, useTranslation } from '@/features/localization/locale';
+import { PresentationFontGate } from '@/features/fonts/PresentationFontGate';
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -45,11 +46,11 @@ export default function App() {
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
-            <Route path={strings.common.symbol_8a5edab2} element={<Editor />} />
+            <Route path={strings.common.symbol_8a5edab2} element={<PresentationFontGate><Editor /></PresentationFontGate>} />
             <Route path={strings.common.projects} element={<Home />} />
-            <Route path={strings.app.editProjectId} element={<Editor />} />
-            <Route path={strings.app.presentId} element={<Player />} />
-            <Route path={strings.app.presenterId} element={<PresenterView />} />
+            <Route path={strings.app.editProjectId} element={<PresentationFontGate><Editor /></PresentationFontGate>} />
+            <Route path={strings.app.presentId} element={<PresentationFontGate><Player /></PresentationFontGate>} />
+            <Route path={strings.app.presenterId} element={<PresentationFontGate><PresenterView /></PresentationFontGate>} />
           </Routes>
         </BrowserRouter>
         <Toaster position={strings.app.bottomRight} />

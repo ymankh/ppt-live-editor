@@ -22,7 +22,6 @@ export function Player() {
   const startSlide = Math.max(0, Number(search.get(strings.common.slide)) || 0);
   const navigate = useNavigate();
   const presentation = useEditor(state => state.document);
-  const loadProject = useEditor(state => state.loadProject);
   const saveProject = useEditor(state => state.saveProject);
   const slides = useMemo(() => presentation.slides.filter(slide => !slide.skipped), [presentation.slides]);
   const [index, setIndex] = useState(0);
@@ -46,7 +45,6 @@ export function Player() {
   const slide = slides[Math.min(index, slides.length - 1)];
   const groups = useMemo(() => slide ? animationGroups(slide) : [], [slide]);
   const scale = fitSlide(size.width, size.height,presentation.slideSize.width,presentation.slideSize.height);
-  useEffect(() => { if (id && id !== presentation.id) void loadProject(id).catch((error: unknown) => toast.error(translate(error instanceof Error ? error.message : String(error), useLocale.getState().locale))); }, [id, presentation.id, loadProject]);
   useEffect(() => {
     const target = presentation.slides.slice(0, startSlide).filter(item => !item.skipped).length;
     setIndex(target); setStep(0);

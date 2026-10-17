@@ -126,6 +126,10 @@ Text boxes, shape/table text, titles, and speaker notes accept Arabic and mixed 
 
 In **Settings → Font library**, enter the exact font-family name and upload a TTF, OTF, WOFF, or WOFF2 file (maximum 20 MiB). The browser validates and registers the file, and the backend stores its metadata and bytes separately from project assets. Uploaded families appear in font selectors and reload on later visits; all clients connected to the same backend share this library. Upload only fonts you are licensed to use and share.
 
+Opening a presentation waits for registered fonts. If a referenced family is unavailable, a blocking dialog lets you upload that exact family or explicitly choose a replacement for every missing family. Replacements update theme, text, and rich-text font references without changing content or coordinates; returning to the library leaves the presentation unchanged. PPTX import retains theme, complex-script, and per-run fonts so missing families can be detected. This applies to supported `.pptx` imports; legacy binary `.ppt` conversion is not supported.
+
+PDF speaker notes embed the bundled Arabic font and use Unicode bidirectional ordering. PPTX preserves logical Arabic text and paragraph RTL metadata; uploaded font binaries are not embedded in PPTX, so recipients still need the fonts installed.
+
 ## Architecture
 
 ```mermaid

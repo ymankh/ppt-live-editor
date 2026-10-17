@@ -2,7 +2,6 @@ import { NotesContent } from '@/features/text/NotesEditor';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ArrowLeft, ArrowRight, ExternalLink, Pause, RotateCcw, X } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { SlidePreview } from './SlidePreview';
 import { useEditor } from '@/store/editor';
@@ -10,7 +9,7 @@ import { channelName, playerMessageSchema } from './channel';
 import type { PlayerMessage } from './channel';
 import './player.css';
 import { strings } from "@/strings";
-import { translate, useLocale, useTranslation } from '@/features/localization/locale';
+import { useLocale, useTranslation } from '@/features/localization/locale';
 
 
 export function PresenterView() {
@@ -18,7 +17,6 @@ export function PresenterView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const presentation = useEditor(state => state.document);
-  const loadProject = useEditor(state => state.loadProject);
   const [slideId, setSlideId] = useState<string>(strings.common.empty);
   const [step, setStep] = useState(0);
   const [startedAt, setStartedAt] = useState(Date.now);
@@ -32,7 +30,6 @@ export function PresenterView() {
   const index = Math.max(0, slides.findIndex(slide => slide.id === slideId));
   const slide = slides[index];
   const nextSlide = slides[index + 1];
-  useEffect(() => { if (id) void loadProject(id).catch((error: unknown) => toast.error(translate(error instanceof Error ? error.message : String(error), useLocale.getState().locale))); }, [id, loadProject]);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);

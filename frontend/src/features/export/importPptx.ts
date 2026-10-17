@@ -1,10 +1,11 @@
 import JSZip from 'jszip';
 import { nanoid } from 'nanoid';
 import { createElement, createPresentation, createSlide } from '@/lib/defaults';
-import { textDocument } from '@/types/model';
 import type { ChartKind, Fill, Presentation, ShapeKind, SlideElement } from '@/types/model';
 import { blobDataUrl } from './assets';
 import { strings } from "@/strings";
+import { parsePptxText, readPptxThemeFonts, resolvePptxTypeface } from './pptxFonts';
+import type { PptxThemeFonts } from './pptxFonts';
 
 
 const shapeKinds: Record<string, ShapeKind> = { rect: strings.common.rect, roundRect: strings.common.roundRect, ellipse: strings.common.ellipse, triangle: strings.common.triangle, rtTriangle: strings.common.rightTriangle,
@@ -48,6 +49,49 @@ async function relationships(zip: JSZip, path: string): Promise<Record<string, s
   }
   return output;
 }
+interface SlideFontContext { theme: PptxThemeFonts; layout: Document | undefined; master: Document | undefined }
+
+async function slideFontContext(zip: JSZip, links: Record<string, string>, fallback: PptxThemeFonts, cache: Map<string, Document>): Promise<SlideFontContext> {
+  const load = async (path: string) => {
+    const cached = cache.get(path);
+    if (cached) return cached;
+    const source = await xml(zip, path);
+    cache.set(path, source);
+    return source;
+  };
+  const layoutPath = Object.values(links).find(path => path.includes('/slideLayouts/'));
+  const layout = layoutPath ? await load(layoutPath) : undefined;
+  const layoutLinks = layoutPath ? await relationships(zip, layoutPath) : {};
+  const masterPath = Object.values(layoutLinks).find(path => path.includes('/slideMasters/'));
+  const master = masterPath ? await load(masterPath) : undefined;
+  const masterLinks = masterPath ? await relationships(zip, masterPath) : {};
+  const themePath = [...Object.values(links), ...Object.values(layoutLinks), ...Object.values(masterLinks)].find(path => path.includes('/theme/'));
+  return { theme: themePath ? readPptxThemeFonts(await load(themePath)) : fallback, layout, master };
+}
+
+function inheritedTextFonts(node: Element, context: SlideFontContext): { properties: Element[]; major: boolean } {
+  const placeholder = first(node, 'ph');
+  const kind = placeholder?.getAttribute('type') ?? 'body';
+  const major = kind === 'title' || kind === 'ctrTitle';
+  const properties: Element[] = [];
+  if (placeholder) for (const source of [context.layout, context.master]) {
+    if (!source) continue;
+    const match = descendants(source, 'sp').find(shape => {
+      const candidate = first(shape, 'ph');
+      if (!candidate) return false;
+      const index = placeholder.getAttribute('idx');
+      return index !== null ? candidate.getAttribute('idx') === index : (candidate.getAttribute('type') ?? 'body') === kind;
+    });
+    const list = match && first(match, 'lstStyle');
+    const defaults = list && first(list, 'defRPr');
+    if (defaults) properties.push(defaults);
+  }
+  const masterStyle = context.master && first(context.master, major ? 'titleStyle' : placeholder ? 'bodyStyle' : 'otherStyle');
+  const defaults = masterStyle && first(masterStyle, 'defRPr');
+  if (defaults) properties.push(defaults);
+  return { properties, major };
+}
+
 export async function importPptx(file: File): Promise<Presentation> {
   const zip = await JSZip.loadAsync(file);
   const root = await xml(zip, strings.export.pptPresentationXml);
@@ -58,10 +102,16 @@ export async function importPptx(file: File): Promise<Presentation> {
   const document = createPresentation(); document.title = file.name.replace(/\.pptx$/i, strings.common.empty);
   document.slideSize = { width, height }; document.slides = [];
   const assets: Record<string, string> = {};
+  const fontCache = new Map<string, Document>();
+  const defaultThemePath = Object.values(rels).find(path => path.includes('/theme/')) ?? zip.file(/^ppt\/theme\/theme\d+\.xml$/)[0]?.name;
+  const defaultFonts = readPptxThemeFonts(defaultThemePath ? await xml(zip, defaultThemePath) : undefined);
+  document.theme.fonts = { heading: resolvePptxTypeface(undefined, defaultFonts, 'latin', true), body: resolvePptxTypeface(undefined, defaultFonts) };
   for (const slideReference of descendants(root, strings.export.sldId)) {
     const relation = slideReference.getAttributeNS(strings.export.httpSchemasOpenxmlformatsOrgOfficeDocument2006Relationships, strings.common.id);
     const path = relation ? rels[relation] : undefined; if (!path) continue;
     const source = await xml(zip, path); const links = await relationships(zip, path);
+    const fontContext = await slideFontContext(zip, links, defaultFonts, fontCache);
+    if (!document.slides.length) document.theme.fonts = { heading: resolvePptxTypeface(undefined, fontContext.theme, 'latin', true), body: resolvePptxTypeface(undefined, fontContext.theme) };
     const slide = createSlide(strings.common.blank_ff71cf74); slide.transition = { effect: strings.common.none, duration: 0 }; slide.background = { type: strings.common.solid, color: strings.common.colorffffff };
     const background = first(source, strings.export.bgPr); const backgroundFill = fill(background);
     if (backgroundFill.type !== strings.common.none) slide.background = backgroundFill;
@@ -91,8 +141,11 @@ export async function importPptx(file: File): Promise<Presentation> {
         if (table) element = { ...createElement(strings.common.table), ...box,
           columnWidths: descendants(table, strings.export.gridCol).map(column => number(column, strings.common.w) / 6350),
           rows: descendants(table, strings.export.tr).map(row => ({ id: nanoid(), height: number(row, strings.export.h, 635000) / 6350,
-            cells: [...row.children].filter(cell => cell.localName === strings.export.tc).map(cell => ({ id: nanoid(), content: textDocument(text(cell)), fill: fill(first(cell, strings.export.tcPr)),
-              colSpan: number(cell, strings.export.gridSpan, 1), rowSpan: number(cell, strings.export.rowSpan, 1) })) })) };
+            cells: [...row.children].filter(cell => cell.localName === strings.export.tc).map(cell => {
+              const body = first(cell, 'txBody');
+              return { id: nanoid(), content: body ? parsePptxText(body, fontContext.theme) : { type: 'doc', content: [] }, fill: fill(first(cell, strings.export.tcPr)),
+                colSpan: number(cell, strings.export.gridSpan, 1), rowSpan: number(cell, strings.export.rowSpan, 1) };
+            }) })) };
         const chart = first(node, strings.common.chart); const chartId = chart?.getAttributeNS(strings.export.httpSchemasOpenxmlformatsOrgOfficeDocument2006Relationships, strings.common.id);
         const chartPath = chartId ? links[chartId] : undefined;
         if (chartPath) {
@@ -109,14 +162,17 @@ export async function importPptx(file: File): Promise<Presentation> {
         }
       } else {
         const body = first(node, strings.export.txBody); const value = body ? text(body) : strings.common.empty;
+        const inherited = inheritedTextFonts(node, fontContext);
+        const content = body ? parsePptxText(body, fontContext.theme, inherited.properties, inherited.major) : { type: 'doc', content: [] };
         const preset = first(node, strings.export.prstGeom)?.getAttribute(strings.export.prst);
-        if (preset && (preset !== strings.common.rect || !value)) element = { ...createElement(strings.common.shape, shapeKinds[preset] ?? strings.common.rect), ...box, fill: fill(properties), text: value ? textDocument(value) : null };
+        if (preset && (preset !== strings.common.rect || !value)) element = { ...createElement(strings.common.shape, shapeKinds[preset] ?? strings.common.rect), ...box, fill: fill(properties), text: value ? content : null };
         else {
           const run = body && (first(body, strings.export.rPr) ?? first(body, strings.export.defRPr)); const paragraph = body && first(body, strings.export.pPr);
           const alignment = paragraph?.getAttribute(strings.export.algn);
-          element = { ...createElement(strings.common.text), ...box, content: textDocument(value), fill: fill(properties, strings.common.colorffffff),
-            fontSize: number(run, strings.export.sz, 2400) / 50, fontFamily: run ? first(run, strings.export.latin)?.getAttribute(strings.export.typeface) ?? strings.common.geist : strings.common.geist,
-            color: `${strings.export.symbol_334359b9}${run ? first(run, strings.export.srgbClr)?.getAttribute(strings.export.val) ?? strings.export.value292825 : strings.export.value292825}`, bold: run?.getAttribute(strings.common.b) === strings.common.value1, italic: run?.getAttribute(strings.export.i) === strings.common.value1,
+          const firstFont = content.content?.flatMap(item => item.content ?? []).find(item => item.type === 'text')?.marks?.find(mark => mark.type === 'textStyle')?.attrs?.fontFamily;
+          element = { ...createElement(strings.common.text), ...box, content, fill: fill(properties, strings.common.colorffffff),
+            fontSize: number(run, strings.export.sz, 2400) / 50, fontFamily: typeof firstFont === 'string' ? firstFont : resolvePptxTypeface(undefined, fontContext.theme, 'latin', inherited.major),
+            color: `${strings.export.symbol_334359b9}${run ? first(run, strings.export.srgbClr)?.getAttribute(strings.export.val) ?? strings.export.value292825 : strings.export.value292825}`, bold: false, italic: false,
             align: alignment === strings.export.ctr ? strings.common.center : alignment === strings.export.r ? strings.common.right : strings.common.left };
         }
       }
