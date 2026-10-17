@@ -11,7 +11,7 @@ export const rendererStrings = {
   start: "-start",
   start_c491a08f: "-start)",
   symbol: ", ",
-  geistVariableSansSerif: ", 'Geist Variable', sans-serif",
+  geistVariableSansSerif: ", 'Geist Variable', 'Folio Arabic', Tahoma, Arial, sans-serif",
   blur: ") blur(",
   contrast: ") contrast(",
   saturate: ") saturate(",

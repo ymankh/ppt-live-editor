@@ -8,6 +8,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <InputPrimitive
       type={type}
+      dir={type === 'number' || type === 'range' ? 'ltr' : 'auto'}
       data-slot={strings.ui.input}
       className={cn(
         strings.ui.h8WFullMinW0RoundedLg,

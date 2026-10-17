@@ -1,3 +1,4 @@
+import { useTranslation } from '@/features/localization/locale';
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from 'react';
 import {
@@ -22,6 +23,7 @@ export function Workspace({
   notes: boolean;
   setNotes: (value: boolean) => void;
 }) {
+  const t = useTranslation();
   const [layout]=useState(()=>{
     try {
       const value:unknown=JSON.parse(localStorage.getItem(strings.editor.folioPanels)??strings.editor.null);
@@ -47,7 +49,7 @@ export function Workspace({
         for (const file of Array.from(event.dataTransfer.files))
           void insertImage(file).catch((error:unknown) =>
             toast.error(
-              error instanceof Error ? error.message : strings.common.imageImportFailed,
+              t(error instanceof Error ? error.message : strings.common.imageImportFailed),
             ),
           );
       }}
@@ -77,8 +79,8 @@ export function Workspace({
             >
               <div className={strings.editor.notesHeading}>
                 <button onClick={() => setNotes(!notes)}>
-                  {notes ? <ChevronDown size={14} /> : <ChevronUp size={14} />}{strings.common.notes}</button>
-                <span>{strings.editor.notesHint}</span>
+                  {notes ? <ChevronDown size={14} /> : <ChevronUp size={14} />}{t(strings.common.notes)}</button>
+                <span>{t(strings.editor.notesHint)}</span>
               </div>
               {notes&&<NotesEditor key={activeId} slideId={activeId} value={text}/>}
             </div>

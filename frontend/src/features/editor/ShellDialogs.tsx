@@ -1,3 +1,4 @@
+import { useTranslation } from '@/features/localization/locale';
 import { Check } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { commands, isEnabled } from "@/features/commands/registry";
@@ -38,20 +39,21 @@ export function ShellDialogs({
   themeOpen,
   setThemeOpen,
 }: Props) {
+  const t = useTranslation();
   const document = useEditor((s) => s.document);
   return (
     <>
       <Dialog open={palette} onOpenChange={setPalette}>
         <DialogContent className={strings.editor.commandDialog}>
           <DialogHeader className={strings.common.srOnly}>
-            <DialogTitle>{strings.editor.commandPalette}</DialogTitle>
-            <DialogDescription>{strings.editor.searchPresentationActions}</DialogDescription>
+            <DialogTitle>{t(strings.editor.commandPalette)}</DialogTitle>
+            <DialogDescription>{t(strings.editor.searchPresentationActions)}</DialogDescription>
           </DialogHeader>
           <Command>
-            <CommandInput placeholder={strings.editor.whatWouldYouLikeToDo} />
+            <CommandInput placeholder={t(strings.editor.whatWouldYouLikeToDo)} />
             <CommandList>
-              <CommandEmpty>{strings.editor.noMatchingActions}</CommandEmpty>
-              <CommandGroup heading={strings.editor.actions}>
+              <CommandEmpty>{t(strings.editor.noMatchingActions)}</CommandEmpty>
+              <CommandGroup heading={t(strings.editor.actions)}>
                 {commands.map((c) => (
                   <CommandItem
                     key={c.id}
@@ -61,12 +63,12 @@ export function ShellDialogs({
                       setPalette(false);
                     }}
                   >
-                    {c.label}
+                    {t(c.label)}
                     <CommandShortcut>{c.shortcut}</CommandShortcut>
                   </CommandItem>
                 ))}
               </CommandGroup>
-              <CommandGroup heading={strings.editor.goToSlide}>
+              <CommandGroup heading={t(strings.editor.goToSlide)}>
                 {document.slides.map((s, i) => (
                   <CommandItem
                     key={s.id}
@@ -74,7 +76,7 @@ export function ShellDialogs({
                       useEditor.getState().setActiveSlide(s.id);
                       setPalette(false);
                     }}
-                  >{strings.common.slide_ff1e0604}{i + 1}
+                  >{t(strings.common.slide_ff1e0604)}{i + 1}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -85,15 +87,15 @@ export function ShellDialogs({
       <Dialog open={help} onOpenChange={setHelp}>
         <DialogContent className={strings.editor.shortcutsDialog}>
           <DialogHeader>
-            <DialogTitle>{strings.editor.makeYourselfAtHome}</DialogTitle>
-            <DialogDescription>{strings.editor.aFewShortcutsToKeepYourIdeasMoving}</DialogDescription>
+            <DialogTitle>{t(strings.editor.makeYourselfAtHome)}</DialogTitle>
+            <DialogDescription>{t(strings.editor.aFewShortcutsToKeepYourIdeasMoving)}</DialogDescription>
           </DialogHeader>
           <div className={strings.editor.shortcutGrid}>
             {commands
               .filter((c) => c.shortcut)
               .map((c) => (
                 <div key={c.id}>
-                  <span>{c.label}</span>
+                  <span>{t(c.label)}</span>
                   <kbd>{c.shortcut?.replace(strings.common.ctrl, strings.common.symbol_70b4b62a)}</kbd>
                 </div>
               ))}
@@ -103,8 +105,8 @@ export function ShellDialogs({
       <Dialog open={themeOpen} onOpenChange={setThemeOpen}>
         <DialogContent className={strings.editor.themesDialog}>
           <DialogHeader>
-            <DialogTitle>{strings.editor.aFreshPerspective}</DialogTitle>
-            <DialogDescription>{strings.editor.chooseAPaletteForYourEntirePresentation}</DialogDescription>
+            <DialogTitle>{t(strings.editor.aFreshPerspective)}</DialogTitle>
+            <DialogDescription>{t(strings.editor.chooseAPaletteForYourEntirePresentation)}</DialogDescription>
           </DialogHeader>
           <div className={strings.editor.themeGrid}>
             {themes.map((theme) => (
@@ -123,7 +125,7 @@ export function ShellDialogs({
                     color: theme.colors.text,
                   }}
                 >
-                  <b>{strings.editor.aa}</b>
+                  <b>{t(strings.editor.aa)}</b>
                   <span>
                     {theme.colors.accent.map((color) => (
                       <i key={color} style={{ background: color }} />
@@ -131,7 +133,7 @@ export function ShellDialogs({
                   </span>
                 </div>
                 <p>
-                  {theme.name}
+                  {t(theme.name)}
                   {document.theme.id === theme.id && <Check size={14} />}
                 </p>
               </button>

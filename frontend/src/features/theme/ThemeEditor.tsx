@@ -1,3 +1,4 @@
+import { useTranslation } from '@/features/localization/locale';
 import { useState } from "react";
 import { nanoid } from "nanoid";
 import { useEditor } from "@/store/editor";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 import { strings } from "@/strings";
 
 export function ThemeEditor() {
+  const t = useTranslation();
   const current = useEditor((s) => s.document.theme);
   const [draft, setDraft] = useState(() => structuredClone(current));
   const [editing, setEditing] = useState(false);
@@ -20,12 +22,12 @@ export function ThemeEditor() {
           setDraft(structuredClone(current));
           setEditing(true);
         }}
-      >{strings.theme.createACustomTheme}</Button>
+      >{t(strings.theme.createACustomTheme)}</Button>
     );
   return (
     <div className={strings.theme.spaceY3BorderTPt4}>
       <Input
-        aria-label={strings.theme.themeName}
+        aria-label={t(strings.theme.themeName)}
         value={draft.name}
         onChange={(e) => setDraft({ ...draft, name: e.target.value })}
       />
@@ -34,7 +36,7 @@ export function ThemeEditor() {
           (key) => (
             <ColorField
               key={key}
-              label={key}
+              label={t(key)}
               value={draft.colors[key]}
               onChange={(color) =>
                 setDraft({
@@ -48,7 +50,7 @@ export function ThemeEditor() {
       </div>
       <div className={strings.theme.gridGridCols2Gap3}>
         <Input
-          aria-label={strings.theme.headingFont}
+          aria-label={t(strings.theme.headingFont)}
           value={draft.fonts.heading}
           onChange={(e) =>
             setDraft({
@@ -58,7 +60,7 @@ export function ThemeEditor() {
           }
         />
         <Input
-          aria-label={strings.theme.bodyFont}
+          aria-label={t(strings.theme.bodyFont)}
           value={draft.fonts.body}
           onChange={(e) =>
             setDraft({
@@ -80,10 +82,10 @@ export function ThemeEditor() {
               JSON.stringify(theme),
             );
             setEditing(false);
-            toast.success(strings.theme.customThemeSaved);
+            toast.success(t(strings.theme.customThemeSaved));
           }}
-        >{strings.theme.saveApply}</Button>
-        <Button variant={strings.common.ghost} onClick={() => setEditing(false)}>{strings.common.cancel}</Button>
+        >{t(strings.theme.saveApply)}</Button>
+        <Button variant={strings.common.ghost} onClick={() => setEditing(false)}>{t(strings.common.cancel)}</Button>
       </div>
     </div>
   );

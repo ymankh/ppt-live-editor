@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getCurrentUser, type CurrentUser } from '@/features/users/currentUser';
 import { strings } from '@/strings';
+import { useTranslation } from '@/features/localization/locale';
 import './UserAvatar.css';
 
 type UserState =
@@ -9,6 +10,7 @@ type UserState =
   | { status: 'error'; message: string };
 
 export function UserAvatar() {
+  const t = useTranslation();
   const [state, setState] = useState<UserState>({ status: 'loading' });
 
   useEffect(() => {
@@ -27,8 +29,8 @@ export function UserAvatar() {
 
   const label = state.status === 'ready'
     ? state.user.displayName
-    : state.status === 'error' ? strings.users.unavailable : strings.users.loading;
-  const title = state.status === 'error' ? `${label}: ${state.message}` : label;
+    : state.status === 'error' ? t(strings.users.unavailable) : t(strings.users.loading);
+  const title = state.status === 'error' ? `${label}: ${t(state.message)}` : label;
 
   return (
     <span

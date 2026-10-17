@@ -113,6 +113,12 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 - Fullscreen presentation playback, animation builds, transitions, slide overview, black/white screen, SVG ink and laser, and a synchronized presenter window.
 - System-aware dark theme with a persistent manual override and a uniform full-width editing toolbar background.
 
+## Language and Arabic editing
+
+Open **Settings** (the gear icon in the editor or project library), then select **English** or **العربية**. The interface switches immediately and remembers the choice in browser-local `folio-locale` storage. Arabic uses an RTL interface; presentation artwork, coordinates, numeric dimensions, and existing document content are not mirrored or translated.
+
+Text boxes, shape/table text, titles, and speaker notes accept Arabic and mixed Arabic/English content. Paragraph direction follows the first strong character independently of interface language. A bundled, SIL-OFL-licensed Amiri font provides Arabic glyphs without an external font request.
+
 ## Architecture
 
 ```mermaid
@@ -141,6 +147,8 @@ In **Design → Layers**, drag the grip on the right of a row to change stacking
 ## Runtime strings
 
 `frontend/src/strings.ts` exports the single `strings` const object. Its values live in small `frontend/src/constants/strings/` modules grouped by feature; `strings.common` owns values shared across features. All application runtime string literals use this object, including UI/accessibility copy, errors, history labels, default slide content, discriminants, CSS classes, colors, routes, storage keys, and interpolated template fragments.
+
+Display translation is separate from these immutable runtime tokens: call the reactive `useTranslation()` hook from `features/localization/locale.ts` at UI boundaries, and add Arabic display copy to `features/localization/ar.ts`. Keep model/option values, commands, routes, classes, and user-authored content unchanged. Shared choice controls translate labels, never stored values.
 
 ```tsx
 import { strings } from '@/strings';

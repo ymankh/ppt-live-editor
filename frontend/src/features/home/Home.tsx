@@ -27,15 +27,18 @@ import { applyTheme } from '@/features/theme/applyTheme';
 import { textDocument } from '@/types/model';
 import "./home.css";
 import { strings } from "@/strings";
+import { translate, useLocale, useTranslation } from "@/features/localization/locale";
+import { SettingsButton } from '@/features/localization/SettingsDialog';
 
 export function Home() {
+  const t = useTranslation();
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [search, setSearch] = useState<string>(strings.common.empty);
   const importInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   useEffect(() => {
     void listProjects().then(setProjects).catch((error: unknown) =>
-      toast.error(error instanceof Error ? error.message : strings.persistence.libraryLoadFailed),
+      toast.error(translate(error instanceof Error ? error.message : strings.persistence.libraryLoadFailed, useLocale.getState().locale)),
     );
   }, []);
   const create = async (blank: boolean, template=0) => {
@@ -64,7 +67,7 @@ export function Home() {
       await useEditor.getState().loadProject(doc.id);
       void navigate(`${strings.common.edit}${doc.id}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : strings.persistence.createFailed);
+      toast.error(translate(error instanceof Error ? error.message : strings.persistence.createFailed, useLocale.getState().locale));
     }
   };
   const upload = async (file: File) => {
@@ -73,9 +76,9 @@ export function Home() {
       await saveProject(doc);
       await useEditor.getState().loadProject(doc.id);
       void navigate(`${strings.common.edit}${doc.id}`);
-      toast.success(strings.home.presentationImported);
+      toast.success(translate(strings.home.presentationImported, useLocale.getState().locale));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : strings.home.importFailed);
+      toast.error(translate(error instanceof Error ? error.message : strings.home.importFailed, useLocale.getState().locale));
     }
   };
   return (
@@ -86,15 +89,16 @@ export function Home() {
             <Presentation size={24} />
           </span>{strings.common.folio}<span className={strings.home.brandDot}>{strings.common.symbol_cdb4ee2a}</span>
         </a>
-        <span className={strings.home.workspaceLabel}>{strings.home.yOURCREATIVEWORKSPACE}</span>
+        <span className={strings.home.workspaceLabel}>{t(strings.home.yOURCREATIVEWORKSPACE)}</span>
         <UserAvatar />
+        <SettingsButton className="settings-button" />
       </header>
       <main>
         <div className={strings.home.homeIntro}>
           <div>
-            <span className={strings.home.eyebrow}>{strings.home.aLITTLESPACEFORBIGIDEAS}</span>
-            <h1>{strings.home.yourNextChapterStartsHere}</h1>
-            <p>{strings.home.bringYourThinkingToLifeMakeSomethingWorthSharing}</p>
+            <span className={strings.home.eyebrow}>{t(strings.home.aLITTLESPACEFORBIGIDEAS)}</span>
+            <h1>{t(strings.home.yourNextChapterStartsHere)}</h1>
+            <p>{t(strings.home.bringYourThinkingToLifeMakeSomethingWorthSharing)}</p>
           </div>
           <button
             className={strings.common.presentAction}
@@ -102,12 +106,12 @@ export function Home() {
               void create(true);
             }}
           >
-            <Plus size={17} />{strings.home.newPresentation}</button>
+            <Plus size={17} />{t(strings.home.newPresentation)}</button>
         </div>
         <section className={strings.home.templateSection}>
           <div className={strings.home.sectionHeading}>
-            <h2>{strings.home.startWithALittleInspiration}</h2>
-            <span>{strings.home.mADETOMAKEYOUROWN}<Sparkles size={13} />
+            <h2>{t(strings.home.startWithALittleInspiration)}</h2>
+            <span>{t(strings.home.mADETOMAKEYOUROWN)}<Sparkles size={13} />
             </span>
           </div>
           <div className={strings.home.starterGrid}>
@@ -133,32 +137,32 @@ export function Home() {
                 title: strings.home.seeThingsDifferently,
                 tag: strings.home.lETSCONNECTTHEDOTS,
               },
-            ].map((t,template) => (
+            ].map((templateOption,template) => (
               <button
-                key={t.name}
+                key={templateOption.name}
                 onClick={() => {
                   void create(false,template);
                 }}
               >
                 <div
                   className={strings.home.templatePreview}
-                  style={{ background: t.color }}
+                  style={{ background: templateOption.color }}
                 >
-                  <span>{t.tag}</span>
-                  <b>{t.title}</b>
+                  <span>{templateOption.tag}</span>
+                  <b>{templateOption.title}</b>
                   <i>
                     <ArrowRight size={28} />
                   </i>
                 </div>
-                <h3>{t.name}</h3>
-                <p>{t.label}</p>
+                <h3>{t(templateOption.name)}</h3>
+                <p>{t(templateOption.label)}</p>
               </button>
             ))}
           </div>
         </section>
         <section>
           <div className={strings.home.sectionHeading}>
-            <h2>{strings.home.yourPresentations}{strings.common.space}
+            <h2>{t(strings.home.yourPresentations)}{strings.common.space}
               <span className={strings.home.projectCount}>{projects.length}</span>
             </h2>
             <div className={strings.home.projectControls}>
@@ -167,7 +171,7 @@ export function Home() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={strings.home.findAPresentation}
+                  placeholder={t(strings.home.findAPresentation)}
                 />
               </label>
               <button
@@ -175,7 +179,7 @@ export function Home() {
                 className={strings.home.importProject}
                 onClick={() => importInputRef.current?.click()}
               >
-                <FileUp size={15} />{strings.home.import}
+                <FileUp size={15} />{t(strings.home.import)}
               </button>
               <input
                 ref={importInputRef}
@@ -223,33 +227,33 @@ export function Home() {
                     <div>
                       <h3>{project.title}</h3>
                       <p>
-                        {project.slideCount}{strings.home.slidesEdited}{strings.common.space}
-                        {new Date(project.updatedAt).toLocaleDateString()}
+                        {project.slideCount}{t(strings.home.slidesEdited)}{strings.common.space}
+                        {new Date(project.updatedAt).toLocaleDateString(useLocale.getState().locale)}
                       </p>
                     </div>
-                    <button aria-label={`${strings.home.rename}${project.title}`} onClick={()=>{
-                      const title=window.prompt(strings.common.presentationTitle,project.title);if(!title?.trim())return;
+                    <button aria-label={`${t(strings.home.rename)}${project.title}`} onClick={()=>{
+                      const title=window.prompt(t(strings.common.presentationTitle),project.title);if(!title?.trim())return;
                       void useEditor.getState().loadProject(project.id).then(async()=>{
                         useEditor.getState().mutate(strings.common.renamePresentation,draft=>{draft.title=title.trim()});
                         await useEditor.getState().saveProject();setProjects(await listProjects());
-                      }).catch((error:unknown)=>toast.error(error instanceof Error?error.message:strings.home.renameFailed));
+                      }).catch((error:unknown)=>toast.error(translate(error instanceof Error?error.message:strings.home.renameFailed, useLocale.getState().locale)));
                     }}><Pencil size={14}/></button>
-                    <button aria-label={`${strings.home.duplicate}${project.title}`} onClick={()=>{
+                    <button aria-label={`${t(strings.home.duplicate)}${project.title}`} onClick={()=>{
                       void useEditor.getState().loadProject(project.id).then(async()=>{
                         const doc=structuredClone(useEditor.getState().document);doc.id=crypto.randomUUID();doc.title+=strings.home.copy;doc.createdAt=new Date().toISOString();
                         useEditor.getState().setDocument(doc);await useEditor.getState().saveProject();setProjects(await listProjects());
-                      }).catch((error:unknown)=>toast.error(error instanceof Error?error.message:strings.home.duplicateFailed));
+                      }).catch((error:unknown)=>toast.error(translate(error instanceof Error?error.message:strings.home.duplicateFailed, useLocale.getState().locale)));
                     }}><Copy size={14}/></button>
                     <button
-                      aria-label={`${strings.home.delete}${project.title}`}
+                      aria-label={`${t(strings.home.delete)}${project.title}`}
                       onClick={() => {
-                        if (window.confirm(`${strings.home.delete_fdd77e66}${project.title}${strings.home.symbol}`))
+                        if (window.confirm(`${t(strings.home.delete_fdd77e66)}${project.title}${t(strings.home.symbol)}`))
                           void deleteProject(project.id).then(() =>
                             setProjects((p) =>
                               p.filter((x) => x.id !== project.id),
                             ),
                           ).catch((error: unknown) =>
-                            toast.error(error instanceof Error ? error.message : strings.persistence.deleteFailed),
+                            toast.error(translate(error instanceof Error ? error.message : strings.persistence.deleteFailed, useLocale.getState().locale)),
                           );
                       }}
                     >
@@ -267,13 +271,13 @@ export function Home() {
               <span>
                 <Plus size={24} />
               </span>
-              <b>{strings.home.aBlankCanvas}</b>
-              <p>{strings.home.everyGreatIdeaStartsSomewhere}</p>
+              <b>{t(strings.home.aBlankCanvas)}</b>
+              <p>{t(strings.home.everyGreatIdeaStartsSomewhere)}</p>
             </button>
           </div>
         </section>
       </main>
-      <footer>{strings.home.thoughtfullyMadeForYourNextBigIdea}<span>{strings.home.fOLIOPRESENTATIONSTUDIO}</span>
+      <footer>{t(strings.home.thoughtfullyMadeForYourNextBigIdea)}<span>{t(strings.home.fOLIOPRESENTATIONSTUDIO)}</span>
       </footer>
     </div>
   );

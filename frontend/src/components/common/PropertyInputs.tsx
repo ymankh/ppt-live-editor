@@ -6,6 +6,7 @@ import { HexColorPicker } from 'react-colorful';
 import { Popover,PopoverContent,PopoverTrigger } from '@/components/ui/popover';
 import { strings } from "@/strings";
 import { isString } from "@/lib/typeGuards";
+import { useTranslation } from '@/features/localization/locale';
 
 export function Section({
   title,
@@ -14,9 +15,10 @@ export function Section({
   title: string;
   children: ReactNode;
 }) {
+  const t = useTranslation();
   return (
     <section className={strings.inputs.propertySection}>
-      <h3>{title}</h3>
+      <h3>{t(title)}</h3>
       {children}
     </section>
   );
@@ -36,6 +38,7 @@ export function NumberField({
   max?: number;
   step?: number;
 }) {
+  const t = useTranslation();
   const [draft, setDraft] = useState(String(Number(value.toFixed(2))));
   useEffect(() => setDraft(String(Number(value.toFixed(2)))), [value]);
   const commit = () => {
@@ -46,9 +49,9 @@ export function NumberField({
   };
   return (
     <label className={strings.common.propertyField}>
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <Input
-        aria-label={label}
+        aria-label={t(label)}
         type={strings.common.number}
         value={draft}
         min={min}
@@ -90,30 +93,29 @@ export function Choice<T extends string>({
   options: readonly T[] | readonly { value: T; label: string }[];
   onChange: (value: T) => void;
 }) {
+  const t = useTranslation();
+  const items = options.map((option) => isString(option)
+    ? { value: option, label: t(option) }
+    : { value: option.value, label: t(option.label) });
   return (
     <label className={strings.common.propertyField}>
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <Select
         value={value}
+        items={items}
         onValueChange={(next) => {
           if (next !== null) onChange(next);
         }}
       >
-        <SelectTrigger aria-label={label}>
+        <SelectTrigger aria-label={t(label)}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {options.map((option) =>
-            isString(option) ? (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ) : (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ),
-          )}
+          {items.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </label>
@@ -128,11 +130,12 @@ export function ColorField({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslation();
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
   return (
     <div className={strings.common.propertyField}>
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <div className={strings.inputs.colorField}>
         <Popover
           onOpenChange={(open) => {
@@ -140,7 +143,7 @@ export function ColorField({
           }}
         >
           <PopoverTrigger
-            aria-label={`${label}${strings.inputs.picker}`}
+            aria-label={`${t(label)} ${t('picker')}`}
             style={{
               background: value,
               width: 23,
@@ -162,7 +165,7 @@ export function ColorField({
               ].map((color) => (
                 <button
                   key={color}
-                  aria-label={`${strings.inputs.use}${color}`}
+                  aria-label={`${t('Use')} ${color}`}
                   onClick={() => setDraft(color)}
                   style={{
                     background: color,
@@ -177,7 +180,7 @@ export function ColorField({
           </PopoverContent>
         </Popover>
         <Input
-          aria-label={label}
+          aria-label={t(label)}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onBlur={() => {
@@ -203,6 +206,7 @@ export function Toggle({
   onChange: (value: boolean) => void;
   disabled?: boolean;
 }) {
+  const t = useTranslation();
   return (
     <Button
       size={strings.common.sm}
@@ -212,7 +216,7 @@ export function Toggle({
       disabled={disabled}
       onClick={() => onChange(!value)}
     >
-      {label}
+      {t(label)}
     </Button>
   );
 }

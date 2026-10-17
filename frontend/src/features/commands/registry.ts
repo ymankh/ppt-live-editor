@@ -2,6 +2,7 @@ import { useEditor } from "@/store/editor";
 import { useView } from '@/store/view';
 import { toast } from 'sonner';
 import { strings } from "@/strings";
+import { translate, useLocale } from "@/features/localization/locale";
 
 export interface Command {
   id: string;
@@ -248,11 +249,11 @@ export const commands: Command[] = [
     shortcut: strings.commands.ctrlS,
     menu: strings.common.file_50009ce1,
     run: () => {
-      void s().saveProject().catch((error: unknown) => toast.error(error instanceof Error ? error.message : strings.store.saveFailed));
+      void s().saveProject().catch((error: unknown) => toast.error(translate(error instanceof Error ? error.message : strings.store.saveFailed, useLocale.getState().locale)));
     },
   },
   {id:strings.commands.selectTool,label:strings.commands.selectionTool,shortcut:strings.commands.v,menu:strings.common.insert,run:()=>s().setTool(strings.common.select)},
-  {id:strings.common.image,label:strings.common.uploadImage,shortcut:strings.common.i,menu:strings.common.insert,run:()=>window.document.querySelector<HTMLButtonElement>(strings.commands.ariaLabelUploadImage)?.click()},
+  {id:strings.common.image,label:strings.common.uploadImage,shortcut:strings.common.i,menu:strings.common.insert,run:()=>window.document.querySelector<HTMLButtonElement>('[data-editor-action="upload-image"]')?.click()},
   {id:strings.common.pastePlace,label:strings.commands.pasteInPlace,shortcut:strings.commands.ctrlShiftV,menu:strings.common.edit_464c4ffd,run:()=>s().pasteClipboard(strings.common.inPlace)},
   {id:strings.commands.grid,label:strings.common.toggleGrid,shortcut:strings.commands.ctrl_38cc2c6c,menu:strings.common.view,run:()=>useView.getState().toggleGrid()},
   {id:strings.commands.rulers,label:strings.common.toggleRulers,shortcut:strings.commands.ctrlR,menu:strings.common.view,run:()=>useView.getState().toggleRulers()},

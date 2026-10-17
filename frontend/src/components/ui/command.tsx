@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/input-group"
 import { SearchIcon, CheckIcon } from "lucide-react"
 import { strings } from "@/strings";
+import { useTranslation } from '@/features/localization/locale';
 
 
 function Command({
@@ -47,11 +48,12 @@ function CommandDialog({
   showCloseButton?: boolean
   children: React.ReactNode
 }) {
+  const t = useTranslation();
   return (
     <Dialog {...props}>
       <DialogHeader className={strings.common.srOnly}>
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogTitle>{t(title)}</DialogTitle>
+        <DialogDescription>{t(description)}</DialogDescription>
       </DialogHeader>
       <DialogContent
         className={cn(

@@ -1,3 +1,4 @@
+import { useTranslation } from '@/features/localization/locale';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ const handlePositions: Record<ResizeHandle, CSSProperties> = {
   sw: { left: 0, top: strings.common.value100, cursor: strings.canvas.neswResize }, w: { left: 0, top: strings.common.value50, cursor: strings.canvas.ewResize },
 };
 export function SlideCanvas() {
+  const t = useTranslation();
   const document = useEditor(state => state.document);
   const activeSlideId = useEditor(state => state.activeSlideId);
   const selection = useEditor(state => state.selection);
@@ -84,19 +86,19 @@ export function SlideCanvas() {
   const selected = gestures.duplicate && gestures.previews.length ? gestures.previews : displaySlide?.elements.filter(element => selection.includes(element.id) && !element.hidden && !element.locked) ?? [];
   const bounds = selectionBounds(selected);
   const slideWidth = document.slideSize.width * scale, slideHeight = document.slideSize.height * scale;
-  if (!slide || !displaySlide) return <div className={strings.canvas.canvasEmpty}>{strings.canvas.addASlideToBeginYourStory}</div>;
+  if (!slide || !displaySlide) return <div className={strings.canvas.canvasEmpty}>{t(strings.canvas.addASlideToBeginYourStory)}</div>;
   const index = document.slides.findIndex(s => s.id === slide.id);
-  return <section className={strings.canvas.canvasShell} aria-label={strings.canvas.slideCanvas}>
+  return <section className={strings.canvas.canvasShell} aria-label={t(strings.canvas.slideCanvas)}>
     <div className={strings.canvas.canvasTopbar}>
-      <div className={strings.canvas.canvasSlideLabel}><span className={strings.canvas.canvasStatusDot} />{strings.common.slide_ff1e0604}{index + 1}<span className={strings.canvas.canvasSlideCount}>{strings.canvas.symbol}{document.slides.length}</span></div>
-      <div className={strings.canvas.canvasTopbarRight}><span className={strings.canvas.canvasDimensions}>{document.slideSize.width}{strings.common.symbol_20dd86b3}{document.slideSize.height}</span><span className={strings.canvas.canvasToolbarDivider} />
-        <Button variant={strings.common.ghost} size={strings.common.icon} className={strings.canvas.canvasBarButton} aria-label={strings.common.zoomOut} onClick={() => useEditor.getState().setZoom(Math.max(0.25, zoom - 0.1))}><Minus size={14} /></Button>
-        <span className={strings.canvas.canvasZoomLabel}>{Math.round(zoom * 100)}{strings.common.symbol_bbf3f11c}</span>
-        <Button variant={strings.common.ghost} size={strings.common.icon} className={strings.canvas.canvasBarButton} aria-label={strings.common.zoomIn} onClick={() => useEditor.getState().setZoom(Math.min(3, zoom + 0.1))}><Plus size={14} /></Button>
-        <Button variant={strings.common.ghost} size={strings.common.icon} className={strings.canvas.canvasBarButton} aria-label={strings.canvas.fitSlideToWorkspace} title={strings.canvas.fitToWorkspace} onClick={() => { useEditor.getState().setZoom(1); gestures.resetPan(); if (viewport.current) { viewport.current.scrollLeft = 0; viewport.current.scrollTop = 0; } }}><Maximize2 size={14} /></Button>
+      <div className={strings.canvas.canvasSlideLabel}><span className={strings.canvas.canvasStatusDot} />{t(strings.common.slide_ff1e0604)}{index + 1}<span className={strings.canvas.canvasSlideCount}>{t(strings.canvas.symbol)}{document.slides.length}</span></div>
+      <div className={strings.canvas.canvasTopbarRight}><span className={strings.canvas.canvasDimensions}>{document.slideSize.width}{t(strings.common.symbol_20dd86b3)}{document.slideSize.height}</span><span className={strings.canvas.canvasToolbarDivider} />
+        <Button variant={strings.common.ghost} size={strings.common.icon} className={strings.canvas.canvasBarButton} aria-label={t(strings.common.zoomOut)} onClick={() => useEditor.getState().setZoom(Math.max(0.25, zoom - 0.1))}><Minus size={14} /></Button>
+        <span className={strings.canvas.canvasZoomLabel}>{Math.round(zoom * 100)}{t(strings.common.symbol_bbf3f11c)}</span>
+        <Button variant={strings.common.ghost} size={strings.common.icon} className={strings.canvas.canvasBarButton} aria-label={t(strings.common.zoomIn)} onClick={() => useEditor.getState().setZoom(Math.min(3, zoom + 0.1))}><Plus size={14} /></Button>
+        <Button variant={strings.common.ghost} size={strings.common.icon} className={strings.canvas.canvasBarButton} aria-label={t(strings.canvas.fitSlideToWorkspace)} title={t(strings.canvas.fitToWorkspace)} onClick={() => { useEditor.getState().setZoom(1); gestures.resetPan(); if (viewport.current) { viewport.current.scrollLeft = 0; viewport.current.scrollTop = 0; } }}><Maximize2 size={14} /></Button>
       </div>
     </div>
-    <div ref={viewport} className={`${strings.canvas.canvasWorkspace}${spacePan || tool === strings.canvas.hand || tool === strings.canvas.pan ? strings.canvas.canvasWorkspacePan : strings.common.empty}${!([strings.common.select, strings.canvas.hand, strings.canvas.pan] as readonly string[]).includes(tool) ? strings.canvas.canvasWorkspaceDraw : strings.common.empty}`} tabIndex={0} role={strings.canvas.application} aria-label={strings.canvas.presentationEditingAreaSelectAndDragElementsDoubleClick} onPointerDown={event => gestures.begin(event)} onPointerMove={gestures.move} onPointerUp={event => gestures.end(event)} onPointerCancel={event => gestures.end(event, true)} onLostPointerCapture={() => gestures.cancel()} onKeyDown={event => {
+    <div ref={viewport} className={`${strings.canvas.canvasWorkspace}${spacePan || tool === strings.canvas.hand || tool === strings.canvas.pan ? strings.canvas.canvasWorkspacePan : strings.common.empty}${!([strings.common.select, strings.canvas.hand, strings.canvas.pan] as readonly string[]).includes(tool) ? strings.canvas.canvasWorkspaceDraw : strings.common.empty}`} tabIndex={0} role={strings.canvas.application} aria-label={t(strings.canvas.presentationEditingAreaSelectAndDragElementsDoubleClick)} onPointerDown={event => gestures.begin(event)} onPointerMove={gestures.move} onPointerUp={event => gestures.end(event)} onPointerCancel={event => gestures.end(event, true)} onLostPointerCapture={() => gestures.cancel()} onKeyDown={event => {
       if ((event.target as HTMLElement).closest(strings.canvas.inputTextareaContenteditableTrueDataEditingTrue)) return;
       if ((event.target as HTMLElement).closest(strings.canvas.rendererRichTextRoleButton) && event.key === strings.canvas.tab) return;
       if ((event.key === strings.common.enter || event.key === strings.common.f2) && event.target === event.currentTarget && selection.length === 1) {
@@ -133,17 +135,17 @@ export function SlideCanvas() {
           {grid && <div className={strings.canvas.canvasGrid} aria-hidden={strings.common.true} style={{ backgroundSize: `${gridSpacing * scale}${strings.common.px_2e0dd922}${gridSpacing * scale}${strings.common.px}` }} />}
           {gestures.guides.map(guide => <div key={guide.axis} aria-hidden={strings.common.true} className={`${strings.canvas.canvasGuideCanvasGuide}${guide.axis}`} style={guide.axis === strings.common.x ? { left: guide.position * scale } : { top: guide.position * scale }} />)}
           {bounds && <div className={strings.canvas.canvasSelection} style={{ left: bounds.x * scale, top: bounds.y * scale, width: bounds.width * scale, height: bounds.height * scale, transform: `${strings.common.rotate}${bounds.rotation}${strings.common.deg}` }}>
-            <div className={strings.canvas.canvasRotationStem} /><button className={strings.canvas.canvasRotationHandle} aria-label={strings.canvas.rotateSelectionDoubleClickToResetRotation} title={strings.canvas.dragToRotateDoubleClickToReset} onDoubleClick={event => {
+            <div className={strings.canvas.canvasRotationStem} /><button className={strings.canvas.canvasRotationHandle} aria-label={t(strings.canvas.rotateSelectionDoubleClickToResetRotation)} title={t(strings.canvas.dragToRotateDoubleClickToReset)} onDoubleClick={event => {
               event.stopPropagation();
               useEditor.getState().mutate(strings.canvas.resetRotation, draft => {
                 const current = draft.slides.find(item => item.id === activeSlideId);
                 for (const element of current?.elements ?? []) if (selection.includes(element.id) && !element.locked) element.rotation = 0;
               });
             }} onPointerDown={event => { event.stopPropagation(); if (viewport.current) gestures.begin(event, strings.canvas.rotate, undefined, viewport.current); }} />
-            {resizeHandles.map(handle => <button key={handle} className={strings.canvas.canvasResizeHandle} style={handlePositions[handle]} aria-label={`${strings.canvas.resize}${handle}`} onPointerDown={event => {
+            {resizeHandles.map(handle => <button key={handle} className={strings.canvas.canvasResizeHandle} style={handlePositions[handle]} aria-label={`${t(strings.canvas.resize)}${t(handle)}`} onPointerDown={event => {
               event.stopPropagation(); if (viewport.current) gestures.begin(event, strings.common.resize, handle, viewport.current);
             }} />)}
-            <span className={strings.canvas.canvasSelectionSize}>{Math.round(bounds.width)}{strings.common.symbol_20dd86b3}{Math.round(bounds.height)}</span>
+            <span className={strings.canvas.canvasSelectionSize}>{Math.round(bounds.width)}{t(strings.common.symbol_20dd86b3)}{Math.round(bounds.height)}</span>
           </div>}
           {gestures.marquee && <div className={strings.canvas.canvasMarquee} style={{ left: gestures.marquee.x * scale, top: gestures.marquee.y * scale, width: gestures.marquee.width * scale, height: gestures.marquee.height * scale }} />}
         </div>
