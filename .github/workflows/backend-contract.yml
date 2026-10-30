@@ -1,0 +1,77 @@
+name: Backend contract
+
+# Verifies that the Node API (backend/node) and the ASP.NET API (backend/Folio.Api) expose the same
+# endpoints and behave identically: route inventories must match, and backend/contract/compare.ts runs
+# the same request scenario against both servers and diffs the responses.
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Node and .NET endpoints match
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --experimental-strip-types --disable-warning=ExperimentalWarning
+      DOTNET_URL: http://127.0.0.1:5091
+      NODE_URL: http://127.0.0.1:5092
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: backend/node/package-lock.json
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Node backend dependencies
+        run: npm ci
+        working-directory: backend/node
+
+      - name: Node backend typecheck and tests
+        run: |
+          npm run typecheck
+          npm test
+        working-directory: backend/node
+
+      - name: Compare route inventories
+        run: node backend/contract/compare.ts
+
+      - name: Build .NET backend
+        run: dotnet build backend/Folio.Api --configuration Release
+
+      - name: Start both backends
+        run: |
+          mkdir -p "$RUNNER_TEMP/db"
+          ASPNETCORE_URLS="$DOTNET_URL" Database__Path="$RUNNER_TEMP/db/dotnet.db" \
+            nohup dotnet run --project backend/Folio.Api --configuration Release --no-build --no-launch-profile \
+            > "$RUNNER_TEMP/dotnet.log" 2>&1 &
+          FOLIO_API_HOST=127.0.0.1 FOLIO_API_PORT=5092 FOLIO_DATABASE_PATH="$RUNNER_TEMP/db/node.db" \
+            nohup node backend/node/src/server.ts > "$RUNNER_TEMP/node.log" 2>&1 &
+          for url in "$DOTNET_URL" "$NODE_URL"; do
+            curl --silent --fail --retry 30 --retry-delay 1 --retry-all-errors "$url/api/health" > /dev/null
+          done
+
+      - name: Compare behavior
+        run: node backend/contract/compare.ts --dotnet "$DOTNET_URL" --node "$NODE_URL"
+
+      - name: Server logs
+        if: always()
+        run: |
+          echo "::group::.NET"; cat "$RUNNER_TEMP/dotnet.log" || true; echo "::endgroup::"
+          echo "::group::Node"; cat "$RUNNER_TEMP/node.log" || true; echo "::endgroup::"

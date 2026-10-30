@@ -1,0 +1,13 @@
+{
+  "name": "folio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "npm run hooks && npm --prefix backend/node ci && npm --prefix frontend ci && npm --prefix apphost ci",
+    "dev": "node scripts/dev.mjs",
+    "test": "npm --prefix backend/node test && npm --prefix frontend test",
+    "typecheck": "npm --prefix backend/node run typecheck && npm --prefix frontend run typecheck",
+    "hooks": "git config core.hooksPath .githooks",
+    "contract": "node --experimental-strip-types --disable-warning=ExperimentalWarning backend/contract/compare.ts"
+  }
+}

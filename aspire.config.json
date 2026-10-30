@@ -1,5 +1,12 @@
 {
   "appHost": {
-    "path": "apphost/Folio.AppHost.csproj"
+    "path": "apphost/apphost.mts",
+    "language": "typescript/nodejs"
+  },
+  "sdk": {
+    "version": "13.6.4"
+  },
+  "packages": {
+    "Aspire.Hosting.JavaScript": "13.6.4"
   }
 }

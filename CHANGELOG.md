@@ -1,5 +1,17 @@
 # Changelog
 
+## Dual backends and commit rules
+- Moved the Node API to `backend/node/` and restored the ASP.NET API in `backend/Folio.Api/` as the reference implementation.
+- Added `backend/contract/compare.ts` and the Backend contract workflow: route inventories must match and an identical request scenario must produce identical responses from both servers.
+- Added a `pre-commit` hook and Commit scope workflow rejecting commits that change both `frontend/` and `backend/`.
+
+## Node.js backend
+- Replaced the ASP.NET Core API with a dependency-free TypeScript API in `backend/` (`node:http`, built-in `node:sqlite`), run directly with Node's type stripping.
+- Preserved the HTTP contract, validation, create-only semantics, asset collection, Host filtering, 100 MiB limit and the SQLite schema (existing databases remain compatible).
+- Replaced the C# AppHost with an Aspire TypeScript AppHost (`apphost/apphost.mts`), so `aspire run` no longer compiles a native executable.
+- Added root `npm run setup` / `npm run dev` to install and run the API and Vite together; Playwright now starts the Node API.
+- Added `node:test` HTTP integration tests and `tsc` type checking for the backend.
+
 ## Centralized runtime strings
 - Expanded `src/strings.ts` into the single const-object API for all application runtime strings, backed by feature-grouped modules under `src/constants/strings/`.
 - Migrated UI/accessibility copy, errors, history labels, default content, discriminants, CSS classes, routes, storage keys, colors, and template fragments; import/type/directive syntax remains literal.
