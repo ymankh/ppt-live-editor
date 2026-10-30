@@ -7,11 +7,12 @@ export default defineConfig({
   use: { baseURL: 'http://127.0.0.1:5174', headless: true },
   webServer: [
     {
-      command: 'dotnet run --project ../backend/Folio.Api --no-launch-profile',
+      command: 'npm --prefix ../backend/node start',
       cwd: import.meta.dirname,
       env: {
-        ASPNETCORE_URLS: 'http://127.0.0.1:5081',
-        Database__Path: path.resolve(import.meta.dirname, '../.cache/playwright/folio.db'),
+        FOLIO_API_HOST: '127.0.0.1',
+        FOLIO_API_PORT: '5081',
+        FOLIO_DATABASE_PATH: path.resolve(import.meta.dirname, '../.cache/playwright/folio.db'),
       },
       url: 'http://127.0.0.1:5081/api/health',
       reuseExistingServer: false,
