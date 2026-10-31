@@ -25,6 +25,17 @@ import { importProject } from "@/features/export/export";
 import { toast } from "sonner";
 import { applyTheme } from '@/features/theme/applyTheme';
 import { textDocument } from '@/types/model';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import "./home.css";
 import { strings } from "@/strings";
 import { translate, useLocale, useTranslation } from "@/features/localization/locale";
@@ -35,6 +46,9 @@ export function Home() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [search, setSearch] = useState<string>(strings.common.empty);
   const importInputRef = useRef<HTMLInputElement>(null);
+  const [renameTarget, setRenameTarget] = useState<ProjectSummary | null>(null);
+  const [renameValue, setRenameValue] = useState<string>(strings.common.empty);
+  const [deleteTarget, setDeleteTarget] = useState<ProjectSummary | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
     void listProjects().then(setProjects).catch((error: unknown) =>
@@ -79,6 +93,31 @@ export function Home() {
       toast.success(translate(strings.home.presentationImported, useLocale.getState().locale));
     } catch (error) {
       toast.error(translate(error instanceof Error ? error.message : strings.home.importFailed, useLocale.getState().locale));
+    }
+  };
+  const rename = async () => {
+    const project = renameTarget;
+    const title = renameValue.trim();
+    if (!project || !title) return;
+    setRenameTarget(null);
+    try {
+      await useEditor.getState().loadProject(project.id);
+      useEditor.getState().mutate(strings.common.renamePresentation, (draft) => { draft.title = title; });
+      await useEditor.getState().saveProject();
+      setProjects(await listProjects());
+    } catch (error) {
+      toast.error(translate(error instanceof Error ? error.message : strings.home.renameFailed, useLocale.getState().locale));
+    }
+  };
+  const remove = async () => {
+    const project = deleteTarget;
+    if (!project) return;
+    setDeleteTarget(null);
+    try {
+      await deleteProject(project.id);
+      setProjects((p) => p.filter((x) => x.id !== project.id));
+    } catch (error) {
+      toast.error(translate(error instanceof Error ? error.message : strings.persistence.deleteFailed, useLocale.getState().locale));
     }
   };
   return (
@@ -232,11 +271,7 @@ export function Home() {
                       </p>
                     </div>
                     <button aria-label={`${t(strings.home.rename)}${project.title}`} onClick={()=>{
-                      const title=window.prompt(t(strings.common.presentationTitle),project.title);if(!title?.trim())return;
-                      void useEditor.getState().loadProject(project.id).then(async()=>{
-                        useEditor.getState().mutate(strings.common.renamePresentation,draft=>{draft.title=title.trim()});
-                        await useEditor.getState().saveProject();setProjects(await listProjects());
-                      }).catch((error:unknown)=>toast.error(translate(error instanceof Error?error.message:strings.home.renameFailed, useLocale.getState().locale)));
+                      setRenameValue(project.title);setRenameTarget(project);
                     }}><Pencil size={14}/></button>
                     <button aria-label={`${t(strings.home.duplicate)}${project.title}`} onClick={()=>{
                       void useEditor.getState().loadProject(project.id).then(async()=>{
@@ -246,16 +281,7 @@ export function Home() {
                     }}><Copy size={14}/></button>
                     <button
                       aria-label={`${t(strings.home.delete)}${project.title}`}
-                      onClick={() => {
-                        if (window.confirm(`${t(strings.home.delete_fdd77e66)}${project.title}${t(strings.home.symbol)}`))
-                          void deleteProject(project.id).then(() =>
-                            setProjects((p) =>
-                              p.filter((x) => x.id !== project.id),
-                            ),
-                          ).catch((error: unknown) =>
-                            toast.error(translate(error instanceof Error ? error.message : strings.persistence.deleteFailed, useLocale.getState().locale)),
-                          );
-                      }}
+                      onClick={() => setDeleteTarget(project)}
                     >
                       <Trash2 size={15} />
                     </button>
@@ -279,6 +305,53 @@ export function Home() {
       </main>
       <footer>{t(strings.home.thoughtfullyMadeForYourNextBigIdea)}<span>{t(strings.home.fOLIOPRESENTATIONSTUDIO)}</span>
       </footer>
+      <Dialog open={renameTarget !== null} onOpenChange={(open) => { if (!open) setRenameTarget(null); }}>
+        <DialogContent>
+          <form
+            className={strings.home.dialogForm}
+            onSubmit={(e) => {
+              e.preventDefault();
+              void rename();
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>{t(strings.common.renamePresentation)}</DialogTitle>
+              <DialogDescription>{t(strings.home.renameDescription)}</DialogDescription>
+            </DialogHeader>
+            <Input
+              aria-label={t(strings.common.presentationTitle)}
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+            />
+            <DialogFooter>
+              <DialogClose render={<Button type={strings.common.button} variant={strings.common.outline} />}>
+                {t(strings.common.cancel)}
+              </DialogClose>
+              <Button type={strings.home.submit} disabled={!renameValue.trim()}>
+                {t(strings.home.save)}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t(strings.home.deletePresentation)}</DialogTitle>
+            <DialogDescription>
+              {t(strings.home.openQuote)}{deleteTarget?.title}{t(strings.home.deleteDescriptionSuffix)}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant={strings.common.outline} />}>
+              {t(strings.common.cancel)}
+            </DialogClose>
+            <Button variant={strings.common.destructive} onClick={() => void remove()}>
+              {t(strings.home.deleteConfirm)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
