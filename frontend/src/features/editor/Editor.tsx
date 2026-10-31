@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   Cloud,
   CloudAlert,
@@ -36,10 +36,12 @@ import {
   MenubarShortcut,
 } from "@/components/ui/menubar";
 import "./editor.css";
-import { toast } from "sonner";
 import { strings } from "@/strings";
+import { SettingsButton } from '@/features/localization/SettingsDialog';
+import { useTranslation } from '@/features/localization/locale';
 
 export function Editor() {
+  const t = useTranslation();
   useImageIngress();
   const document = useEditor((s) => s.document);
   const activeId = useEditor((s) => s.activeSlideId);
@@ -60,7 +62,6 @@ export function Editor() {
         matchMedia(strings.editor.prefersColorSchemeDark).matches),
   );
   const navigate = useNavigate();
-  const { projectId } = useParams();
   const index = document.slides.findIndex((s) => s.id === activeId);
   // The save state is shown as an icon only; the words remain available to assistive technology.
   const saveLabel = saveStatus === strings.common.saved ? strings.editor.saved : saveStatus;
@@ -69,17 +70,6 @@ export function Editor() {
     : saveStatus === strings.store.saving ? CloudUpload
     : saveStatus === strings.store.saveFailed ? CloudAlert
     : Cloud;
-  useEffect(() => {
-    if (projectId && projectId !== document.id)
-      void useEditor.getState().loadProject(projectId).catch((error: unknown) =>
-        toast.error(error instanceof Error ? error.message : strings.persistence.projectLoadFailed),
-      );
-  }, [projectId, document.id]);
-  useEffect(() => {
-    if (!projectId) void useEditor.getState().restoreProject().catch((error: unknown) =>
-      toast.error(error instanceof Error ? error.message : strings.persistence.restoreFailed),
-    );
-  }, [projectId]);
   useEffect(() => {
     window.document.documentElement.classList.toggle(strings.common.dark, dark);
     localStorage.setItem(strings.editor.folioTheme, dark ? strings.common.dark : strings.common.light);
@@ -133,13 +123,14 @@ export function Editor() {
   return (
     <div className={strings.editor.editorApp}>
       <header className={strings.editor.appHeader}>
-        <Link to={strings.common.projects} className={strings.editor.brandMark} aria-label={strings.editor.goToProjects}>
+        <Link to={strings.common.projects} className={strings.editor.brandMark} aria-label={t(strings.editor.goToProjects)}>
           <Presentation size={24} />
         </Link>
         <div className={strings.editor.documentHeading}>
           <div className={strings.editor.titleLine}>
             <input
-              aria-label={strings.common.presentationTitle}
+              aria-label={t(strings.common.presentationTitle)}
+              dir="auto"
               value={document.title}
               onChange={(e) =>
                 useEditor.getState().mutate(strings.common.renamePresentation, (d) => {
@@ -150,10 +141,10 @@ export function Editor() {
             <span
               className={`${strings.editor.savedTag}${saveStatus === strings.store.saveFailed ? strings.editor.savedTagFailed : strings.common.empty}`}
               role={strings.common.status}
-              title={saveLabel}
+              title={t(saveLabel)}
             >
               <SaveIcon size={15} aria-hidden={strings.common.true} />
-              <span className={strings.common.srOnly}>{saveLabel}</span>
+              <span className={strings.common.srOnly}>{t(saveLabel)}</span>
             </span>
           </div>
           <Menubar className={strings.editor.applicationMenubar}>
@@ -168,7 +159,7 @@ export function Editor() {
               strings.editor.help,
             ].map((menu) => (
               <MenubarMenu key={menu}>
-                <MenubarTrigger>{menu}</MenubarTrigger>
+                <MenubarTrigger>{t(menu)}</MenubarTrigger>
                 <MenubarContent className={strings.editor.applicationMenu}>
                   {commands
                     .filter((c) => c.menu === menu)
@@ -178,7 +169,7 @@ export function Editor() {
                         disabled={!isEnabled(c)}
                         onClick={c.run}
                       >
-                        {c.id===strings.common.undo&&past.length?`${strings.editor.undo}${past.at(-1)?.label??strings.common.empty}`:c.id===strings.common.redo&&future.length?`${strings.editor.redo}${future.at(-1)?.label??strings.common.empty}`:c.label}
+                        {c.id===strings.common.undo&&past.length?`${t(strings.editor.undo)}${t(past.at(-1)?.label??strings.common.empty)}`:c.id===strings.common.redo&&future.length?`${t(strings.editor.redo)}${t(future.at(-1)?.label??strings.common.empty)}`:t(c.label)}
                         <MenubarShortcut>
                           {c.shortcut?.replace(strings.common.ctrl, strings.common.symbol_70b4b62a)}
                         </MenubarShortcut>
@@ -190,21 +181,21 @@ export function Editor() {
                         onClick={() => {
                           void navigate(strings.common.projects);
                         }}
-                      >{strings.editor.allPresentations}</MenubarItem>
-                      <MenubarItem onClick={() => setExportOpen(true)}>{strings.common.exportPresentation}</MenubarItem>
+                      >{t(strings.editor.allPresentations)}</MenubarItem>
+                      <MenubarItem onClick={() => setExportOpen(true)}>{t(strings.common.exportPresentation)}</MenubarItem>
                     </>
                   )}
                   {menu === strings.common.view && (
                     <>
-                      <MenubarItem onClick={() => setNotes(!notes)}>{strings.editor.toggleSpeakerNotes}</MenubarItem>
-                      <MenubarItem onClick={toggleDark}>{strings.editor.toggleDarkMode}</MenubarItem>
+                      <MenubarItem onClick={() => setNotes(!notes)}>{t(strings.editor.toggleSpeakerNotes)}</MenubarItem>
+                      <MenubarItem onClick={toggleDark}>{t(strings.editor.toggleDarkMode)}</MenubarItem>
                     </>
                   )}
                   {menu === strings.editor.format && (
-                    <MenubarItem onClick={() => setThemeOpen(true)}>{strings.editor.presentationTheme}</MenubarItem>
+                    <MenubarItem onClick={() => setThemeOpen(true)}>{t(strings.editor.presentationTheme)}</MenubarItem>
                   )}
                   {menu === strings.editor.help && (
-                    <MenubarItem onClick={() => setHelp(true)}>{strings.editor.keyboardShortcuts}</MenubarItem>
+                    <MenubarItem onClick={() => setHelp(true)}>{t(strings.editor.keyboardShortcuts)}</MenubarItem>
                   )}
                 </MenubarContent>
               </MenubarMenu>
@@ -213,9 +204,10 @@ export function Editor() {
         </div>
         <div className={strings.editor.headerActions}>
           <UserAvatar />
+          <SettingsButton className="settings-button" />
           <button
             className={strings.editor.headerIcon}
-            aria-label={strings.editor.toggleDarkMode}
+            aria-label={t(strings.editor.toggleDarkMode)}
             onClick={toggleDark}
           >
             {dark ? <Sun size={18} /> : <Moon size={18} />}
@@ -224,33 +216,33 @@ export function Editor() {
             className={strings.editor.secondaryAction}
             onClick={() => setThemeOpen(true)}
           >
-            <Sparkles size={15} />{strings.editor.theme}</button>
+            <Sparkles size={15} />{t(strings.editor.theme)}</button>
           <button
             className={strings.editor.secondaryAction}
             onClick={() => setExportOpen(true)}
           >
-            <Download size={15} />{strings.editor.export}</button>
+            <Download size={15} />{t(strings.editor.export)}</button>
           <button
             className={strings.common.presentAction}
             onClick={() => {
               void navigate(`${strings.common.present}${document.id}${strings.editor.slide}${index}`);
             }}
           >
-            <Play size={15} fill={strings.editor.currentColor} />{strings.editor.present}
+            <Play size={15} fill={strings.editor.currentColor} />{t(strings.editor.present)}
           </button>
         </div>
       </header>
       <div className={strings.editor.toolbarRow}>
         <div className={strings.editor.historyButtons}>
           <button
-            aria-label={strings.common.undo_a8283ade}
+            aria-label={t(strings.common.undo_a8283ade)}
             disabled={!past.length}
             onClick={() => useEditor.getState().undo()}
           >
             <Undo2 size={17} />
           </button>
           <button
-            aria-label={strings.common.redo_74273989}
+            aria-label={t(strings.common.redo_74273989)}
             disabled={!future.length}
             onClick={() => useEditor.getState().redo()}
           >

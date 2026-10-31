@@ -1,4 +1,5 @@
 import { notesText } from '@/features/text/notes';
+import { translate, useLocale } from '@/features/localization/locale';
 import JSZip from 'jszip';
 import { jsPDF } from 'jspdf';
 import { z } from 'zod';
@@ -8,6 +9,7 @@ import { assetReferences } from '@/features/persistence/repository';
 import { presentationSchema } from './schema';
 import { rasterizeSlide } from './raster';
 import { importPptx } from './importPptx';
+import { notesTextOptions, registerNotesFont, visualNotesLines, wrapNotesParagraph } from './pdfNotes';
 import { strings } from "@/strings";
 
 export { exportPptx } from './pptx';
@@ -62,10 +64,12 @@ export interface PdfExportOptions { notesPages?: boolean }
 /** Notes pages place the slide above its speaker notes, continuing long notes on extra pages. Defaults to slide-only PDF. */
 export async function exportPdf(presentation: Presentation, options: PdfExportOptions = {}): Promise<void> {
   const { width, height } = presentation.slideSize;
+  const locale = useLocale.getState().locale;
   const pageWidth = options.notesPages ? 595.28 : width / 2;
   const pageHeight = options.notesPages ? 841.89 : height / 2;
   const orientation = pageWidth >= pageHeight ? strings.export.landscape : strings.export.portrait;
   const pdf = new jsPDF({ orientation, unit: strings.export.pt, format: [pageWidth, pageHeight] });
+  if (options.notesPages) await registerNotesFont(pdf);
   for (const [index, slide] of presentation.slides.entries()) {
     if (index > 0) pdf.addPage([pageWidth, pageHeight], orientation);
     const image = await rasterizeSlide(presentation, slide);
@@ -76,14 +80,19 @@ export async function exportPdf(presentation: Presentation, options: PdfExportOp
     const fittedWidth = imageHeight * width / height;
     pdf.addImage(image, strings.export.pNG, (pageWidth - fittedWidth) / 2, margin, fittedWidth, imageHeight);
     pdf.setFontSize(12);
-    pdf.text(`${strings.common.slide_ff1e0604}${index + 1}${strings.export.speakerNotes}`, margin, margin + imageHeight + 28);
+    const heading = `${translate(strings.common.slide_ff1e0604, locale)}${index + 1}${translate(strings.export.speakerNotes, locale)}`;
+    const headingOptions = notesTextOptions(heading);
+    pdf.text(visualNotesLines(pdf, [heading], heading).join(''), headingOptions.align === 'right' ? pageWidth - margin : margin, margin + imageHeight + 28, headingOptions);
     pdf.setFontSize(11);
-    const lines = pdf.splitTextToSize(notesText(slide.notes) || strings.export.noSpeakerNotes, imageWidth) as string[];
     let y = margin + imageHeight + 50;
-    for (const line of lines) {
-      if (y > pageHeight - margin) { pdf.addPage([pageWidth, pageHeight], orientation); y = margin; }
-      pdf.text(line, margin, y);
-      y += 15;
+    for (const paragraph of (notesText(slide.notes) || translate(strings.export.noSpeakerNotes, locale)).split(/\r?\n/u)) {
+      // A wrapped continuation retains its paragraph's base direction, even when it starts with Latin text.
+      const textOptions = notesTextOptions(paragraph);
+      for (const line of visualNotesLines(pdf, wrapNotesParagraph(pdf, paragraph, imageWidth), paragraph)) {
+        if (y > pageHeight - margin) { pdf.addPage([pageWidth, pageHeight], orientation); y = margin; }
+        pdf.text(line, textOptions.align === 'right' ? pageWidth - margin : margin, y, textOptions);
+        y += 20;
+      }
     }
   }
   pdf.setProperties({ title: presentation.title, creator: strings.export.appName });

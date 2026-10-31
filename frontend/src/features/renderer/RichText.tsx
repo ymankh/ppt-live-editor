@@ -4,6 +4,7 @@ import type { TipTapDocument } from '@/types/model';
 
 import TextEditor from './TextEditor';
 import { strings } from "@/strings";
+import { useTranslation } from '@/features/localization/locale';
 
 
 function renderNode(node: TipTapDocument, key: string): ReactNode {
@@ -42,7 +43,7 @@ function renderNode(node: TipTapDocument, key: string): ReactNode {
     case strings.common.hardBreak: return <br key={key} />;
     case strings.renderer.heading: {
       const level = Math.max(1, Math.min(6, Number(node.attrs?.level ?? 1)));
-      return <div key={key} role={strings.renderer.heading} aria-level={level} className={`${strings.renderer.rendererHeadingRendererHeading}${level}`} style={style}>{children}</div>;
+      return <div key={key} dir="auto" role={strings.renderer.heading} aria-level={level} className={`${strings.renderer.rendererHeadingRendererHeading}${level}`} style={style}>{children}</div>;
     }
     case strings.renderer.bulletList: return <ul key={key}>{children}</ul>;
     case strings.renderer.orderedList: return <ol key={key} start={Number(node.attrs?.start ?? 1)}>{children}</ol>;
@@ -50,18 +51,19 @@ function renderNode(node: TipTapDocument, key: string): ReactNode {
     case strings.renderer.blockquote: return <blockquote key={key}>{children}</blockquote>;
     case strings.renderer.codeBlock: return <pre key={key}><code>{children}</code></pre>;
     case strings.renderer.horizontalRule: return <hr key={key} />;
-    default: return <p key={key} style={style}>{children ?? <br />}</p>;
+    default: return <p key={key} dir="auto" style={style}>{children ?? <br />}</p>;
   }
 }
 
 export interface RichTextProps { content: TipTapDocument; interactive?: boolean; onCommit?: (content: TipTapDocument) => void; style?: CSSProperties }
 export function RichText({ content, interactive = false, onCommit, style }: RichTextProps) {
+  const t = useTranslation();
   const [editing, setEditing] = useState(false);
   const rendered = renderNode(content, strings.common.doc);
-  return <div className={`${strings.renderer.rendererRichText}${editing ? strings.renderer.rendererRichTextEditing : strings.common.empty}`} style={style} {...(interactive && !editing ? {
+  return <div dir="auto" className={`${strings.renderer.rendererRichText}${editing ? strings.renderer.rendererRichTextEditing : strings.common.empty}`} style={style} {...(interactive && !editing ? {
     role: strings.common.button,
     tabIndex: 0,
-    [strings.common.ariaLabel]: strings.renderer.editText,
+    [strings.common.ariaLabel]: t(strings.renderer.editText),
     onDoubleClick: (event: MouseEvent<HTMLDivElement>) => { event.stopPropagation(); setEditing(true); },
     onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget || !([strings.common.enter, strings.common.f2, strings.common.space] as readonly string[]).includes(event.key)) return;

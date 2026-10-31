@@ -27,8 +27,6 @@
 .canvas-selection-size { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--primary); color: var(--primary-foreground); padding: 3px 6px; border-radius: var(--radius-xs); font-size: 11px; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .12s; }
 .canvas-selection:has(.canvas-resize-handle:hover) .canvas-selection-size { opacity: 1; }
 .canvas-marquee { position: absolute; border: 1px solid var(--primary); background: color-mix(in oklch, var(--primary) 10%, transparent); pointer-events: none; z-index: 11; }
-.canvas-hint { display: flex; align-items: center; gap: 6px; min-height: 31px; padding: 0 20px; color: var(--muted-foreground); font-size: 11px; border-top: 1px solid var(--border); background: var(--muted); }
-.canvas-hint-right { margin-left: auto; color: var(--muted-foreground); }
 .canvas-empty { display: flex; align-items: center; justify-content: center; flex: 1; color: var(--muted-foreground); background: var(--canvas); }
 .canvas-workspace-draw { cursor: crosshair; }
 .canvas-workspace-pan.canvas-workspace-draw { cursor: grab; }
@@ -36,4 +34,4 @@
 .canvas-guide { position: absolute; pointer-events: none; z-index: 9; }
 .canvas-guide-x { top: 0; bottom: 0; border-left: 1px dashed var(--primary); }
 .canvas-guide-y { left: 0; right: 0; border-top: 1px dashed var(--primary); }
-@media (max-width: 1000px) { .canvas-dimensions, .canvas-hint-right { display: none; } .canvas-topbar { padding: 0 16px; } .canvas-hint { padding: 0 12px; } }
+@media (max-width: 1000px) { .canvas-dimensions { display: none; } .canvas-topbar { padding: 0 16px; } }

@@ -133,6 +133,7 @@ export const exportStrings = {
   pNGOrJPEGImagesBundledInOneZIP: "PNG or JPEG images, bundled in one ZIP.",
   portrait: "portrait",
   positionFixedLeft30000pxTop0PointerEventsNone: "position:fixed;left:-30000px;top:0;pointer-events:none;",
+  rasterCapturePosition: "static",
   powerPoint: "PowerPoint",
   powerPointFileIsMissing: "PowerPoint file is missing ",
   pPr: "pPr",

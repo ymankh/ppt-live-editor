@@ -9,6 +9,7 @@ export function notesHtml(source:string):string{
   if(([strings.text.sCRIPT, strings.text.sTYLE, strings.text.iFRAME, strings.text.oBJECT, strings.text.eMBED] as readonly string[]).includes(element.tagName)){element.remove();continue}
   if(!allowed[element.tagName]){element.replaceWith(...Array.from(element.childNodes));continue}
   for(const attribute of Array.from(element.attributes))element.removeAttribute(attribute.name);
+  if (['P', 'LI', 'BLOCKQUOTE'].includes(element.tagName)) element.setAttribute('dir', 'auto');
  }
  return document.body.innerHTML;
 }

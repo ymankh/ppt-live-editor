@@ -1,3 +1,4 @@
+import { useTranslation } from '@/features/localization/locale';
 import { memo, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { nanoid } from 'nanoid';
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type Modifier } from '@dnd-kit/core';
@@ -51,21 +52,23 @@ function SortableSlide({ slide, theme, index, selected, onSelect, onDuplicate, o
   slide: Slide; theme: Theme; index: number; selected: boolean; onSelect: (event: MouseEvent) => void;
   onDuplicate: () => void; onDelete: () => void; canDelete: boolean;
 }) {
+  const t = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: slide.id });
   return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? .45 : 1 }} className={`${strings.slides.slideItem}${selected ? strings.common.isSelected : strings.common.empty}`}>
     <span className={strings.slides.slideNumber}>{index + 1}</span>
     <ContextMenu><ContextMenuTrigger render={<div />} className={strings.slides.slideContext}>
-      <button type={strings.common.button} className={strings.slides.slideThumbnail} onClick={onSelect} aria-label={`${strings.common.slide_ff1e0604}${index + 1}`} aria-pressed={selected}>
+      <button type={strings.common.button} className={strings.slides.slideThumbnail} onClick={onSelect} aria-label={`${t(strings.common.slide_ff1e0604)}${index + 1}`} aria-pressed={selected}>
         <SlideThumbnail slide={slide} theme={theme} />
       </button>
     </ContextMenuTrigger>
-      <ContextMenuContent><ContextMenuItem onClick={onDuplicate}><Copy size={14} />{strings.slides.duplicateSlide}{selected ? strings.common.s : strings.common.empty}</ContextMenuItem><ContextMenuItem variant={strings.common.destructive} disabled={!canDelete} onClick={onDelete}><Trash2 size={14} />{strings.slides.deleteSlide}{selected ? strings.common.s : strings.common.empty}</ContextMenuItem></ContextMenuContent>
+      <ContextMenuContent><ContextMenuItem onClick={onDuplicate}><Copy size={14} />{t(strings.slides.duplicateSlide)}{selected ? t(strings.common.s) : t(strings.common.empty)}</ContextMenuItem><ContextMenuItem variant={strings.common.destructive} disabled={!canDelete} onClick={onDelete}><Trash2 size={14} />{t(strings.slides.deleteSlide)}{selected ? t(strings.common.s) : t(strings.common.empty)}</ContextMenuItem></ContextMenuContent>
     </ContextMenu>
-    <button type={strings.common.button} className={strings.slides.slideDragHandle} aria-label={`${strings.slides.reorderSlide}${index + 1}`} {...attributes} {...listeners}><GripVertical size={13} /></button>
+    <button type={strings.common.button} className={strings.slides.slideDragHandle} aria-label={`${t(strings.slides.reorderSlide)}${index + 1}`} {...attributes} {...listeners}><GripVertical size={13} /></button>
   </div>;
 }
 
 export function SlidePanel() {
+  const t = useTranslation();
   const editor = useEditor();
   const [slideSelection, setSlideSelection] = useState<{ ids: string[]; activeId: string }>({ ids: [], activeId: editor.activeSlideId });
   const setSelectedIds = (ids: string[], activeId = useEditor.getState().activeSlideId) => setSlideSelection({ ids, activeId });
@@ -137,14 +140,14 @@ export function SlidePanel() {
       draft.slides = remaining;
     });
   };
-  return <aside className={strings.slides.slidePanel} aria-label={strings.common.slides}>
-    <div className={strings.common.panelHeader}><h2>{strings.slides.slides}<span className={strings.slides.slideCount}>{slides.length}</span></h2><Button variant={strings.common.ghost} size={strings.common.iconSm} title={strings.slides.chooseASlideLayout} aria-label={strings.slides.chooseSlideLayout} onClick={() => setLayoutOpen(true)}><Plus size={17} /></Button></div>
+  return <aside className={strings.slides.slidePanel} aria-label={t(strings.common.slides)}>
+    <div className={strings.common.panelHeader}><h2>{t(strings.slides.slides)}<span className={strings.slides.slideCount}>{slides.length}</span></h2><Button variant={strings.common.ghost} size={strings.common.iconSm} title={t(strings.slides.chooseASlideLayout)} aria-label={t(strings.slides.chooseSlideLayout)} onClick={() => setLayoutOpen(true)}><Plus size={17} /></Button></div>
     <div className={strings.slides.slideList}><DndContext sensors={sensors} modifiers={slideDragModifiers} collisionDetection={closestCenter} onDragEnd={reorder}><SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
       {slides.map((slide, index) => <SortableSlide key={slide.id} slide={slide} theme={editor.document.theme} index={index} selected={currentIds.includes(slide.id)} onSelect={event => selectSlide(event, slide.id)} onDuplicate={() => duplicate(slide.id)} onDelete={() => remove(slide.id)} canDelete={(currentIds.includes(slide.id) ? currentIds.length : 1) < slides.length} />)}
     </SortableContext></DndContext></div>
-    <div className={strings.slides.slidePanelFooter}><Button variant={strings.common.outline} className={strings.slides.addSlideButton} onClick={() => { editor.addSlide(); setSelectedIds([]); }}><Plus size={16} />{strings.common.addSlide}</Button><Button variant={strings.common.ghost} size={strings.common.icon} aria-label={strings.slides.slideLayouts} title={strings.slides.slideLayouts} onClick={() => setLayoutOpen(true)}><LayoutTemplate size={17} /></Button></div>
-    <Dialog open={layoutOpen} onOpenChange={setLayoutOpen}><DialogContent className={strings.slides.layoutDialog}><DialogHeader><DialogTitle>{strings.slides.aFreshCanvas}</DialogTitle><DialogDescription>{strings.slides.chooseALayoutToStartYourNextSlide}</DialogDescription></DialogHeader>
-      <div className={strings.slides.layoutDialogGrid}>{layoutPreviews.map(layout => <button className={strings.slides.layoutOption} key={layout.id} onClick={() => { editor.addSlide(layout.id); setSelectedIds([]); setLayoutOpen(false); }}><div className={strings.slides.layoutPreview}><div><SlideRenderer slide={layout.slide} theme={editor.document.theme} width={1920} /></div></div><span>{layout.name}</span></button>)}</div>
+    <div className={strings.slides.slidePanelFooter}><Button variant={strings.common.outline} className={strings.slides.addSlideButton} onClick={() => { editor.addSlide(); setSelectedIds([]); }}><Plus size={16} />{t(strings.common.addSlide)}</Button><Button variant={strings.common.ghost} size={strings.common.icon} aria-label={t(strings.slides.slideLayouts)} title={t(strings.slides.slideLayouts)} onClick={() => setLayoutOpen(true)}><LayoutTemplate size={17} /></Button></div>
+    <Dialog open={layoutOpen} onOpenChange={setLayoutOpen}><DialogContent className={strings.slides.layoutDialog}><DialogHeader><DialogTitle>{t(strings.slides.aFreshCanvas)}</DialogTitle><DialogDescription>{t(strings.slides.chooseALayoutToStartYourNextSlide)}</DialogDescription></DialogHeader>
+      <div className={strings.slides.layoutDialogGrid}>{layoutPreviews.map(layout => <button className={strings.slides.layoutOption} key={layout.id} onClick={() => { editor.addSlide(layout.id); setSelectedIds([]); setLayoutOpen(false); }}><div className={strings.slides.layoutPreview}><div><SlideRenderer slide={layout.slide} theme={editor.document.theme} width={1920} /></div></div><span>{t(layout.name)}</span></button>)}</div>
     </DialogContent></Dialog>
   </aside>;
 }

@@ -27,6 +27,7 @@ export interface EditorTransaction extends HistoryEntry {
 export type ArrangeOperation = 'front' | 'back' | 'forward' | 'backward' | 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
 export interface EditorState {
   document: Presentation;
+  openRevision: number;
   activeSlideId: string;
   selection: string[];
   zoom: number;
@@ -87,7 +88,7 @@ function clonedElements(elements: SlideElement[], offset: Point = { x: 32, y: 32
 }
 
 export const useEditor = create<EditorState>()(immer((set, get) => ({
-  document: initial, activeSlideId: initial.slides[0]?.id ?? strings.common.empty, selection: [], zoom: 1, tool: strings.common.select, saveStatus: strings.common.saved, past: [], future: [], transaction: null,
+  document: initial, openRevision: 0, activeSlideId: initial.slides[0]?.id ?? strings.common.empty, selection: [], zoom: 1, tool: strings.common.select, saveStatus: strings.common.saved, past: [], future: [], transaction: null,
   mutate(label, recipe) {
     const state = get();
     const [document, patches, inverse] = produceWithPatches(state.document, recipe);
@@ -292,7 +293,7 @@ export const useEditor = create<EditorState>()(immer((set, get) => ({
     ++loadVersion;
     get().cancelTransaction();
     get().mutate(strings.store.openPresentation, draft => { Object.assign(draft, document); });
-    set({ activeSlideId: document.slides[0]?.id ?? strings.common.empty, selection: [], past: [], future: [], transaction: null });
+    set({ openRevision: get().openRevision + 1, activeSlideId: document.slides[0]?.id ?? strings.common.empty, selection: [], past: [], future: [], transaction: null });
   },
   newProject() { get().setDocument(createPresentation()); },
   async saveProject() {

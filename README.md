@@ -106,6 +106,9 @@ When you add or change an endpoint, change both backends and extend the scenario
 | DELETE | `/api/projects/{id}` | Idempotent deletion; 204, with exclusive asset collection |
 | PUT | `/api/assets/{id}` | Store raw bytes with the request's Content-Type; 204 |
 | GET | `/api/assets/{id}` | Raw bytes and stored Content-Type, or 404 |
+| GET | `/api/fonts` | Uploaded font IDs and family names |
+| POST / PUT | `/api/fonts?family={name}` | Store validated TTF/OTF/WOFF/WOFF2 bytes, up to 20 MiB; duplicate family returns 409 |
+| GET | `/api/fonts/{id}/content` | Uploaded font bytes for browser registration |
 
 URL-encode resource IDs. The latest-document route has two segments so a project named `latest` remains retrievable. Project PUT preserves the presentation JSON, checks the version-1 envelope, timestamps, positive slide dimensions, slide/element containers and asset references, and rejects malformed JSON or a route/body ID mismatch with 400. The editor's existing Zod schema remains the full import validation boundary. Both PUT routes accept `If-None-Match: *` for create-only migration and return 412 if the resource already exists. Requests are limited to 100 MiB. Errors use HTTP status codes and `application/problem+json` bodies.
 
@@ -120,6 +123,7 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 ## Workspace
 
 - Three resizable columns: sortable slide thumbnails, logical DOM/SVG canvas, and contextual inspector. Slide reordering is constrained to up/down movement so sideways dragging cannot expand the slide list.
+- The canvas extends directly to speaker notes without a separate instruction/hint bar.
 - Rename the presentation directly in the header title field; use the presentation icon to return to the project library. Present starts playback directly without a dropdown menu.
 - Eight layouts and six presentation themes. Solid, gradient, and image backgrounds; editable transitions, speaker notes, and skipped slides.
 - Text, 25 SVG shape kinds, straight/elbow/curved lines, images, tables, and seven chart types.
@@ -137,6 +141,20 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 - Project archive, PowerPoint, PDF, and PNG exports. Project archive and basic PowerPoint import from the project library.
 - Fullscreen presentation playback, animation builds, transitions, slide overview, black/white screen, SVG ink and laser, and a synchronized presenter window.
 - System-aware dark theme with a persistent manual override and a uniform full-width editing toolbar background.
+
+## Language and Arabic editing
+
+Open **Settings** (the gear icon in the editor or project library), then select **English** or **العربية**. The interface switches immediately and remembers the choice in browser-local `folio-locale` storage. Arabic uses an RTL interface; presentation artwork, coordinates, numeric dimensions, and existing document content are not mirrored or translated.
+
+Text boxes, shape/table text, titles, and speaker notes accept Arabic and mixed Arabic/English content. Paragraph direction follows the first strong character independently of interface language. A bundled, SIL-OFL-licensed Amiri font provides Arabic glyphs without an external font request.
+
+## Font library
+
+In **Settings → Font library**, enter the exact font-family name and upload a TTF, OTF, WOFF, or WOFF2 file (maximum 20 MiB). The browser validates and registers the file, and the backend stores its metadata and bytes separately from project assets. Uploaded families appear in font selectors and reload on later visits; all clients connected to the same backend share this library. Upload only fonts you are licensed to use and share.
+
+Opening a presentation waits for registered fonts. If a referenced family is unavailable, a blocking dialog lets you upload that exact family or explicitly choose a replacement for every missing family. Replacements update theme, text, and rich-text font references without changing content or coordinates; returning to the library leaves the presentation unchanged. PPTX import retains theme, complex-script, and per-run fonts so missing families can be detected. This applies to supported `.pptx` imports; legacy binary `.ppt` conversion is not supported.
+
+PDF speaker notes embed the bundled Arabic font and use Unicode bidirectional ordering. PPTX preserves logical Arabic text and paragraph RTL metadata; uploaded font binaries are not embedded in PPTX, so recipients still need the fonts installed.
 
 ## Architecture
 
@@ -166,6 +184,8 @@ In **Design → Layers**, drag the grip on the right of a row to change stacking
 ## Runtime strings
 
 `frontend/src/strings.ts` exports the single `strings` const object. Its values live in small `frontend/src/constants/strings/` modules grouped by feature; `strings.common` owns values shared across features. All application runtime string literals use this object, including UI/accessibility copy, errors, history labels, default slide content, discriminants, CSS classes, colors, routes, storage keys, and interpolated template fragments.
+
+Display translation is separate from these immutable runtime tokens: call the reactive `useTranslation()` hook from `features/localization/locale.ts` at UI boundaries, and add Arabic display copy to `features/localization/ar.ts`. Keep model/option values, commands, routes, classes, and user-authored content unchanged. Shared choice controls translate labels, never stored values.
 
 ```tsx
 import { strings } from '@/strings';
@@ -220,6 +240,8 @@ PPTX uses native editable text, shapes, lines, images, tables, and charts, and i
 Basic PPTX import handles positioned text, common shapes, connectors, images, tables, cached chart data, backgrounds, and notes. It does not reconstruct master/layout inheritance, grouped objects, advanced geometry, media/OLE, detailed theme/rich-text metadata, or animations.
 
 PDF and PNG/JPEG use the shared renderer and rasterize slides. PDF optionally includes printable, paginated notes pages. Image export supports the current slide or all slides and 1×–4× resolution. Skipped slides are included in all-slide exports; playback builds are not. Font and remote-image availability affect export.
+
+Raster exports reset off-screen staging to static positioning in the captured clone, preventing blank PDF/image output. Referenced images are embedded as data URLs before capture using the shared asset loader; remote images still require CORS. The browser regression verifies actual background/artwork pixels, and PDF smoke verification renders the generated slide-only and speaker-notes documents.
 
 ## Browser behavior and current boundaries
 

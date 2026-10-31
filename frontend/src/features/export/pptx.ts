@@ -1,4 +1,5 @@
 import { notesText } from '@/features/text/notes';
+import { getTextDirection } from '@/features/text/direction';
 import pptxgen from 'pptxgenjs';
 import type { Fill, Presentation, ShapeKind, Stroke, TipTapDocument } from '@/types/model';
 import { plainText } from '@/types/model';
@@ -30,6 +31,12 @@ function lineOptions(stroke: Stroke | null, opacity = 1): pptxgen.ShapeLineProps
 }
 function richRuns(node: TipTapDocument, inherited: pptxgen.TextPropsOptions = {}): pptxgen.TextProps[] {
   const options = { ...inherited };
+  if (node.type === 'doc' || ['paragraph', 'heading', 'blockquote', 'listItem'].includes(node.type)) {
+    const direction = node.attrs?.dir;
+    options.rtlMode = (direction === 'rtl' || direction === 'ltr' ? direction : getTextDirection(plainText(node))) === 'rtl';
+    const align = node.attrs?.textAlign;
+    if (align === 'left' || align === 'right' || align === 'center' || align === 'justify') options.align = align;
+  }
   for (const mark of node.marks ?? []) {
     if (mark.type === strings.common.bold) options.bold = true;
     if (mark.type === strings.common.italic) options.italic = true;
@@ -42,12 +49,17 @@ function richRuns(node: TipTapDocument, inherited: pptxgen.TextPropsOptions = {}
       if (isString(mark.attrs?.fontSize)) { const size = Number.parseFloat(mark.attrs.fontSize); if (Number.isFinite(size)) options.fontSize = pt(size); }
     }
   }
-  if (node.text) return [{ text: node.text, options }];
-  if (node.type === strings.common.hardBreak) return [{ text: strings.common.newline, options }];
+  // PowerPoint shapes logical Unicode itself; do not reverse text or mirror the slide layout.
+  if (node.text) return [{ text: node.text, options: { ...options, ...(/\p{Script=Arabic}/u.test(node.text) ? { lang: 'ar-SA' } : {}) } }];
+  if (node.type === strings.common.hardBreak) return [{ text: '', options: { ...options, softBreakBefore: true } }];
   const children = node.content ?? [];
+  if (!children.length && ['paragraph', 'heading'].includes(node.type)) return [{ text: '', options }];
   return children.flatMap((child, index) => {
     const runs = richRuns(child, options);
-    if (node.type === strings.common.doc && index < children.length - 1) runs.push({ text: strings.common.newline, options });
+    if (['doc', 'blockquote', 'bulletList', 'orderedList', 'listItem'].includes(node.type) && index < children.length - 1) {
+      const last = runs[runs.length - 1];
+      if (last) last.options = { ...last.options, breakLine: true };
+    }
     return runs;
   });
 }
@@ -96,7 +108,7 @@ export async function exportPptx(presentation: Presentation): Promise<void> {
         case strings.common.image: slide.addImage({ ...box, data: await imageData(element.assetId), flipH: element.flipH, flipV: element.flipV,
           transparency: (1 - element.opacity) * 100, ...hyperlink }); break;
         case strings.common.table: {
-          const rows: pptxgen.TableRow[] = element.rows.map((row, index) => row.cells.map(cell => ({ text: plainText(cell.content),
+          const rows: pptxgen.TableRow[] = element.rows.map((row, index) => row.cells.map(cell => ({ text: richRuns(cell.content),
             options: { colspan: cell.colSpan, rowspan: cell.rowSpan, fill: fillOptions(index === 0 && element.style.headerRow ? element.style.headerFill : cell.fill),
               bold: index === 0 && element.style.headerRow } })));
           slide.addTable(rows, { ...box, colW: element.columnWidths.map(inch), rowH: element.rows.map(row => inch(row.height)),

@@ -11,16 +11,17 @@ import { animateStep, animationGroups, transitionFrames } from './animations';
 import { channelName, playerMessageSchema } from './channel';
 import './player.css';
 import { strings } from "@/strings";
+import { translate, useLocale, useTranslation } from '@/features/localization/locale';
 
 
 type Stroke = { slideId: string; points: Point[] };
 export function Player() {
+  const t = useTranslation();
   const { id } = useParams();
   const [search] = useSearchParams();
   const startSlide = Math.max(0, Number(search.get(strings.common.slide)) || 0);
   const navigate = useNavigate();
   const presentation = useEditor(state => state.document);
-  const loadProject = useEditor(state => state.loadProject);
   const saveProject = useEditor(state => state.saveProject);
   const slides = useMemo(() => presentation.slides.filter(slide => !slide.skipped), [presentation.slides]);
   const [index, setIndex] = useState(0);
@@ -44,7 +45,6 @@ export function Player() {
   const slide = slides[Math.min(index, slides.length - 1)];
   const groups = useMemo(() => slide ? animationGroups(slide) : [], [slide]);
   const scale = fitSlide(size.width, size.height,presentation.slideSize.width,presentation.slideSize.height);
-  useEffect(() => { if (id && id !== presentation.id) void loadProject(id).catch((error: unknown) => toast.error(String(error))); }, [id, presentation.id, loadProject]);
   useEffect(() => {
     const target = presentation.slides.slice(0, startSlide).filter(item => !item.skipped).length;
     setIndex(target); setStep(0);
@@ -87,8 +87,8 @@ export function Player() {
   const next = useCallback(() => { if (blackout) setBlackout(null); else if (step < groups.length - 1) setStep(step + 1); else jump(index + 1); }, [blackout, step, groups.length, jump, index]);
   const previous = useCallback(() => { if (blackout) setBlackout(null); else if (step > 0) setStep(step - 1); else jump(index - 1); }, [blackout, step, jump, index]);
   const fullscreen = useCallback(() => {
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => toast.error(strings.presenter.couldNotExitFullscreen));
-    else void stage.current?.requestFullscreen().catch(() => toast.error(strings.presenter.fullscreenIsUnavailableInThisBrowser));
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => toast.error(translate(strings.presenter.couldNotExitFullscreen, useLocale.getState().locale)));
+    else void stage.current?.requestFullscreen().catch(() => toast.error(translate(strings.presenter.fullscreenIsUnavailableInThisBrowser, useLocale.getState().locale)));
   }, []);
   useEffect(() => {
     if (!autoAdvance || blackout || overview || heldTool || tool === strings.presenter.pen || !slide) return;
@@ -124,7 +124,7 @@ export function Player() {
         const number = Number(numericJump.current);
         const target = slides.findIndex(item => item.id === presentation.slides[number - 1]?.id);
         if (target >= 0) jump(target);
-        else toast.error(strings.presenter.thatSlideIsUnavailableOrSkipped);
+        else toast.error(translate(strings.presenter.thatSlideIsUnavailableOrSkipped, useLocale.getState().locale));
         numericJump.current = strings.common.empty; setJumpDigits(strings.common.empty);
       }
       else if (([strings.presenter.arrowright, strings.presenter.arrowdown, strings.common.space, strings.presenter.enter_e08d706b, strings.presenter.pagedown] as readonly string[]).includes(key)) next();
@@ -156,16 +156,16 @@ export function Player() {
   };
   const openPresenter = async () => {
     const popup = window.open(strings.common.empty, `${strings.presenter.presenter_f990a125}${presentation.id}`, strings.presenter.popupWidth1280Height800);
-    if (!popup) { toast.error(strings.presenter.allowPopUpsToOpenPresenterView); return; }
+    if (!popup) { toast.error(translate(strings.presenter.allowPopUpsToOpenPresenterView, useLocale.getState().locale)); return; }
     try { await saveProject(); popup.location.href = `${strings.presenter.presenter}${presentation.id}`; }
-    catch (error) { popup.close(); toast.error(String(error)); }
+    catch (error) { popup.close(); toast.error(translate(error instanceof Error ? error.message : String(error), useLocale.getState().locale)); }
   };
-  if (!slide) return <div className={strings.presenter.playerEmpty}>{strings.presenter.allSlidesAreSkipped}<button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }}>{strings.presenter.backToEditor}</button></div>;
+  if (!slide) return <div className={strings.presenter.playerEmpty}>{t(strings.presenter.allSlidesAreSkipped)}<button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }}>{t(strings.presenter.backToEditor)}</button></div>;
   return <div className={strings.presenter.playerRoot} ref={stage}>
     <div className={strings.presenter.playerFit} style={{ width: presentation.slideSize.width * scale, height: presentation.slideSize.height * scale }}>
-      <div className={strings.presenter.playerLogical} role={strings.presenter.region} aria-label={strings.presenter.audienceSlide} style={{width:presentation.slideSize.width,height:presentation.slideSize.height,transform:`${strings.common.scale}${scale}${strings.common.symbol_ba5ec51d}`}} onPointerUp={event=>{if(tool===strings.presenter.pointer&&!(event.target instanceof Element&&event.target.closest(strings.presenter.aButton)))next()}}>
+      <div className={strings.presenter.playerLogical} role={strings.presenter.region} aria-label={t(strings.presenter.audienceSlide)} style={{width:presentation.slideSize.width,height:presentation.slideSize.height,transform:`${strings.common.scale}${scale}${strings.common.symbol_ba5ec51d}`}} onPointerUp={event=>{if(tool===strings.presenter.pointer&&!(event.target instanceof Element&&event.target.closest(strings.presenter.aButton)))next()}}>
         <div ref={content} key={slide.id}><SlideRenderer slide={slide} theme={presentation.theme} logicalSize={presentation.slideSize} width={presentation.slideSize.width} />
-          {slide.elements.filter(element => !element.hidden && element.link).map(element => <button key={element.id} data-link-element={element.id} className={strings.presenter.playerLink} aria-label={`${strings.presenter.open}${element.name}${strings.presenter.link}`}
+          {slide.elements.filter(element => !element.hidden && element.link).map(element => <button key={element.id} data-link-element={element.id} className={strings.presenter.playerLink} aria-label={`${t(strings.presenter.open)}${element.name}${t(strings.presenter.link)}`}
             style={{ left: element.x, top: element.y, width: element.width, height: element.height, transform: `${strings.common.rotate}${element.rotation}${strings.common.deg}` }}
             onClick={event => { event.stopPropagation(); const link = element.link; if (link?.kind === strings.common.slide) { const target = slides.findIndex(item => item.id === link.slideId); if (target >= 0) jump(target); }
               else if (link?.kind === strings.common.url && /^(https?:|mailto:|tel:)/i.test(link.href)) window.open(link.href, strings.common.blank, strings.presenter.noopenerNoreferrer); }} />)}
@@ -180,23 +180,23 @@ export function Player() {
         </svg>
       </div>
     </div>
-    {blackout && <button aria-label={strings.presenter.returnToPresentation} className={strings.presenter.playerBlackout} style={{ background: blackout }} onClick={() => setBlackout(null)} />}
-    {overview && <div className={strings.presenter.playerOverview}><header><h2>{strings.presenter.jumpToASlide}</h2><button onClick={() => setOverview(false)} aria-label={strings.presenter.closeOverview}><X /></button></header><div>
+    {blackout && <button aria-label={t(strings.presenter.returnToPresentation)} className={strings.presenter.playerBlackout} style={{ background: blackout }} onClick={() => setBlackout(null)} />}
+    {overview && <div className={strings.presenter.playerOverview}><header><h2>{t(strings.presenter.jumpToASlide)}</h2><button onClick={() => setOverview(false)} aria-label={t(strings.presenter.closeOverview)}><X /></button></header><div>
       {slides.map((item, slideIndex) => <button key={item.id} onClick={() => jump(slideIndex)} className={slideIndex === index ? strings.presenter.isActive : strings.common.empty}>
         <SlideRenderer slide={item} theme={presentation.theme} logicalSize={presentation.slideSize} width={320} /><span>{presentation.slides.indexOf(item)+1}</span></button>)}
     </div></div>}
-    <nav className={strings.presenter.playerControls} aria-label={strings.presenter.presentationControls}>
-      <button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }} title={strings.presenter.exitPresentationEsc}><X size={18} /></button>
-      <button onClick={previous} title={strings.presenter.previousSlide}><ArrowLeft size={18} /></button><span>{index + 1}{strings.common.symbol}{slides.length}</span><button onClick={next} title={strings.presenter.nextSlide}><ArrowRight size={18} /></button>
-      <i /><button onClick={() => setOverview(value => !value)} title={strings.presenter.slideOverviewG}><Grid2X2 size={18} /></button>
-      <button onClick={() => setTool(value => value === strings.presenter.laser ? strings.presenter.pointer : strings.presenter.laser)} className={tool === strings.presenter.laser ? strings.presenter.isActive : strings.common.empty} title={strings.presenter.laserPointerHoldL}><MousePointer2 size={18} /></button>
-      <button onClick={() => setTool(value => value === strings.presenter.pen ? strings.presenter.pointer : strings.presenter.pen)} className={tool === strings.presenter.pen ? strings.presenter.isActive : strings.common.empty} title={strings.presenter.penHoldPClearInkE}><PenLine size={18} /></button>
-      <label title={strings.presenter.automaticallyAdvanceSlidesAndBuilds} style={{ display: strings.presenter.flex, alignItems: strings.common.center, gap: 6 }}>{strings.presenter.auto}<select aria-label={strings.presenter.autoAdvanceInterval} value={autoAdvance} onChange={event => setAutoAdvance(Number(event.target.value))} style={{ color: strings.presenter.inherit, background: strings.presenter.color252525, borderRadius: 4, padding: 4 }}>
-          <option value={strings.common.value0}>{strings.presenter.off}</option><option value={strings.common.value5}>{strings.presenter.value5s}</option><option value={strings.common.value10}>{strings.presenter.value10s}</option><option value={strings.presenter.value15}>{strings.presenter.value15s}</option><option value={strings.presenter.value30}>{strings.presenter.value30s}</option><option value={strings.presenter.value60}>{strings.presenter.value60s}</option>
+    <nav className={strings.presenter.playerControls} aria-label={t(strings.presenter.presentationControls)}>
+      <button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }} title={t(strings.presenter.exitPresentationEsc)}><X size={18} /></button>
+      <button onClick={previous} title={t(strings.presenter.previousSlide)}><ArrowLeft size={18} /></button><span>{index + 1}{strings.common.symbol}{slides.length}</span><button onClick={next} title={t(strings.presenter.nextSlide)}><ArrowRight size={18} /></button>
+      <i /><button onClick={() => setOverview(value => !value)} title={t(strings.presenter.slideOverviewG)}><Grid2X2 size={18} /></button>
+      <button onClick={() => setTool(value => value === strings.presenter.laser ? strings.presenter.pointer : strings.presenter.laser)} className={tool === strings.presenter.laser ? strings.presenter.isActive : strings.common.empty} title={t(strings.presenter.laserPointerHoldL)}><MousePointer2 size={18} /></button>
+      <button onClick={() => setTool(value => value === strings.presenter.pen ? strings.presenter.pointer : strings.presenter.pen)} className={tool === strings.presenter.pen ? strings.presenter.isActive : strings.common.empty} title={t(strings.presenter.penHoldPClearInkE)}><PenLine size={18} /></button>
+      <label title={t(strings.presenter.automaticallyAdvanceSlidesAndBuilds)} style={{ display: strings.presenter.flex, alignItems: strings.common.center, gap: 6 }}>{t(strings.presenter.auto)}<select aria-label={t(strings.presenter.autoAdvanceInterval)} value={autoAdvance} onChange={event => setAutoAdvance(Number(event.target.value))} style={{ color: strings.presenter.inherit, background: strings.presenter.color252525, borderRadius: 4, padding: 4 }}>
+          <option value={strings.common.value0}>{t(strings.presenter.off)}</option><option value={strings.common.value5}>{t(strings.presenter.value5s)}</option><option value={strings.common.value10}>{t(strings.presenter.value10s)}</option><option value={strings.presenter.value15}>{t(strings.presenter.value15s)}</option><option value={strings.presenter.value30}>{t(strings.presenter.value30s)}</option><option value={strings.presenter.value60}>{t(strings.presenter.value60s)}</option>
         </select>
       </label>
-      {jumpDigits && <span role={strings.presenter.status}>{strings.presenter.goTo}{jumpDigits}{strings.presenter.enter}</span>}
-      <button onClick={() => void openPresenter()} title={strings.presenter.openPresenterView}><Monitor size={18} /></button><button onClick={fullscreen} title={strings.presenter.fullscreenF}><Expand size={18} /></button>
+      {jumpDigits && <span role={strings.presenter.status}>{t(strings.presenter.goTo)}{jumpDigits}{t(strings.presenter.enter)}</span>}
+      <button onClick={() => void openPresenter()} title={t(strings.presenter.openPresenterView)}><Monitor size={18} /></button><button onClick={fullscreen} title={t(strings.presenter.fullscreenF)}><Expand size={18} /></button>
     </nav>
   </div>;
 }

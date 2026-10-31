@@ -6,6 +6,7 @@ import { strings } from "@/strings";
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea
+      dir="auto"
       data-slot={strings.ui.textarea}
       className={cn(
         strings.ui.flexFieldSizingContentMinH16WFull,
