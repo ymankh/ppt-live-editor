@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   Cloud,
+  CloudAlert,
+  CloudCheck,
+  CloudUpload,
   Download,
   Moon,
   Play,
@@ -60,6 +63,13 @@ export function Editor() {
   );
   const navigate = useNavigate();
   const index = document.slides.findIndex((s) => s.id === activeId);
+  // The save state is shown as an icon only; the words remain available to assistive technology.
+  const saveLabel = saveStatus === strings.common.saved ? strings.editor.saved : saveStatus;
+  const SaveIcon =
+    saveStatus === strings.common.saved ? CloudCheck
+    : saveStatus === strings.store.saving ? CloudUpload
+    : saveStatus === strings.store.saveFailed ? CloudAlert
+    : Cloud;
   useEffect(() => {
     window.document.documentElement.classList.toggle(strings.common.dark, dark);
     localStorage.setItem(strings.editor.folioTheme, dark ? strings.common.dark : strings.common.light);
@@ -128,9 +138,13 @@ export function Editor() {
                 })
               }
             />
-            <span className={strings.editor.savedTag}>
-              <Cloud size={14} />
-              {t(saveStatus === strings.common.saved ? strings.editor.saved : saveStatus)}
+            <span
+              className={`${strings.editor.savedTag}${saveStatus === strings.store.saveFailed ? strings.editor.savedTagFailed : strings.common.empty}`}
+              role={strings.common.status}
+              title={t(saveLabel)}
+            >
+              <SaveIcon size={15} aria-hidden={strings.common.true} />
+              <span className={strings.common.srOnly}>{t(saveLabel)}</span>
             </span>
           </div>
           <Menubar className={strings.editor.applicationMenubar}>
@@ -146,7 +160,7 @@ export function Editor() {
             ].map((menu) => (
               <MenubarMenu key={menu}>
                 <MenubarTrigger>{t(menu)}</MenubarTrigger>
-                <MenubarContent>
+                <MenubarContent className={strings.editor.applicationMenu}>
                   {commands
                     .filter((c) => c.menu === menu)
                     .map((c) => (

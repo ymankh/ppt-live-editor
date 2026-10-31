@@ -200,6 +200,5 @@ export function PropertiesPanel() {
       <TabsContent value={strings.editor.layers_e3b81689}><LayersPanel slide={slide} /></TabsContent>
       </div>
     </Tabs>
-    <div className={strings.editor.designFooter}><span className={strings.editor.designStatusDot} />{t(strings.editor.everyDetailConsidered)}</div>
   </aside>;
 }

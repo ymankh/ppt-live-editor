@@ -14,6 +14,7 @@ import { inputsStrings } from './constants/strings/inputs';
 import { persistenceStrings } from './constants/strings/persistence';
 import { presenterStrings } from './constants/strings/presenter';
 import { rendererStrings } from './constants/strings/renderer';
+import { shortcutStrings } from './constants/strings/shortcuts';
 import { slidesStrings } from './constants/strings/slides';
 import { storeStrings } from './constants/strings/store';
 import { textStrings } from './constants/strings/text';
@@ -38,6 +39,7 @@ export const strings = {
   persistence: persistenceStrings,
   presenter: presenterStrings,
   renderer: rendererStrings,
+  shortcuts: shortcutStrings,
   slides: slidesStrings,
   store: storeStrings,
   text: textStrings,

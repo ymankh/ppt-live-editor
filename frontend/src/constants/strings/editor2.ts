@@ -177,4 +177,6 @@ export const editorStrings2 = {
   width_3019947b: "Width",
   zoom: "Zoom",
   zoomLabel: "zoom-label",
+  savedTagFailed: " is-failed",
+  applicationMenu: "application-menu",
 } as const;

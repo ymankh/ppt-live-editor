@@ -19,6 +19,7 @@ export const commonStrings2 = {
   solid: "solid",
   notes: "Speaker notes",
   srOnly: "sr-only",
+  status: "status",
   stacked: "stacked",
   star5: "star5",
   star6: "star6",
