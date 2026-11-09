@@ -148,8 +148,8 @@ export function ColorField({
               background: value,
               width: 23,
               height: 23,
-              borderRadius: 4,
-              border: strings.inputs.value1pxSolidDedee3,
+              borderRadius: strings.inputs.swatchRadius,
+              border: strings.inputs.swatchBorder,
             }}
           />
           <PopoverContent className={strings.inputs.wAutoP3}>
@@ -171,8 +171,8 @@ export function ColorField({
                     background: color,
                     width: 24,
                     height: 24,
-                    borderRadius: 5,
-                    border: strings.inputs.value1pxSolidDdd,
+                    borderRadius: strings.inputs.swatchRadius,
+                    border: strings.inputs.swatchBorder,
                   }}
                 />
               ))}

@@ -1,5 +1,10 @@
 # Changelog
 
+## shadcn theme variables everywhere
+- Application styles read only the standard shadcn/ui variables, the set tweakcn.com exports, so `npx shadcn add https://tweakcn.com/r/themes/<theme>.json` restyles the whole interface. The project library, presenter view, slideshow controls, text toolbar, avatar, export dialog and settings button no longer hardcode colors, fonts, corners or shadows, and the non-standard `--canvas`, `--success`, `--shadow-color` and `--radius-xs` variables are gone.
+- `index.css` defines the font, shadow and letter-spacing variables tweakcn themes provide and maps them into Tailwind, so shadcn components use the theme's shadows and fonts too.
+- The light/dark choice now applies to every page from startup instead of only after the editor has opened; the library no longer stays light under dark dialogs. The slideshow stage always uses the theme's dark variables. Native controls follow the scheme through `color-scheme`.
+
 ## Friendly error messages
 - Failed API calls throw `ApiError`, and `userMessage` turns any failure into a short, translated message: no connection, a server problem, a file that is too large, or otherwise what failed. Messages the app defines, such as font upload rules, are kept; status codes, URLs and server wording are never shown. Technical details stay in the browser console.
 - The library, editor, font gate and font settings, image drops and pastes, export, presenter view, account avatar and crash screen use these messages, with Arabic translations. The old terse fallbacks ("Rename failed", "Import failed", …) were retired.

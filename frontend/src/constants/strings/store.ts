@@ -14,5 +14,6 @@ export const storeStrings = {
   saveFailed: "Save failed",
   saving: "Saving",
   undefined: "undefined",
+  function: "function",
   unsaved: "Unsaved",
 } as const;

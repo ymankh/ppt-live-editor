@@ -161,8 +161,10 @@ export function Player() {
     try { await saveProject(); popup.location.href = `${strings.presenter.presenter}${presentation.id}`; }
     catch (error) { popup.close(); notifyError(error, strings.errors.openPresenterView); }
   };
-  if (!slide) return <div className={strings.presenter.playerEmpty}>{t(strings.presenter.allSlidesAreSkipped)}<button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }}>{t(strings.presenter.backToEditor)}</button></div>;
-  return <div className={strings.presenter.playerRoot} ref={stage}>
+  // The slideshow stage always uses the theme's dark variables, whatever scheme the editor uses.
+  const stageClass = `${strings.presenter.playerRoot} ${strings.common.dark}`;
+  if (!slide) return <div className={`${strings.presenter.playerEmpty} ${strings.common.dark}`}>{t(strings.presenter.allSlidesAreSkipped)}<button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }}>{t(strings.presenter.backToEditor)}</button></div>;
+  return <div className={stageClass} ref={stage}>
     <div className={strings.presenter.playerFit} style={{ width: presentation.slideSize.width * scale, height: presentation.slideSize.height * scale }}>
       <div className={strings.presenter.playerLogical} role={strings.presenter.region} aria-label={t(strings.presenter.audienceSlide)} style={{width:presentation.slideSize.width,height:presentation.slideSize.height,transform:`${strings.common.scale}${scale}${strings.common.symbol_ba5ec51d}`}} onPointerUp={event=>{if(tool===strings.presenter.pointer&&!(event.target instanceof Element&&event.target.closest(strings.presenter.aButton)))next()}}>
         <div ref={content} key={slide.id}><SlideRenderer slide={slide} theme={presentation.theme} logicalSize={presentation.slideSize} width={presentation.slideSize.width} />

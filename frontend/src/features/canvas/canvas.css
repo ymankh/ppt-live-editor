@@ -1,5 +1,5 @@
-.canvas-shell { display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; height: 100%; background: var(--canvas); color: var(--foreground); }
-.canvas-topbar { height: 40px; min-height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: var(--muted); border-bottom: 1px solid var(--border); font-size: 12px; }
+.canvas-shell { display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; height: 100%; background: var(--muted); color: var(--foreground); }
+.canvas-topbar { height: 40px; min-height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: var(--background); border-bottom: 1px solid var(--border); font-size: 12px; }
 .canvas-slide-label { display: flex; align-items: center; gap: 8px; font-weight: 500; }
 .canvas-status-dot { display: block; height: 5px; width: 5px; background: var(--primary); border-radius: 50%; }
 .canvas-slide-count { color: var(--muted-foreground); font-weight: 400; margin-left: -3px; }
@@ -10,7 +10,7 @@
 .canvas-workspace-pan:active { cursor: grabbing; }
 .canvas-stage-area { display: flex; align-items: center; justify-content: center; min-width: 100%; min-height: 100%; box-sizing: border-box; }
 /* The slide paper stays white in every UI theme; the slide background is drawn on top of it. */
-.canvas-slide-frame { position: relative; flex-shrink: 0; background: white; box-shadow: 0 2px 5px var(--shadow-color), 0 14px 32px var(--shadow-color); }
+.canvas-slide-frame { position: relative; flex-shrink: 0; background: white; box-shadow: var(--shadow-lg); }
 .canvas-ruler { position: absolute; pointer-events: none; color: var(--muted-foreground); font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
 .canvas-ruler-horizontal { left: 0; right: 0; top: -30px; height: 16px; border-bottom: 1px solid var(--border); }
 .canvas-ruler-horizontal > span { position: absolute; transform: translateX(-50%); top: -2px; }
@@ -24,10 +24,10 @@
 .canvas-rotation-stem { position: absolute; width: 1px; height: 23px; top: -24px; left: 50%; background: var(--primary); }
 .canvas-rotation-handle { position: absolute; left: 50%; top: -29px; transform: translateX(-50%); height: 9px; width: 9px; border: 1.5px solid var(--primary); border-radius: 50%; background: var(--background); padding: 0; pointer-events: auto; cursor: grab; }
 .canvas-rotation-handle:hover { background: var(--primary); }
-.canvas-selection-size { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--primary); color: var(--primary-foreground); padding: 3px 6px; border-radius: var(--radius-xs); font-size: 11px; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .12s; }
+.canvas-selection-size { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--primary); color: var(--primary-foreground); padding: 3px 6px; border-radius: var(--radius-sm); font-size: 11px; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .12s; }
 .canvas-selection:has(.canvas-resize-handle:hover) .canvas-selection-size { opacity: 1; }
 .canvas-marquee { position: absolute; border: 1px solid var(--primary); background: color-mix(in oklch, var(--primary) 10%, transparent); pointer-events: none; z-index: 11; }
-.canvas-empty { display: flex; align-items: center; justify-content: center; flex: 1; color: var(--muted-foreground); background: var(--canvas); }
+.canvas-empty { display: flex; align-items: center; justify-content: center; flex: 1; color: var(--muted-foreground); background: var(--muted); }
 .canvas-workspace-draw { cursor: crosshair; }
 .canvas-workspace-pan.canvas-workspace-draw { cursor: grab; }
 .canvas-grid { position: absolute; inset: 0; pointer-events: none; z-index: 4; --grid-line: color-mix(in oklch, var(--muted-foreground) 15%, transparent); background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px); }

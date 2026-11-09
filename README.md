@@ -140,7 +140,19 @@ On first project access, the frontend imports existing `chapter-editor` IndexedD
 - API-backed SQLite autosave with serialized, debounced writes, startup restoration, and explicit save. Backend failures show failed-save status rather than falling back to local projects.
 - Project archive, PowerPoint, PDF, and PNG exports. Project archive and basic PowerPoint import from the project library.
 - Fullscreen presentation playback, animation builds, transitions, slide overview, black/white screen, SVG ink and laser, and a synchronized presenter window.
-- System-aware dark theme with a persistent manual override and a uniform full-width editing toolbar background.
+- System-aware dark theme with a persistent manual override that applies to every page, and a uniform full-width editing toolbar background.
+
+## Interface theme
+
+The interface reads only the standard shadcn/ui CSS variables (`--background`, `--primary`, `--muted`, `--sidebar-*`, `--radius`, `--font-sans`, `--shadow-*`, `--tracking-normal`, …) from the `:root` and `.dark` blocks of `frontend/src/index.css`: the same set [tweakcn](https://tweakcn.com) exports. To apply a tweakcn theme, run this in `frontend/`:
+
+```sh
+npx shadcn@latest add https://tweakcn.com/r/themes/<theme>.json
+```
+
+or paste the `:root` and `.dark` blocks from tweakcn's code panel over the existing ones. Load any web font the theme names in `--font-sans` (for example with an `@fontsource` package); keep `'Folio Arabic'` in that list to keep the bundled Arabic font for Arabic interface text.
+
+The light/dark choice (moon/sun button in the editor) applies to every page and is stored as `folio-theme`; until you choose, the system preference is used. The slideshow stage always uses the theme's dark variables. Slide artwork, template and theme previews, presentation color swatches, the laser pointer and black/white audience screens keep their presentation colors.
 
 ## Language and Arabic editing
 
