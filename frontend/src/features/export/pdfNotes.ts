@@ -2,15 +2,18 @@ import type { jsPDF, TextOptionsLight } from 'jspdf';
 import { getTextDirection, getVisualTextLines } from '@/features/text/direction';
 import { blobDataUrl } from './assets';
 
-// Unmodified Amiri Regular, SIL OFL 1.1 (public/fonts/amiri/OFL.txt).
-// Primary source: https://github.com/aliftype/amiri/tree/d3d0c5cb6fe7196cb4a58608fc5c8ecd2e6e80fa
+// Unmodified IBM Plex Sans Arabic Regular, SIL OFL 1.1 (public/fonts/ibm-plex-sans-arabic/OFL.txt), the interface's
+// Arabic font. Primary source: https://github.com/IBM/plex/releases/tag/%40ibm%2Fplex-sans-arabic%401.1.0
+// jsPDF shapes Arabic into presentation forms (U+FB50–U+FEFC), which this TTF maps; it also has Latin glyphs.
+const notesFontFile = 'IBMPlexSansArabic-Regular.ttf';
+const notesFontFamily = 'IBM Plex Sans Arabic';
 export async function registerNotesFont(pdf: jsPDF): Promise<void> {
-  const response = await fetch(`${import.meta.env.BASE_URL}fonts/amiri/Amiri-Regular.ttf`);
+  const response = await fetch(`${import.meta.env.BASE_URL}fonts/ibm-plex-sans-arabic/${notesFontFile}`);
   if (!response.ok) throw new Error(`Cannot load bundled speaker-notes font (${response.status}).`);
   const data = await blobDataUrl(await response.blob());
-  pdf.addFileToVFS('Amiri-Regular.ttf', data.slice(data.indexOf(',') + 1));
-  pdf.addFont('Amiri-Regular.ttf', 'Folio Arabic', 'normal');
-  pdf.setFont('Folio Arabic', 'normal');
+  pdf.addFileToVFS(notesFontFile, data.slice(data.indexOf(',') + 1));
+  pdf.addFont(notesFontFile, notesFontFamily, 'normal');
+  pdf.setFont(notesFontFamily, 'normal');
   // Never reverse every character: Latin and numbers must remain in their own reading order.
   pdf.setR2L(false);
 }

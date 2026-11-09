@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/features/localization/locale';
+import { strings } from '@/strings';
 import { useFontRegistry } from './registry';
 
 export function FontSettings() {
@@ -38,8 +39,13 @@ export function FontSettings() {
     }}>
       <label htmlFor={familyId} className="text-sm font-medium">{t('Font family name')}</label>
       <Input id={familyId} value={family} required maxLength={200} disabled={uploading} aria-describedby={helpId} onChange={event => { setFamily(event.target.value); setUploaded(false); }} />
-      <label htmlFor={fileId} className="text-sm font-medium">{t('Font file')}</label>
-      <Input id={fileId} ref={fileInput} type="file" accept=".ttf,.otf,.woff,.woff2" required disabled={uploading} aria-describedby={helpId} onChange={event => { setFile(event.target.files?.[0] ?? null); setUploaded(false); }} />
+      <label id={`${fileId}-label`} htmlFor={fileId} className="text-sm font-medium">{t('Font file')}</label>
+      {/* The browser's own file button follows the browser language, so the picker is a translated button. */}
+      <div className="flex min-w-0 items-center gap-2">
+        <Button id={fileId} type="button" variant="outline" disabled={uploading} aria-labelledby={`${fileId}-label ${fileId}`} aria-describedby={`${fileId}-name ${helpId}`} onClick={() => fileInput.current?.click()}>{t(strings.inputs.chooseFile)}</Button>
+        <span id={`${fileId}-name`} className="min-w-0 truncate text-sm text-muted-foreground" dir="auto">{file?.name ?? t(strings.inputs.noFileChosen)}</span>
+      </div>
+      <input ref={fileInput} type="file" accept=".ttf,.otf,.woff,.woff2" hidden onChange={event => { setFile(event.target.files?.[0] ?? null); setUploaded(false); }} />
       <Button type="submit" disabled={uploading || !ready || !family.trim() || !file}>{t(uploading ? 'Uploading font…' : 'Upload font')}</Button>
     </form>
     {error && <p role="alert" className="text-sm text-destructive">{t(error)}</p>}

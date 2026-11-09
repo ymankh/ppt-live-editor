@@ -1,6 +1,5 @@
 export const exportStrings = {
   speakerNotes: " · Speaker notes",
-  slidesPleaseKeepThisWindowOpen: " slides · Please keep this window open.",
   imagesZip: "-images.zip",
   mx6Mb6Mt1P4: "-mx-6 -mb-6 mt-1 p-4",
   notes: "-notes",
@@ -201,4 +200,6 @@ export const exportStrings = {
   yourExportIsReady: "Your export is ready",
   yourProject: "your project",
   yVal: "yVal",
+  // interpolate() fills {count} after translation.
+  exportProgress: "{count} slides · Please keep this window open.",
 } as const;

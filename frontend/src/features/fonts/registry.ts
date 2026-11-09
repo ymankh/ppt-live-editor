@@ -15,7 +15,7 @@ interface FontRegistry {
 }
 
 const maximumBytes = 20 * 1024 * 1024;
-const builtinFamilies = ['Geist', 'Geist Variable', 'Folio Arabic', 'Inter', 'Arial', 'Tahoma', 'Georgia', 'Times New Roman', 'Courier New', 'Verdana'];
+const builtinFamilies = ['Geist', 'Geist Variable', 'IBM Plex Sans Arabic', 'Folio Arabic', 'Inter', 'Arial', 'Tahoma', 'Georgia', 'Times New Roman', 'Courier New', 'Verdana'];
 const genericFamilies: Record<string, true> = {
   serif: true, 'sans-serif': true, monospace: true, cursive: true, fantasy: true, 'system-ui': true,
   'ui-serif': true, 'ui-sans-serif': true, 'ui-monospace': true, 'ui-rounded': true, math: true, emoji: true, fangsong: true,
@@ -56,6 +56,9 @@ export const useFontRegistry = create<FontRegistry>((set, get) => ({
       }));
       await Promise.all([
         document.fonts.load('16px "Geist Variable"'),
+        // The Arabic fallback of every slide text: the regular and bold faces slide text renders with.
+        document.fonts.load('16px "IBM Plex Sans Arabic"', 'العربية'),
+        document.fonts.load('bold 16px "IBM Plex Sans Arabic"', 'العربية'),
         document.fonts.load('16px "Folio Arabic"', 'العربية'),
       ]);
       for (const face of faces) document.fonts.add(face);

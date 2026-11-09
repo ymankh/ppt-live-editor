@@ -1,4 +1,5 @@
 import { useTranslation } from '@/features/localization/locale';
+import { interpolate } from '@/features/localization/format';
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -6,6 +7,7 @@ import { Eye, EyeOff, GripVertical, LockKeyhole, UnlockKeyhole } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Section } from '@/components/common/PropertyInputs';
+import { useSortableAccessibility } from '@/components/common/useSortableAccessibility';
 import { useEditor } from '@/store/editor';
 import type { Slide, SlideElement } from '@/types/model';
 import { strings } from "@/strings";
@@ -26,7 +28,7 @@ function layerIcon(element: SlideElement): string {
 function SortableLayer({ element }: { element: SlideElement }) {
   const t = useTranslation();
   const selected = useEditor(state => state.selection.includes(element.id));
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: element.id });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: element.id, attributes: { roleDescription: t(strings.editor.sortableRole) } });
   return <div ref={setNodeRef} data-layer-id={element.id} className={`${strings.editor.layerRow}${selected ? strings.editor.selected : strings.common.empty}${strings.common.space}${isDragging ? strings.editor.isDragging : strings.common.empty}`} style={{ transform: CSS.Transform.toString(transform), transition }}>
     <button type={strings.common.button} className={strings.editor.layerType} aria-label={`${t(strings.editor.select_1f7133c2)}${element.name}`} onClick={event => {
       const editor = useEditor.getState();
@@ -43,6 +45,10 @@ export function LayersPanel({ slide }: { slide: Slide }) {
   const t = useTranslation();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const elements = [...slide.elements].reverse();
+  const accessibility = useSortableAccessibility(elements.map(element => element.id), id => {
+    const element = elements.find(item => item.id === id);
+    return element ? element.name || t(element.type.charAt(0).toUpperCase() + element.type.slice(1)) : strings.common.empty;
+  });
   const reorder = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
     useEditor.getState().mutate(strings.editor.reorderLayer, draft => {
@@ -54,9 +60,9 @@ export function LayersPanel({ slide }: { slide: Slide }) {
       target.elements = arrayMove(target.elements, from, to);
     });
   };
-  return <Section title={`${elements.length}${t(strings.editor.layers)}`}>
+  return <Section title={interpolate(t(strings.editor.layerCount), { count: elements.length })}>
     <p className={strings.editor.propertyNote}>{t(strings.editor.topmostObjectsAppearFirstDragAHandleToReorder)}</p>
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorder}>
+    <DndContext accessibility={accessibility} sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorder}>
       <SortableContext items={elements.map(element => element.id)} strategy={verticalListSortingStrategy}>
         <div className={strings.editor.layerList}>{elements.map(element => <SortableLayer key={element.id} element={element} />)}</div>
       </SortableContext>

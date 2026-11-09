@@ -3,6 +3,7 @@ import { useEditor } from "@/store/editor";
 import { textDocument } from "@/types/model";
 import { strings } from "@/strings";
 import { isString } from "@/lib/typeGuards";
+import { getTextDirection } from "@/features/text/direction";
 
 export async function insertImage(file: File): Promise<void> {
   if (!/^image\/(png|jpeg|svg\+xml|gif|webp)$/.test(file.type))
@@ -47,6 +48,8 @@ export function pasteText(text: string): void {
   const element = createElement(strings.common.text);
   if (element.type !== strings.common.text) throw new Error(strings.images.invalidTextDefaults);
   element.content = textDocument(text);
+  // Pasted text keeps its own reading direction whatever the interface language.
+  element.align = getTextDirection(text) === 'rtl' ? strings.common.right : strings.common.left;
   const store = useEditor.getState();
   store.mutate(strings.images.pasteText, (d) => {
     d.slides.find((s) => s.id === store.activeSlideId)?.elements.push(element);

@@ -72,4 +72,11 @@ describe('localized property inputs', () => {
     expect(screen.getByRole('textbox', { name: 'Override' }).getAttribute('dir')).toBe('rtl');
     expect(screen.getByRole('textbox', { name: 'Notes' }).getAttribute('dir')).toBe('auto');
   });
+
+  it('leaves data options such as font family names untranslated', () => {
+    useLocale.getState().setLocale('ar');
+    render(<Choice label="Language" value="Settings" options={['Settings', 'Geist']} translateOptions={false} onChange={vi.fn()} />);
+    expect(screen.getByRole('option', { name: 'Settings' }).getAttribute('value')).toBe('Settings');
+    expect(screen.queryByRole('option', { name: translate('Settings', 'ar') })).toBeNull();
+  });
 });

@@ -1,6 +1,5 @@
 export const homeStrings = {
   copy: " (copy)",
-  slidesEdited: " slides · Edited",
   pptjsonPptx: ".pptjson,.pptx",
   openQuote: "“",
   deleteDescriptionSuffix: "” will be permanently deleted. This can’t be undone.",
@@ -62,4 +61,6 @@ export const homeStrings = {
   yOURNEXTBIGIDEA: "YOUR NEXT BIG IDEA",
   yourNextChapterStartsHere: "Your next chapter starts here.",
   yourPresentations: "Your presentations",
+  // interpolate() fills the {placeholders} after translation.
+  projectSummary: "{count} slides · Edited {date}",
 } as const;

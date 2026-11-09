@@ -1,5 +1,12 @@
 # Changelog
 
+## Arabic interface design
+- Arabic text in the interface and on slides now uses the bundled IBM Plex Sans Arabic (SIL OFL, official IBM files) instead of Amiri. It is the typeface of the Saudi DGA design system and is designed to sit beside Latin grotesques like Geist. Amiri stays selectable as the `Folio Arabic` slide font. PDF speaker notes embed Plex too.
+- The Arabic interface follows Arabic UI practice: no letter-spacing (it pulls joined letters apart), the smallest labels a step larger, taller lines for paragraphs, keyboard shortcuts shown left to right at the end of menu items, notifications at the bottom left, and back/next and undo/redo icons mirrored.
+- Content the app generates follows the interface language. In Arabic, new presentations, the three starter templates (cards and decks), slide layouts and new text boxes, tables and charts are written in Arabic and laid out right to left. Pasted text is aligned by its own direction.
+- Every remaining English interface label, tooltip, menu, announcement and library string has an Arabic translation. Dates and times use Western digits. Arabic sentences no longer get their word order or number agreement from English fragments.
+- Fixed in both languages: switching between a light and a dark theme left light literal surfaces (the starter cover, cards, white cells) under text that had turned light. Neutral tints now follow the new theme, which made the "A bold beginning" template's title readable again. In Arabic, the slideshow no longer cuts off the left quarter of the slide, an Arabic chart title starts at the right, and file extensions in the export dialog read correctly.
+
 ## shadcn theme variables everywhere
 - Application styles read only the standard shadcn/ui variables, the set tweakcn.com exports, so `npx shadcn add https://tweakcn.com/r/themes/<theme>.json` restyles the whole interface. The project library, presenter view, slideshow controls, text toolbar, avatar, export dialog and settings button no longer hardcode colors, fonts, corners or shadows, and the non-standard `--canvas`, `--success`, `--shadow-color` and `--radius-xs` variables are gone.
 - `index.css` defines the font, shadow and letter-spacing variables tweakcn themes provide and maps them into Tailwind, so shadcn components use the theme's shadows and fonts too.

@@ -49,9 +49,9 @@ export function ShellDialogs({
             <DialogTitle>{t(strings.editor.commandPalette)}</DialogTitle>
             <DialogDescription>{t(strings.editor.searchPresentationActions)}</DialogDescription>
           </DialogHeader>
-          <Command>
+          <Command label={t(strings.editor.searchPresentationActions)}>
             <CommandInput placeholder={t(strings.editor.whatWouldYouLikeToDo)} />
-            <CommandList>
+            <CommandList label={t(strings.ui.commandSuggestions)}>
               <CommandEmpty>{t(strings.editor.noMatchingActions)}</CommandEmpty>
               <CommandGroup heading={t(strings.editor.actions)}>
                 {commands.map((c) => (

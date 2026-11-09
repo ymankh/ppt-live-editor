@@ -228,14 +228,14 @@ export function Editor() {
             disabled={!past.length}
             onClick={() => useEditor.getState().undo()}
           >
-            <Undo2 size={17} />
+            <Undo2 size={17} className={strings.ui.rtlMirror} />
           </button>
           <button
             aria-label={t(strings.common.redo_74273989)}
             disabled={!future.length}
             onClick={() => useEditor.getState().redo()}
           >
-            <Redo2 size={17} />
+            <Redo2 size={17} className={strings.ui.rtlMirror} />
           </button>
         </div>
         <Toolbar />

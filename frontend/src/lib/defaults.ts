@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { textDocument, type ElementBase, type ElementOf, type ElementType, type Presentation, type ShapeKind, type Slide, type SlideElement, type TextElement, type Theme } from '../types/model';
 import { strings } from "@/strings";
-
+import { translate, useLocale, type Locale } from '@/features/localization/locale';
 
 const defaultTheme: Theme = { id: strings.defaults.studio, name: strings.defaults.studio_0aa91af2, colors: { background: strings.defaults.colorfffaf5, text: strings.defaults.color292825, primary: strings.common.colored7355, secondary: strings.defaults.colorf7e8dc, accent: [strings.common.colored7355, strings.defaults.colorb8c4aa, strings.defaults.colore5bd80, strings.defaults.color8c9aaf] }, fonts: { heading: strings.common.geist, body: strings.common.geist } };
 export const themes: Theme[] = [
@@ -20,26 +20,55 @@ export const layouts = [
 ];
 export const coverImage = strings.defaults.httpsImagesUnsplashComPhoto1497366754035F200968a6e72AutoFormat;
 const base = (name: string): ElementBase => ({ id: nanoid(), name, x: 640, y: 380, width: 640, height: 320, rotation: 0, opacity: 1, locked: false, hidden: false, animations: [] });
+const rightToLeft = (locale: Locale) => locale === 'ar';
+/** Starter layouts are drawn on a 1920px-wide slide. */
+const starterWidth = 1920;
 
-export function createElement<T extends ElementType>(type: T, shape?: ShapeKind): ElementOf<T>;
-export function createElement(type: ElementType, shape: ShapeKind = strings.common.rect): SlideElement {
+/** Generated content follows the interface language unless a locale is passed. */
+export function createElement<T extends ElementType>(type: T, shape?: ShapeKind, locale?: Locale): ElementOf<T>;
+export function createElement(type: ElementType, shape: ShapeKind = strings.common.rect, locale: Locale = useLocale.getState().locale): SlideElement {
+  const tr = (value: string) => translate(value, locale);
   switch (type) {
-    case strings.common.text: return { ...base(strings.common.text_71988c4d), type, width: 760, height: 120, content: textDocument(strings.defaults.yourTextHere), verticalAlign: strings.common.top, autoFit: strings.common.none, padding: 0, fill: { type: strings.common.none }, stroke: null, shadow: null, cornerRadius: 0, fontSize: 64, fontFamily: strings.common.geist, color: strings.defaults.color292825, bold: false, italic: false, align: strings.common.left, letterSpacing: 0 };
-    case strings.common.shape: return { ...base(strings.common.shape_e0e49270), type, shape, fill: { type: strings.common.solid, color: strings.common.colored7355 }, stroke: null, shadow: null, cornerRadius: shape === strings.common.roundRect ? 32 : 0, flipH: false, flipV: false, text: null, textVerticalAlign: strings.common.middle };
-    case strings.common.line: return { ...base(strings.common.line_d7852cd0), type, width: 640, height: 0, start: { x: 0, y: 0 }, end: { x: 640, y: 0 }, curve: strings.common.straight, stroke: { color: strings.defaults.color292825, width: 4, style: strings.common.solid }, startArrow: strings.common.none, endArrow: strings.common.none };
-    case strings.common.image: return { ...base(strings.common.image_1aa4cb0b), type, assetId: coverImage, naturalWidth: 1400, naturalHeight: 1000, crop: { x: 0, y: 0, width: 1, height: 1 }, filters: { brightness: 1, contrast: 1, saturation: 1, blur: 0, grayscale: 0 }, flipH: false, flipV: false, stroke: null, shadow: null, cornerRadius: 24, clipShape: strings.common.roundRect };
-    case strings.common.table: return { ...base(strings.common.table_16d1c905), type, width: 900, height: 360, rows: Array.from({ length: 4 }, (_, row) => ({ id: nanoid(), height: 90, cells: (row === 0 ? [strings.defaults.initiative, strings.defaults.owner, strings.defaults.status] : [strings.defaults.newInitiative, strings.defaults.team, strings.defaults.inProgress]).map(value => ({ id: nanoid(), content: textDocument(value), fill: { type: strings.common.solid, color: row === 0 ? strings.defaults.colorf7e8dc : strings.common.colorffffff }, colSpan: 1, rowSpan: 1 })) })), columnWidths: [300, 300, 300], style: { headerRow: true, bandedRows: true, borderColor: strings.defaults.colordedbd5, borderWidth: 1, headerFill: { type: strings.common.solid, color: strings.defaults.colorf7e8dc } } };
-    case strings.common.chart: return { ...base(strings.common.chart_3e5b90ae), type, width: 1000, height: 600, chart: strings.common.bar, categories: [strings.defaults.q1, strings.defaults.q2, strings.defaults.q3, strings.defaults.q4], series: [{ id: nanoid(), name: strings.defaults.growth, color: strings.common.colored7355, values: [24, 38, 56, 82] }, { id: nanoid(), name: strings.common.target, color: strings.defaults.colorb8c4aa, values: [30, 42, 60, 90] }], options: { showLegend: true, showGrid: true, showValues: false, stacked: false, title: strings.defaults.quarterlyGrowth } };
+    case strings.common.text: return { ...base(tr(strings.common.text_71988c4d)), type, width: 760, height: 120, content: textDocument(tr(strings.defaults.yourTextHere)), verticalAlign: strings.common.top, autoFit: strings.common.none, padding: 0, fill: { type: strings.common.none }, stroke: null, shadow: null, cornerRadius: 0, fontSize: 64, fontFamily: strings.common.geist, color: strings.defaults.color292825, bold: false, italic: false, align: rightToLeft(locale) ? strings.common.right : strings.common.left, letterSpacing: 0 };
+    case strings.common.shape: return { ...base(tr(strings.common.shape_e0e49270)), type, shape, fill: { type: strings.common.solid, color: strings.common.colored7355 }, stroke: null, shadow: null, cornerRadius: shape === strings.common.roundRect ? 32 : 0, flipH: false, flipV: false, text: null, textVerticalAlign: strings.common.middle };
+    case strings.common.line: return { ...base(tr(strings.common.line_d7852cd0)), type, width: 640, height: 0, start: { x: 0, y: 0 }, end: { x: 640, y: 0 }, curve: strings.common.straight, stroke: { color: strings.defaults.color292825, width: 4, style: strings.common.solid }, startArrow: strings.common.none, endArrow: strings.common.none };
+    case strings.common.image: return { ...base(tr(strings.common.image_1aa4cb0b)), type, assetId: coverImage, naturalWidth: 1400, naturalHeight: 1000, crop: { x: 0, y: 0, width: 1, height: 1 }, filters: { brightness: 1, contrast: 1, saturation: 1, blur: 0, grayscale: 0 }, flipH: false, flipV: false, stroke: null, shadow: null, cornerRadius: 24, clipShape: strings.common.roundRect };
+    case strings.common.table: {
+      // Slide coordinates stay left to right, so a right-to-left table lists its first column on the right.
+      const columns = (cells: string[]) => rightToLeft(locale) ? cells.map(tr).reverse() : cells.map(tr);
+      const header = columns([strings.defaults.initiative, strings.defaults.owner, strings.defaults.status]), body = columns([strings.defaults.newInitiative, strings.defaults.team, strings.defaults.inProgress]);
+      return { ...base(tr(strings.common.table_16d1c905)), type, width: 900, height: 360, rows: Array.from({ length: 4 }, (_, row) => ({ id: nanoid(), height: 90, cells: (row === 0 ? header : body).map(value => ({ id: nanoid(), content: textDocument(value), fill: { type: strings.common.solid, color: row === 0 ? strings.defaults.colorf7e8dc : strings.common.colorffffff }, colSpan: 1, rowSpan: 1 })) })), columnWidths: [300, 300, 300], style: { headerRow: true, bandedRows: true, borderColor: strings.defaults.colordedbd5, borderWidth: 1, headerFill: { type: strings.common.solid, color: strings.defaults.colorf7e8dc } } };
+    }
+    case strings.common.chart: return { ...base(tr(strings.common.chart_3e5b90ae)), type, width: 1000, height: 600, chart: strings.common.bar, categories: [strings.defaults.q1, strings.defaults.q2, strings.defaults.q3, strings.defaults.q4].map(tr), series: [{ id: nanoid(), name: tr(strings.defaults.growth), color: strings.common.colored7355, values: [24, 38, 56, 82] }, { id: nanoid(), name: tr(strings.common.target), color: strings.defaults.colorb8c4aa, values: [30, 42, 60, 90] }], options: { showLegend: true, showGrid: true, showValues: false, stacked: false, title: tr(strings.defaults.quarterlyGrowth) } };
   }
 }
 
-const text = (value: string, x: number, y: number, width: number, height: number, size = 48, extras: Partial<TextElement> = {}): TextElement => ({ ...createElement(strings.common.text), name: value.split(strings.common.newline)[0] ?? strings.common.empty, content: textDocument(value), x, y, width, height, fontSize: size, ...extras });
-const box = (x: number, y: number, width: number, height: number, color: string, radius = 0): SlideElement => ({ ...createElement(strings.common.shape, radius ? strings.common.roundRect : strings.common.rect), x, y, width, height, fill: { type: strings.common.solid, color }, cornerRadius: radius });
-const photo = (x: number, y: number, width: number, height: number): SlideElement => ({ ...createElement(strings.common.image), x, y, width, height, cornerRadius: 36 });
-const footer = (number: string): SlideElement[] => [text(strings.defaults.cHAPTERSTUDIO, 100, 1000, 500, 35, 20, { letterSpacing: 3 }), text(number, 1740, 1000, 80, 35, 20, { align: strings.common.right })];
-const slide = (elements: SlideElement[], layoutId: string = strings.defaults.titleContent_a43cc9ac, color: string = strings.defaults.colorfffaf5): Slide => ({ id: nanoid(), elements, background: { type: strings.common.solid, color }, notes: strings.common.empty, transition: { effect: strings.common.fade, duration: 0.45 }, layoutId });
+/** Mirrors a left-to-right starter element for right-to-left text. Arabic is cursive, so tracking is removed too. */
+function mirrored(element: SlideElement): SlideElement {
+  const x = starterWidth - element.x - element.width, rotation = element.rotation ? -element.rotation : 0;
+  switch (element.type) {
+    case strings.common.text: return { ...element, x, rotation, align: element.align === strings.common.left ? strings.common.right : element.align === strings.common.right ? strings.common.left : element.align, letterSpacing: 0 };
+    case strings.common.line: return { ...element, x, rotation, start: { ...element.start, x: element.width - element.start.x }, end: { ...element.end, x: element.width - element.end.x } };
+    default: return { ...element, x, rotation };
+  }
+}
 
-export function createSlide(layout: string = strings.common.blank_ff71cf74): Slide {
+/** Starter slide builders. Layouts are drawn left to right; right-to-left locales mirror every finished slide. */
+function starterKit(locale: Locale) {
+  const tr = (value: string) => translate(value, locale);
+  const text = (value: string, x: number, y: number, width: number, height: number, size = 48, extras: Partial<TextElement> = {}): TextElement => {
+    const copy = tr(value);
+    return { ...createElement(strings.common.text, undefined, locale), name: copy.split(strings.common.newline)[0] ?? strings.common.empty, content: textDocument(copy), x, y, width, height, fontSize: size, align: strings.common.left, ...extras };
+  };
+  const box = (x: number, y: number, width: number, height: number, color: string, radius = 0): SlideElement => ({ ...createElement(strings.common.shape, radius ? strings.common.roundRect : strings.common.rect, locale), x, y, width, height, fill: { type: strings.common.solid, color }, cornerRadius: radius });
+  const photo = (x: number, y: number, width: number, height: number): SlideElement => ({ ...createElement(strings.common.image, undefined, locale), x, y, width, height, cornerRadius: 36 });
+  const footer = (number: string): SlideElement[] => [text(strings.defaults.cHAPTERSTUDIO, 100, 1000, 500, 35, 20, { letterSpacing: 3 }), text(number, 1740, 1000, 80, 35, 20, { align: strings.common.right })];
+  const slide = (elements: SlideElement[], layoutId: string = strings.defaults.titleContent_a43cc9ac, color: string = strings.defaults.colorfffaf5): Slide => ({ id: nanoid(), elements: rightToLeft(locale) ? elements.map(mirrored) : elements, background: { type: strings.common.solid, color }, notes: strings.common.empty, transition: { effect: strings.common.fade, duration: 0.45 }, layoutId });
+  return { tr, text, box, photo, footer, slide };
+}
+
+export function createSlide(layout: string = strings.common.blank_ff71cf74, locale: Locale = useLocale.getState().locale): Slide {
+  const { text, box, photo, slide } = starterKit(locale);
   switch (layout) {
     case strings.defaults.title: return slide([text(strings.defaults.aNewPerspective, 120, 320, 1560, 220, 132, { bold: true }), text(strings.defaults.aLittleContextForYourBigIdea, 130, 650, 1300, 120, 44)], layout);
     case strings.defaults.titleContent_a43cc9ac: return slide([text(strings.defaults.slideTitle, 120, 110, 1680, 160, 96, { bold: true }), text(strings.defaults.startWithTheStoryYouWantToTellAdd, 130, 350, 1500, 550, 48)], layout);
@@ -52,22 +81,23 @@ export function createSlide(layout: string = strings.common.blank_ff71cf74): Sli
   }
 }
 
-export function createPresentation(): Presentation {
+export function createPresentation(locale: Locale = useLocale.getState().locale): Presentation {
+  const { tr, text, box, footer, slide } = starterKit(locale);
   const cover = slide([
     box(115, 145, 650, 64, strings.defaults.colorf3dfd2, 32), text(strings.defaults.q32025STRATEGYVISION, 143, 161, 600, 40, 24, { letterSpacing: 3 }),
     text(strings.common.theNextChapter, 110, 335, 930, 385, 150, { bold: false, letterSpacing: -6 }),
     text(strings.defaults.bigIdeasClearDirectionABoldPlanForWhat, 125, 782, 865, 125, 38, { color: strings.defaults.color68605a }),
-    { ...createElement(strings.common.image), x: 1070, y: 140, width: 700, height: 800, cornerRadius: 24 },
-    { ...createElement(strings.common.shape, strings.common.ellipse), x: 980, y: 766, width: 260, height: 260, fill: { type: strings.common.solid, color: strings.common.colored7355 } },
+    { ...createElement(strings.common.image, undefined, locale), x: 1070, y: 140, width: 700, height: 800, cornerRadius: 24 },
+    { ...createElement(strings.common.shape, strings.common.ellipse, locale), x: 980, y: 766, width: 260, height: 260, fill: { type: strings.common.solid, color: strings.common.colored7355 } },
     text(strings.defaults.aCMESTUDIO, 125, 1000, 630, 35, 20, { letterSpacing: 3 }), text(strings.defaults.value01, 1740, 1000, 80, 35, 20, { align: strings.common.right }),
   ], strings.defaults.title, strings.common.colorf7eee6);
-  cover.notes = strings.defaults.welcomeTheTeamThisQuarterIsAboutTurningOur;
+  cover.notes = tr(strings.defaults.welcomeTheTeamThisQuarterIsAboutTurningOur);
   const overview = slide([
     text(strings.defaults.value01THEOVERVIEW, 120, 105, 1200, 70, 26, { color: strings.common.colored7355, letterSpacing: 3 }),
     text(strings.defaults.aFreshPerspectiveASharedAmbition, 115, 230, 1670, 290, 110, { bold: true, letterSpacing: -4 }),
     ...[strings.defaults.buildWithPurpose, strings.defaults.growTogether, strings.defaults.makeItMatter].flatMap((heading, i) => [box(120 + i * 570, 600, 530, 300, i === 1 ? strings.defaults.colore5eadf : strings.defaults.colorf7e8dc, 24), text(`${strings.common.value0}${i + 1}`, 155 + i * 570, 635, 400, 60, 30, { color: strings.common.colored7355 }), text(heading, 155 + i * 570, 725, 440, 75, 45, { bold: true }), text([strings.defaults.focusOnTheWorkThatMovesOurCustomersForward, strings.defaults.bringOurPeopleAndIdeasCloserThanEver, strings.defaults.createLastingValueNotJustAnotherLaunch][i] ?? strings.common.empty, 155 + i * 570, 810, 450, 75, 27)]), ...footer(strings.defaults.value02),
   ]);
-  overview.notes = strings.defaults.ourThreePrioritiesIntentionalProductsStrongerCollaborationAndImpact;
+  overview.notes = tr(strings.defaults.ourThreePrioritiesIntentionalProductsStrongerCollaborationAndImpact);
   const opportunity = slide([
     text(strings.defaults.value02THEOPPORTUNITY, 120, 105, 1200, 70, 26, { color: strings.common.colored7355, letterSpacing: 3 }),
     text(strings.defaults.theMomentIsOurs, 115, 260, 950, 310, 126, { bold: true, letterSpacing: -4 }),
@@ -84,14 +114,14 @@ export function createPresentation(): Presentation {
     text(strings.defaults.value04THEROADMAP, 120, 105, 1200, 70, 26, { color: strings.common.colored7355, letterSpacing: 3 }),
     text(strings.defaults.fromAmbitionToAction, 115, 225, 1600, 290, 112, { bold: true, letterSpacing: -4 }),
     box(140, 660, 1630, 4, strings.defaults.colorddcdbf),
-    ...[strings.defaults.discover, strings.defaults.build, strings.defaults.launch].flatMap((heading, i) => [{ ...createElement(strings.common.shape, strings.common.ellipse), x: 145 + i * 560, y: 644, width: 36, height: 36, fill: { type: strings.common.solid, color: strings.common.colored7355 } }, text([strings.defaults.jULY, strings.defaults.aUGUST, strings.defaults.sEPTEMBER][i] ?? strings.common.empty, 145 + i * 560, 565, 480, 55, 27, { color: strings.common.colored7355, letterSpacing: 3 }), text(heading, 145 + i * 560, 720, 480, 85, 54, { bold: true }), text([strings.defaults.listenDeeplyDefineWhatMatters, strings.defaults.prototypeQuicklyRefineWithIntention, strings.defaults.showUpBoldlyLearnAndKeepGrowing][i] ?? strings.common.empty, 145 + i * 560, 825, 470, 100, 30)]), ...footer(strings.defaults.value05),
+    ...[strings.defaults.discover, strings.defaults.build, strings.defaults.launch].flatMap((heading, i) => [{ ...createElement(strings.common.shape, strings.common.ellipse, locale), x: 145 + i * 560, y: 644, width: 36, height: 36, fill: { type: strings.common.solid, color: strings.common.colored7355 } }, text([strings.defaults.jULY, strings.defaults.aUGUST, strings.defaults.sEPTEMBER][i] ?? strings.common.empty, 145 + i * 560, 565, 480, 55, 27, { color: strings.common.colored7355, letterSpacing: 3 }), text(heading, 145 + i * 560, 720, 480, 85, 54, { bold: true }), text([strings.defaults.listenDeeplyDefineWhatMatters, strings.defaults.prototypeQuicklyRefineWithIntention, strings.defaults.showUpBoldlyLearnAndKeepGrowing][i] ?? strings.common.empty, 145 + i * 560, 825, 470, 100, 30)]), ...footer(strings.defaults.value05),
   ]);
   const thanks = slide([
-    { ...createElement(strings.common.shape, strings.common.ellipse), x: 1450, y: -230, width: 720, height: 720, fill: { type: strings.common.solid, color: strings.common.colored7355 } },
+    { ...createElement(strings.common.shape, strings.common.ellipse, locale), x: 1450, y: -230, width: 720, height: 720, fill: { type: strings.common.solid, color: strings.common.colored7355 } },
     text(strings.defaults.hereSToWhatSNext, 115, 300, 1580, 380, 154, { bold: true, letterSpacing: -6 }),
     text(strings.defaults.letSWriteThisChapterTogether, 125, 780, 1420, 100, 45, { color: strings.defaults.color68605a }),
     text(strings.defaults.tHANKYOU, 125, 155, 950, 60, 26, { letterSpacing: 4 }), ...footer(strings.defaults.value06),
   ], strings.defaults.section, strings.defaults.colorf9eee4);
   const now = new Date().toISOString();
-  return { version: 1, id: nanoid(), title: strings.common.theNextChapter_5529f97e, slideSize: { width: 1920, height: 1080 }, theme: structuredClone(defaultTheme), slides: [cover, overview, opportunity, strategy, roadmap, thanks], createdAt: now, updatedAt: now };
+  return { version: 1, id: nanoid(), title: tr(strings.common.theNextChapter_5529f97e), slideSize: { width: starterWidth, height: 1080 }, theme: structuredClone(defaultTheme), slides: [cover, overview, opportunity, strategy, roadmap, thanks], createdAt: now, updatedAt: now };
 }

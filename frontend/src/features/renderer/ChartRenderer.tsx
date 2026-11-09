@@ -2,9 +2,11 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, Legend, Line,
 import type { ChartElement, Theme } from '@/types/model';
 import type { ReactNode } from 'react';
 import { strings } from "@/strings";
+import { useTranslation } from '@/features/localization/locale';
 
 
 export function ChartRenderer({ element, theme }: { element: ChartElement; theme: Theme }) {
+  const t = useTranslation();
   const { width, height, options, series } = element;
   const data = element.categories.map((name, index) => ({ name, ...Object.fromEntries(series.map(s => [s.id, s.values[index] ?? 0])) }));
   const chartHeight = Math.max(1, height - (options.title ? 60 : 0));
@@ -23,7 +25,7 @@ export function ChartRenderer({ element, theme }: { element: ChartElement; theme
     </PieChart>;
   } else if (element.chart === strings.common.scatter) {
     chart = <ScatterChart width={width} height={chartHeight} margin={margin}>{grid}
-      <XAxis type={strings.common.number} dataKey={strings.common.x} tick={axisStyle} name={strings.common.category} /><YAxis type={strings.common.number} dataKey={strings.common.y} tick={axisStyle} />{tooltip}{legend}
+      <XAxis type={strings.common.number} dataKey={strings.common.x} tick={axisStyle} name={t(strings.common.category)} /><YAxis type={strings.common.number} dataKey={strings.common.y} tick={axisStyle} />{tooltip}{legend}
       {series.map(s => <Scatter key={s.id} name={s.name} data={s.values.map((y, x) => ({ x: x + 1, y }))} fill={s.color} isAnimationActive={false} />)}
     </ScatterChart>;
   } else if (element.chart === strings.common.line) {
@@ -42,6 +44,6 @@ export function ChartRenderer({ element, theme }: { element: ChartElement; theme
     </BarChart>;
   }
   return <div className={strings.renderer.rendererChart} style={{ fontFamily: `${theme.fonts.body}${strings.renderer.geistVariableSansSerif}`, color: theme.colors.text }}>
-    {options.title && <div className={strings.renderer.rendererChartTitle}>{options.title}</div>}{chart}
+    {options.title && <div dir="auto" className={strings.renderer.rendererChartTitle}>{options.title}</div>}{chart}
   </div>;
 }

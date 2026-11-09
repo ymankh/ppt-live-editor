@@ -23,7 +23,8 @@
 .renderer-table { border-collapse: collapse; table-layout: fixed; height: 100%; width: 100%; font-size: 30px; }
 .renderer-table td { padding: 18px 22px; vertical-align: middle; overflow-wrap: anywhere; }
 .renderer-chart { overflow: hidden; }
-.renderer-chart-title { height: 60px; font-size: 30px; font-weight: 600; padding-left: 20px; }
+/* Like slide paragraphs, the title's direction follows its own text, so an Arabic title starts at the right. */
+.renderer-chart-title { height: 60px; font-size: 30px; font-weight: 600; padding-inline-start: 20px; }
 .renderer-chart .recharts-wrapper { font-size: 24px; }
 .renderer-editor { position: relative; min-height: 1em; user-select: text; cursor: text; }
 .renderer-editor .tiptap { outline: none; min-height: 1em; }

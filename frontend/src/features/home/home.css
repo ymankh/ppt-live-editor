@@ -21,7 +21,10 @@
 .template-preview { position: relative; height: 190px; padding: 22px 26px; border-radius: var(--radius-lg); overflow: hidden; color: #333536; }
 .template-preview > span { font-size: 7px; letter-spacing: 1.5px; }
 .template-preview b { display: block; margin-top: 27px; white-space: pre-line; font-size: 36px; line-height: 1.05; font-weight: 500; letter-spacing: -1.4px; }
-.template-preview i { position: absolute; right: 25px; bottom: 25px; width: 90px; height: 90px; display: grid; place-items: center; border-radius: 50%; background: #ffffff60; }
+.template-preview i { position: absolute; inset-inline-end: 25px; bottom: 25px; width: 90px; height: 90px; display: grid; place-items: center; border-radius: 50%; background: #ffffff60; }
+/* Tracking breaks Arabic letter joins, and Arabic needs taller lines and a readable tag size. */
+.template-preview:lang(ar) > span { font-size: 11px; font-weight: 500; letter-spacing: 0; }
+.template-preview:lang(ar) b { margin-top: 22px; padding-inline-end: 100px; font-size: 32px; line-height: 1.35; letter-spacing: 0; }
 .starter-grid h3 { font-weight: 500; font-size: 12px; margin: 12px 0 4px; }
 .starter-grid p { font-size: 10px; color: var(--muted-foreground); }
 .template-section { margin-bottom: 45px; padding-bottom: 35px; border-bottom: 1px solid var(--border); }

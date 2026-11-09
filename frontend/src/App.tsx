@@ -55,7 +55,8 @@ export default function App() {
             <Route path={strings.app.presenterId} element={<PresentationFontGate><PresenterView /></PresentationFontGate>} />
           </Routes>
         </BrowserRouter>
-        <Toaster position={strings.app.bottomRight} />
+        {/* Notifications sit at the inline end: bottom right in English, bottom left in Arabic. */}
+        <Toaster position={locale === 'ar' ? strings.app.bottomLeft : strings.app.bottomRight} />
       </TooltipProvider>
       </DirectionProvider>
     </ErrorBoundary>
