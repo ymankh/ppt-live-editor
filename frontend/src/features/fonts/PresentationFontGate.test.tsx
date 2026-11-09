@@ -2,8 +2,11 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { createElement, createPresentation, createSlide } from '@/lib/defaults';
+import { ApiError } from '@/lib/api';
 import { useEditor } from '@/store/editor';
+import { arabic } from '@/features/localization/ar';
 import { useLocale } from '@/features/localization/locale';
+import { getProject } from '@/features/persistence/repository';
 import { useFontRegistry } from './registry';
 import { PresentationFontGate } from './PresentationFontGate';
 
@@ -49,7 +52,10 @@ beforeEach(() => {
     return Promise.resolve();
   });
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe('blocking presentation font resolution', () => {
   it('waits for persisted font initialization before scanning or rendering the editor', async () => {
@@ -123,12 +129,39 @@ describe('blocking presentation font resolution', () => {
 
   it('shows initialization failures and retries instead of silently rendering fallback fonts', async () => {
     const document = openFixture('Geist');
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     mocks.initialize.mockRejectedValueOnce(new Error('Font service unavailable'));
     renderGate(document.id);
-    expect((await screen.findByRole('alert')).textContent).toBe('Font service unavailable');
+    expect((await screen.findByRole('alert')).textContent).toBe("We couldn't load the fonts for this presentation. Please try again.");
     expect(screen.queryByTestId('editor')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByTestId('editor')).toBeTruthy();
+  });
+
+  it('explains server failures in plain, translated language without status codes or URLs', async () => {
+    const document = openFixture('Geist');
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mocks.initialize.mockRejectedValueOnce(new ApiError('Folio API request failed (GET /api/fonts, HTTP 404): Not Found', 404, 'Not Found'));
+    const { unmount } = renderGate(document.id);
+    expect((await screen.findByRole('alert')).textContent).toBe("We couldn't load the fonts for this presentation. Please try again.");
+    unmount();
+
+    useLocale.getState().setLocale('ar');
+    mocks.initialize.mockRejectedValueOnce(new ApiError('Cannot reach the Folio API (GET /api/fonts): Failed to fetch', undefined, undefined));
+    renderGate(document.id);
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toBe(arabic["Can't connect to Folio. Check your internet connection and try again."]);
+    expect(alert.textContent).not.toMatch(/HTTP|\/api|Folio API/);
+  });
+
+  it('names the presentation as what failed once fonts are ready', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.mocked(getProject).mockRejectedValueOnce(new ApiError('Folio API request failed (GET /api/projects/x, HTTP 400): Bad Request', 400, 'Bad Request'));
+    renderGate('not-open');
+    expect((await screen.findByRole('alert')).textContent).toBe("We couldn't open this presentation. Please try again.");
+    vi.mocked(getProject).mockResolvedValueOnce(undefined);
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe("This presentation couldn't be found. It may have been deleted."));
   });
 
   it('preserves the active unsaved document and does not reload fonts when changing locale', async () => {

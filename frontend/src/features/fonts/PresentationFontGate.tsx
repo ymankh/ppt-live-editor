@@ -3,8 +3,10 @@ import type { ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { userMessage } from '@/features/errors/userMessage';
 import { useTranslation } from '@/features/localization/locale';
 import { useEditor } from '@/store/editor';
+import { strings } from '@/strings';
 import { isFontAvailable, useAvailableFontFamilies, useFontRegistry } from './registry';
 import { fontFamilyKey, missingFontFamilies, replaceFontFamilies } from './missingFonts';
 
@@ -23,18 +25,22 @@ export function PresentationFontGate({ children }: { children: ReactNode }) {
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let cancelled = false;
+    // Names what was loading when a failure happens, so the message can say what failed.
+    let failure: string = strings.errors.loadPresentationFonts;
     setError(null);
     setLoadedRoute(null);
     const load = async () => {
       await useFontRegistry.getState().initialize();
       if (cancelled) return;
+      failure = targetId ? strings.errors.openPresentation : strings.errors.openLatestPresentation;
       if (targetId) {
         if (useEditor.getState().document.id !== targetId) await useEditor.getState().loadProject(targetId);
       } else await useEditor.getState().restoreProject();
       if (!cancelled) setLoadedRoute(routeKey);
     };
     void load().catch((cause: unknown) => {
-      if (!cancelled) setError(cause instanceof Error ? cause.message : String(cause));
+      console.error(cause);
+      if (!cancelled) setError(userMessage(cause, failure));
     });
     return () => { cancelled = true; };
   }, [targetId, routeKey, attempt]);
@@ -99,7 +105,8 @@ function FontResolutionSession({ children, onBack }: { children: ReactNode; onBa
                   setError(null);
                   setUploading(family);
                   void useFontRegistry.getState().uploadFont(file, family).catch((cause: unknown) => {
-                    setError(cause instanceof Error ? cause.message : String(cause));
+                    console.error(cause);
+                    setError(userMessage(cause, strings.errors.uploadFont));
                   }).finally(() => setUploading(null));
                 }} />
               </label>

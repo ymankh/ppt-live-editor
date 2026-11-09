@@ -10,14 +10,16 @@ import { PresenterView } from '@/features/presenter/PresenterView';
 import { strings } from "@/strings";
 import { useLocale, useTranslation } from '@/features/localization/locale';
 import { PresentationFontGate } from '@/features/fonts/PresentationFontGate';
+import { userMessage } from '@/features/errors/userMessage';
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
   { error: string | null }
 > {
   state: { error: string | null } = { error: null };
-  static getDerivedStateFromError(error: Error) {
-    return { error: error.message };
+  // React logs the technical error to the console; people see a friendly explanation.
+  static getDerivedStateFromError(error: unknown) {
+    return { error: userMessage(error, strings.errors.unexpected) };
   }
   render() {
     if (this.state.error) return <AppError error={this.state.error} />;
@@ -30,7 +32,7 @@ function AppError({ error }: { error: string }) {
   return (
     <div className={strings.app.p12}>
       <h1 className={strings.app.textXlFontSemibold}>{t(strings.app.errorTitle)}</h1>
-      <p className={strings.app.my4TextMutedForeground}>{error}</p>
+      <p className={strings.app.my4TextMutedForeground}>{t(error)}</p>
       <button className={strings.app.roundedBgPrimaryP3TextPrimaryForeground} onClick={() => location.reload()}>
         {t(strings.app.reload)}
       </button>

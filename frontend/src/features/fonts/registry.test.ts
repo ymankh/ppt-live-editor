@@ -110,10 +110,26 @@ describe('font registry', () => {
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Library unavailable' }), { status: 503 }));
     await expect(useFontRegistry.getState().initialize()).rejects.toThrow('Library unavailable');
     expect(useFontRegistry.getState().ready).toBe(false);
-    expect(useFontRegistry.getState().error).toContain('Library unavailable');
+    expect(useFontRegistry.getState().error).toBe('Something went wrong on our side. Please try again in a moment.');
     await useFontRegistry.getState().initialize();
     expect(useFontRegistry.getState().ready).toBe(true);
     expect(useFontRegistry.getState().error).toBeNull();
+  });
+
+  it('reports a missing font library route as a friendly message, not the HTTP status', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Not Found', status: 404 }), { status: 404 }));
+    await expect(useFontRegistry.getState().initialize()).rejects.toThrow('HTTP 404');
+    expect(useFontRegistry.getState().error).toBe("We couldn't load your fonts. Please try again.");
+  });
+
+  it('keeps upload rules the server re-checks and hides other server wording', async () => {
+    await useFontRegistry.getState().initialize();
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ title: 'A font with this family name is already uploaded.' }), { status: 409 }));
+    await expect(useFontRegistry.getState().uploadFont(fontFile(), 'Custom')).rejects.toThrow('HTTP 409');
+    expect(useFontRegistry.getState().error).toBe('A font with this family name is already uploaded.');
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ title: 'One or more validation errors occurred.' }), { status: 400 }));
+    await expect(useFontRegistry.getState().uploadFont(fontFile(), 'Custom')).rejects.toThrow('HTTP 400');
+    expect(useFontRegistry.getState().error).toBe("We couldn't upload this font. Please try again.");
   });
 
   it('detects actual system and loaded fonts without trusting FontFaceSet.check', () => {

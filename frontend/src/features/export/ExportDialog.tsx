@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useEditor } from '@/store/editor';
 import { exportImages, exportPdf, exportPptx, exportProject } from './export';
 import { Choice } from '@/components/common/PropertyInputs';
+import { userMessage } from '@/features/errors/userMessage';
 import { strings } from "@/strings";
 import { translate, useLocale, useTranslation } from '@/features/localization/locale';
 
@@ -39,7 +40,8 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       toast.success(translate(strings.export.yourExportIsReady, useLocale.getState().locale), { id: notification, description: translate(strings.export.checkYourDownloadsFolder, useLocale.getState().locale) });
       onOpenChange(false);
     } catch (error) {
-      toast.error(translate(strings.export.exportCouldNotBeCompleted, useLocale.getState().locale), { id: notification, description: translate(error instanceof Error ? error.message : strings.export.pleaseTryAgain, useLocale.getState().locale) });
+      console.error(error);
+      toast.error(translate(strings.export.exportCouldNotBeCompleted, useLocale.getState().locale), { id: notification, description: translate(userMessage(error, strings.export.pleaseTryAgain), useLocale.getState().locale) });
     } finally { setBusy(false); }
   };
   return <Dialog open={open} onOpenChange={value => { if (!busy) onOpenChange(value); }}>
