@@ -77,7 +77,7 @@ Vite dev and preview proxy `/api` to `http://localhost:5080`; set `FOLIO_API_URL
 
 ## Backend
 
-`backend/node/src/server.ts` starts the API; `app.ts` routes requests, `repository.ts` owns SQLite persistence, `projectDocument.ts` validates presentation envelopes, and `users.ts` supplies the current user. TypeScript uses only erasable syntax so Node runs the sources directly; `tsc` is used for type checking only. Backend tests use `node:test` against a real HTTP server and an in-memory database.
+`backend/node/src/server.ts` starts the API; `app.ts` routes requests, `repository.ts` owns SQLite persistence, `projectDocument.ts` validates presentation envelopes, `fonts.ts` validates font uploads, and `users.ts` supplies the current user. TypeScript uses only erasable syntax so Node runs the sources directly; `tsc` is used for type checking only. Backend tests use `node:test` against a real HTTP server and an in-memory database.
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -91,7 +91,7 @@ Vite dev and preview proxy `/api` to `http://localhost:5080`; set `FOLIO_API_URL
 `backend/Folio.Api/` (ASP.NET Core, `dotnet run --project backend/Folio.Api`) and `backend/node/` must stay interchangeable. The [Backend contract workflow](.github/workflows/backend-contract.yml) runs on every pull request touching `backend/**`:
 
 1. **Route inventory** — method/path pairs parsed from the C# controller attributes must equal the Node route table (`listRoutes` in `app.ts`). Run locally with `npm run contract`.
-2. **Behavior** — both servers start with fresh databases and [`compare.ts`](backend/contract/compare.ts) sends the same ~50-request scenario to each (CRUD, ordering, encoded IDs, validation failures, conflicts, assets, collection, 404/405/415, Host filtering). Status codes, media types, `Content-Disposition`/`X-Content-Type-Options` and bodies must match; problem responses compare by status because framework-generated titles differ.
+2. **Behavior** — both servers start with fresh databases and [`compare.ts`](backend/contract/compare.ts) sends the same ~70-request scenario to each (CRUD, ordering, encoded IDs, validation failures, conflicts, assets, collection, font uploads and content, 404/405/415, Host filtering). Status codes, media types, `Content-Disposition`/`X-Content-Type-Options` and bodies must match; problem responses compare by status because framework-generated titles differ, and IDs each server generates (font IDs) compare as present strings.
 
 When you add or change an endpoint, change both backends and extend the scenario. Building the .NET API locally may be blocked by binary-authorization tools; CI runners are unaffected.
 
@@ -255,4 +255,4 @@ A commit may not change both `frontend/` and `backend/`; everything else (`appho
 
 ## Verification
 
-The Node backend passes `tsc` type checking and `node:test` HTTP integration tests covering health, current user, project CRUD and timestamp ordering, encoded IDs (including `/` and a project named `latest`), validation failures, unsupported media types, create-only conflicts, binary asset round trips with download-safe headers, exclusive asset collection on delete, unknown routes, 405 responses, and Host filtering. Playwright starts its own API on port 5081 with an isolated database under `.cache/playwright/` and Vite on port 5174, with serialized project resets so tests never clear the normal workspace.
+The Node backend passes `tsc` type checking and `node:test` HTTP integration tests covering health, current user, project CRUD and timestamp ordering, encoded IDs (including `/` and a project named `latest`), validation failures, unsupported media types, create-only conflicts, binary asset round trips with download-safe headers, exclusive asset collection on delete, font uploads (TTF/OTF/WOFF/WOFF2 detection, family-name rules, case-insensitive duplicates, the 20 MiB limit) with listing and content, unknown routes, 405 responses, and Host filtering. Playwright starts its own API on port 5081 with an isolated database under `.cache/playwright/` and Vite on port 5174, with serialized project resets so tests never clear the normal workspace.

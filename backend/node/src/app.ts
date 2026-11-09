@@ -1,4 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, RequestListener, ServerResponse } from 'node:http';
+import { fontContentType, fontMessages, maximumFontBytes, readFontFamily } from './fonts.ts';
 import { readProjectDocument } from './projectDocument.ts';
 import type { FolioRepository } from './repository.ts';
 import type { CurrentUserProvider } from './users.ts';
@@ -12,7 +14,7 @@ export interface AppOptions {
   readonly allowedHosts?: ReadonlySet<string>;
 }
 
-export type Method = 'GET' | 'PUT' | 'DELETE';
+export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 type Handler = (request: IncomingMessage, response: ServerResponse, id: string) => Promise<void> | void;
 type Routes = Partial<Record<Method, Handler>>;
 export type RouteTable = Readonly<Record<string, Routes>>;
@@ -26,7 +28,7 @@ class HttpError extends Error {
 }
 
 const statusTitles: Readonly<Record<number, string>> = {
-  400: 'Bad Request', 404: 'Not Found', 405: 'Method Not Allowed', 412: 'Precondition Failed',
+  400: 'Bad Request', 404: 'Not Found', 405: 'Method Not Allowed', 409: 'Conflict', 412: 'Precondition Failed',
   413: 'Payload Too Large', 415: 'Unsupported Media Type', 500: 'Internal Server Error',
 };
 
@@ -50,15 +52,15 @@ function noContent(response: ServerResponse): void {
   response.end();
 }
 
-async function readBody(request: IncomingMessage): Promise<Buffer> {
+async function readBody(request: IncomingMessage, limit = maximumRequestBytes, tooLarge = 'Request exceeds the 100 MiB limit'): Promise<Buffer> {
   const declared = Number(request.headers['content-length'] ?? 0);
-  if (declared > maximumRequestBytes) throw new HttpError(413, 'Request exceeds the 100 MiB limit');
+  if (declared > limit) throw new HttpError(413, tooLarge);
   const chunks: Buffer[] = [];
   let total = 0;
   for await (const chunk of request as AsyncIterable<Buffer | string>) {
     const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
     total += buffer.length;
-    if (total > maximumRequestBytes) throw new HttpError(413, 'Request exceeds the 100 MiB limit');
+    if (total > limit) throw new HttpError(413, tooLarge);
     chunks.push(buffer);
   }
   return Buffer.concat(chunks, total);
@@ -130,6 +132,37 @@ export function createRoutes({ repository, currentUserProvider }: AppOptions): R
     },
   };
 
+  // Validation order matches FontsController: family name, declared size, font bytes, then duplicate family.
+  const uploadFont: Handler = async (request, response) => {
+    const family = readFontFamily(new URL(request.url ?? '/', 'http://localhost').searchParams.get('family'));
+    if (family === undefined) return problem(response, 400, fontMessages.family);
+    const content = await readBody(request, maximumFontBytes, fontMessages.tooLarge);
+    const contentType = fontContentType(content);
+    if (contentType === undefined) return problem(response, 400, fontMessages.format);
+    const id = randomUUID().replaceAll('-', '');
+    if (!repository.addFont(id, family, contentType, content)) return problem(response, 409, fontMessages.duplicate);
+    const body = JSON.stringify({ id, family });
+    response.writeHead(201, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Length': Buffer.byteLength(body),
+      Location: `/api/fonts/${id}/content`,
+    });
+    response.end(body);
+  };
+
+  const fontContent: Routes = {
+    GET: (_request, response, id) => {
+      const font = repository.getFont(id);
+      if (font === undefined) return problem(response, 404);
+      response.writeHead(200, {
+        'Content-Type': font.contentType,
+        'Content-Length': font.content.byteLength,
+        'X-Content-Type-Options': 'nosniff',
+      });
+      response.end(font.content);
+    },
+  };
+
   const table: RouteTable = {
     '/api/health': { GET: (_request, response) => json(response, JSON.stringify({ status: 'ok' })) },
     '/api/users/me': {
@@ -146,6 +179,12 @@ export function createRoutes({ repository, currentUserProvider }: AppOptions): R
     },
     '/api/projects/{id}': project,
     '/api/assets/{id}': asset,
+    '/api/fonts': {
+      GET: (_request, response) => json(response, JSON.stringify(repository.listFonts())),
+      POST: uploadFont,
+      PUT: uploadFont,
+    },
+    '/api/fonts/{id}/content': fontContent,
   };
   return table;
 }

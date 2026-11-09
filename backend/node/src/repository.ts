@@ -8,6 +8,11 @@ export interface StoredAsset {
   readonly content: Uint8Array;
 }
 
+export interface FontRecord {
+  readonly id: string;
+  readonly family: string;
+}
+
 const schema = `
   PRAGMA journal_mode = WAL;
   CREATE TABLE IF NOT EXISTS projects (
@@ -28,6 +33,12 @@ const schema = `
       PRIMARY KEY (project_id, asset_id)
   );
   CREATE INDEX IF NOT EXISTS project_assets_asset ON project_assets(asset_id);
+  CREATE TABLE IF NOT EXISTS fonts (
+      id TEXT PRIMARY KEY NOT NULL,
+      family TEXT NOT NULL COLLATE NOCASE UNIQUE,
+      content_type TEXT NOT NULL,
+      content BLOB NOT NULL
+  );
 `;
 
 /**
@@ -108,6 +119,23 @@ export class FolioRepository {
 
   getAsset(id: string): StoredAsset | undefined {
     const row = this.db.prepare('SELECT content_type, content FROM assets WHERE id = ?').get(id);
+    if (row === undefined || typeof row.content_type !== 'string' || !(row.content instanceof Uint8Array)) return undefined;
+    return { contentType: row.content_type, content: row.content };
+  }
+
+  listFonts(): FontRecord[] {
+    return this.db.prepare('SELECT id, family FROM fonts ORDER BY family COLLATE NOCASE, id').all()
+      .map((row) => ({ id: String(row.id), family: String(row.family) }));
+  }
+
+  /** Returns false when a font with the same family name (ignoring ASCII case) is already stored. */
+  addFont(id: string, family: string, contentType: string, content: Uint8Array): boolean {
+    const sql = 'INSERT INTO fonts(id, family, content_type, content) VALUES(?, ?, ?, ?) ON CONFLICT(family) DO NOTHING';
+    return Number(this.db.prepare(sql).run(id, family, contentType, content).changes) !== 0;
+  }
+
+  getFont(id: string): StoredAsset | undefined {
+    const row = this.db.prepare('SELECT content_type, content FROM fonts WHERE id = ?').get(id);
     if (row === undefined || typeof row.content_type !== 'string' || !(row.content instanceof Uint8Array)) return undefined;
     return { contentType: row.content_type, content: row.content };
   }

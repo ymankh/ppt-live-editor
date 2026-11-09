@@ -101,3 +101,109 @@ test('routing and host filtering', async () => {
   });
   assert.equal(status, 400);
 });
+
+// Smallest byte layouts that pass the TTF/OTF/WOFF/WOFF2 structure checks: one table right after the directory.
+function sfnt(signature: number, tableLength = 4): Uint8Array {
+  const bytes = new Uint8Array(32);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, signature);
+  view.setUint16(4, 1);
+  view.setUint32(12 + 8, 28);
+  view.setUint32(12 + 12, tableLength);
+  return bytes;
+}
+
+function woff(): Uint8Array {
+  const bytes = new Uint8Array(68);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, 0x774f4646);
+  view.setUint32(4, 0x00010000);
+  view.setUint32(8, bytes.length);
+  view.setUint16(12, 1);
+  view.setUint32(16, 28);
+  view.setUint32(44 + 4, 64);
+  view.setUint32(44 + 8, 4);
+  view.setUint32(44 + 12, 4);
+  return bytes;
+}
+
+function woff2(): Uint8Array {
+  const bytes = new Uint8Array(52);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, 0x774f4632);
+  view.setUint32(4, 0x00010000);
+  view.setUint32(8, bytes.length);
+  view.setUint16(12, 1);
+  view.setUint32(16, 28);
+  view.setUint32(20, 4);
+  return bytes;
+}
+
+const uploadFont = (family: string | undefined, body: Uint8Array, method = 'POST') =>
+  fetch(`${base}/api/fonts${family === undefined ? '' : `?family=${encodeURIComponent(family)}`}`, {
+    method, headers: { 'Content-Type': 'application/octet-stream' }, body,
+  });
+
+test('font library uploads, lists and serves validated fonts', async () => {
+  assert.deepEqual(await (await fetch(`${base}/api/fonts`)).json(), []);
+
+  const created = await uploadFont('Test Sans', sfnt(0x00010000));
+  assert.equal(created.status, 201);
+  assert.match(created.headers.get('content-type') ?? '', /^application\/json/);
+  const font = (await created.json()) as { id: string; family: string };
+  assert.match(font.id, /^[0-9a-f]{32}$/);
+  assert.equal(font.family, 'Test Sans');
+  assert.equal(created.headers.get('location'), `/api/fonts/${font.id}/content`);
+
+  assert.equal((await uploadFont('  beta  ', sfnt(0x4f54544f), 'PUT')).status, 201);
+  assert.equal((await uploadFont('Alpha', woff())).status, 201);
+  assert.equal((await uploadFont('Gamma', woff2())).status, 201);
+  assert.equal((await uploadFont('Apple', sfnt(0x74727565))).status, 201);
+
+  const list = (await (await fetch(`${base}/api/fonts`)).json()) as { id: string; family: string }[];
+  assert.deepEqual(list.map((entry) => entry.family), ['Alpha', 'Apple', 'beta', 'Gamma', 'Test Sans']);
+
+  const content = await fetch(`${base}/api/fonts/${font.id}/content`);
+  assert.equal(content.status, 200);
+  assert.equal(content.headers.get('content-type'), 'font/ttf');
+  assert.equal(content.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(content.headers.get('content-disposition'), null);
+  assert.deepEqual(new Uint8Array(await content.arrayBuffer()), sfnt(0x00010000));
+
+  const types = await Promise.all(list.map(async (entry) =>
+    (await fetch(`${base}/api/fonts/${entry.id}/content`)).headers.get('content-type')));
+  assert.deepEqual(types, ['font/woff', 'font/ttf', 'font/otf', 'font/woff2', 'font/ttf']);
+  assert.equal((await fetch(`${base}/api/fonts/missing/content`)).status, 404);
+});
+
+test('font uploads reject bad names, non-fonts, duplicates and oversized bodies', async () => {
+  const font = sfnt(0x00010000);
+  assert.equal((await uploadFont('Unique Family', font)).status, 201);
+  const duplicate = await uploadFont('UNIQUE FAMILY', font);
+  assert.equal(duplicate.status, 409);
+  assert.equal(duplicate.headers.get('content-type'), 'application/problem+json');
+  assert.equal(((await duplicate.json()) as { title: string }).title, 'A font with this family name is already uploaded.');
+
+  for (const family of [undefined, '   ', 'One, Two', 'Quote"d', 'Brace{', 'Control\u0001', 'Next\u0085Line', 'F'.repeat(201)])
+    assert.equal((await uploadFont(family, font)).status, 400, `family ${JSON.stringify(family)}`);
+  assert.equal((await uploadFont('F'.repeat(200), font)).status, 201);
+
+  for (const body of [new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0]), sfnt(0x00010000, 8), new Uint8Array(4)])
+    assert.equal((await uploadFont('Not A Font', body)).status, 400);
+
+  const port = (server.address() as AddressInfo).port;
+  const oversized = await new Promise<{ status: number | undefined; connection: string | undefined }>((resolve, reject) => {
+    const upload = request({
+      host: '127.0.0.1', port, method: 'POST', path: '/api/fonts?family=Huge',
+      headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': 20 * 1024 * 1024 + 1 },
+    }, (response) => {
+      response.resume();
+      resolve({ status: response.statusCode, connection: response.headers.connection });
+      upload.destroy();
+    });
+    upload.on('error', reject);
+    upload.flushHeaders();
+  });
+  assert.deepEqual(oversized, { status: 413, connection: 'close' });
+  assert.equal((await fetch(`${base}/api/fonts`, { method: 'DELETE' })).status, 405);
+});

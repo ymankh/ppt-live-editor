@@ -1,5 +1,9 @@
 # Changelog
 
+## Font library on the Node API
+- Added `GET`/`POST`/`PUT /api/fonts` and `GET /api/fonts/{id}/content` to the Node API, matching the ASP.NET `FontsController`: family-name rules, 20 MiB limit, TTF/OTF/WOFF/WOFF2 structure checks, case-insensitive duplicates and the shared `fonts` table. Opening any presentation previously failed with a 404 because the editor loads the font library first.
+- The contract scenario covers font uploads, listing and content, and can address resources whose IDs each server generates.
+
 ## Dual backends and commit rules
 - Moved the Node API to `backend/node/` and restored the ASP.NET API in `backend/Folio.Api/` as the reference implementation.
 - Added `backend/contract/compare.ts` and the Backend contract workflow: route inventories must match and an identical request scenario must produce identical responses from both servers.

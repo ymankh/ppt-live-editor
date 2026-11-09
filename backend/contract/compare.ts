@@ -61,11 +61,16 @@ function compareRoutes(): string[] {
 interface Step {
   readonly name: string;
   readonly method: string;
-  readonly path: string;
+  /** A function receives the IDs captured so far from the same server (see `capture`). */
+  readonly path: string | ((ids: Readonly<Record<string, string>>) => string);
   readonly headers?: Readonly<Record<string, string>>;
   readonly body?: string | Uint8Array;
   /** `status` compares only status codes (for framework-generated responses such as host filtering). */
   readonly compare?: 'full' | 'status';
+  /** Stores the JSON body's `id` under this name so later steps can address the created resource. */
+  readonly capture?: string;
+  /** Server-generated `id` values differ between backends; compare them only as present strings. */
+  readonly generatedIds?: true;
 }
 
 interface Observed {
@@ -93,6 +98,61 @@ const jsonPut = (name: string, route: string, value: unknown, headers: Readonly<
 });
 
 const pngBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 255]);
+
+// Smallest byte layouts that pass the TTF/OTF/WOFF/WOFF2 structure checks: one table right after the directory.
+function sfntBytes(signature: number, tableLength = 4): Uint8Array {
+  const bytes = new Uint8Array(32);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, signature);
+  view.setUint16(4, 1);
+  view.setUint32(12 + 8, 28);
+  view.setUint32(12 + 12, tableLength);
+  return bytes;
+}
+
+function woffBytes(): Uint8Array {
+  const bytes = new Uint8Array(68);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, 0x774f4646);
+  view.setUint32(4, 0x00010000);
+  view.setUint32(8, bytes.length);
+  view.setUint16(12, 1);
+  view.setUint32(16, 28);
+  view.setUint32(44 + 4, 64);
+  view.setUint32(44 + 8, 4);
+  view.setUint32(44 + 12, 4);
+  return bytes;
+}
+
+function woff2Bytes(): Uint8Array {
+  const bytes = new Uint8Array(52);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, 0x774f4632);
+  view.setUint32(4, 0x00010000);
+  view.setUint32(8, bytes.length);
+  view.setUint16(12, 1);
+  view.setUint32(16, 28);
+  view.setUint32(20, 4);
+  return bytes;
+}
+
+const ttfBytes = sfntBytes(0x00010000);
+const fontUpload = (name: string, family: string | undefined, body: Uint8Array, extra: Partial<Step> = {}): Step => ({
+  name,
+  method: 'POST',
+  path: family === undefined ? '/api/fonts' : `/api/fonts?family=${encodeURIComponent(family)}`,
+  headers: { 'Content-Type': 'application/octet-stream' },
+  body,
+  generatedIds: true,
+  ...extra,
+});
+
+/** A previously captured ID; fails loudly so a broken capture cannot pass as two identical 404s. */
+function captured(ids: Readonly<Record<string, string>>, name: string): string {
+  const id = ids[name];
+  if (id === undefined) throw new Error(`No ID was captured as "${name}".`);
+  return id;
+}
 
 const scenario: readonly Step[] = [
   { name: 'health', method: 'GET', path: '/api/health' },
@@ -140,18 +200,37 @@ const scenario: readonly Step[] = [
   { name: 'shared asset kept', method: 'GET', path: '/api/assets/vector' },
   { name: 'idempotent delete', method: 'DELETE', path: '/api/projects/owner' },
   { name: 'final project list', method: 'GET', path: '/api/projects' },
+  { name: 'empty font list', method: 'GET', path: '/api/fonts' },
+  fontUpload('upload TTF font', 'Test Sans', ttfBytes, { capture: 'ttf' }),
+  fontUpload('upload OTF font with PUT and padded family', '  beta  ', sfntBytes(0x4f54544f), { method: 'PUT' }),
+  fontUpload('upload WOFF font', 'Alpha', woffBytes()),
+  fontUpload('upload WOFF2 font', 'Gamma', woff2Bytes(), { capture: 'woff2' }),
+  fontUpload('upload Apple TrueType font', 'Unicode خط 🎉', sfntBytes(0x74727565)),
+  fontUpload('duplicate family, different case', 'TEST SANS', ttfBytes),
+  fontUpload('missing family', undefined, ttfBytes),
+  fontUpload('blank family', '   ', ttfBytes),
+  fontUpload('family with CSS punctuation', 'One, Two', ttfBytes),
+  fontUpload('family with a C1 control character', 'Next\u0085Line', ttfBytes),
+  fontUpload('family longer than 200 characters', 'F'.repeat(201), ttfBytes),
+  fontUpload('not a font', 'Picture', pngBytes),
+  fontUpload('font table outside the file', 'Broken', sfntBytes(0x00010000, 8)),
+  { name: 'font list ordering', method: 'GET', path: '/api/fonts', generatedIds: true },
+  { name: 'TTF font content', method: 'GET', path: (ids) => `/api/fonts/${captured(ids, 'ttf')}/content` },
+  { name: 'WOFF2 font content', method: 'GET', path: (ids) => `/api/fonts/${captured(ids, 'woff2')}/content` },
+  { name: 'missing font content', method: 'GET', path: '/api/fonts/missing/content' },
+  { name: 'unsupported font method', method: 'DELETE', path: '/api/fonts' },
   { name: 'unknown route', method: 'GET', path: '/api/nope' },
   { name: 'unsupported method', method: 'DELETE', path: '/api/health' },
   { name: 'POST to collection', method: 'POST', path: '/api/projects', headers: { 'Content-Type': 'application/json' }, body: '{}' },
   { name: 'disallowed Host header', method: 'GET', path: '/api/health', headers: { Host: 'evil.example' }, compare: 'status' },
 ];
 
-function send(base: URL, step: Step): Promise<{ status: number; headers: Record<string, string | string[] | undefined>; body: Buffer }> {
+function send(base: URL, step: Step, path: string): Promise<{ status: number; headers: Record<string, string | string[] | undefined>; body: Buffer }> {
   return new Promise((resolve, reject) => {
     const body = step.body === undefined ? undefined : typeof step.body === 'string' ? Buffer.from(step.body) : Buffer.from(step.body);
     const headers: Record<string, string | number> = { ...step.headers };
     if (body !== undefined) headers['Content-Length'] = body.length;
-    const req = httpRequest({ host: base.hostname, port: base.port, method: step.method, path: step.path, headers }, (res) => {
+    const req = httpRequest({ host: base.hostname, port: base.port, method: step.method, path, headers }, (res) => {
       const chunks: Buffer[] = [];
       res.on('data', (chunk: Buffer) => chunks.push(chunk));
       res.on('end', () => resolve({ status: res.statusCode ?? 0, headers: res.headers, body: Buffer.concat(chunks) }));
@@ -162,8 +241,22 @@ function send(base: URL, step: Step): Promise<{ status: number; headers: Record<
   });
 }
 
-async function observe(base: URL, step: Step): Promise<Observed> {
-  const response = await send(base, step);
+/** The step's path with `{name}` placeholders for captured IDs, for reports. */
+const pathTemplate = (step: Step): string => typeof step.path === 'string'
+  ? step.path
+  : step.path(new Proxy<Record<string, string>>({}, { get: (_target, key) => `{${String(key)}}` }));
+
+/** Replaces non-empty `id` strings, which each backend generates independently, with a marker. */
+function withoutGeneratedIds(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(withoutGeneratedIds);
+  if (typeof value !== 'object' || value === null) return value;
+  return Object.fromEntries(Object.entries(value).map(([key, entry]) =>
+    [key, key === 'id' && typeof entry === 'string' && entry !== '' ? '<generated>' : withoutGeneratedIds(entry)]));
+}
+
+/** Sends one step to one server. `ids` holds that server's captured IDs and receives new captures. */
+async function observe(base: URL, step: Step, ids: Record<string, string>): Promise<Observed> {
+  const response = await send(base, step, typeof step.path === 'string' ? step.path : step.path(ids));
   const header = (name: string): string | null => {
     const value = response.headers[name];
     return value === undefined ? null : Array.isArray(value) ? value.join(', ') : value;
@@ -177,18 +270,24 @@ async function observe(base: URL, step: Step): Promise<Observed> {
     // Framework-generated problem text (titles, trace IDs) differs; the client contract is the status.
     const parsed: unknown = JSON.parse(response.body.toString('utf8'));
     body = { problemStatus: typeof parsed === 'object' && parsed !== null && 'status' in parsed ? parsed.status : undefined };
-  } else if (mediaType?.endsWith('json') === true) body = JSON.parse(response.body.toString('utf8'));
-  else body = { base64: response.body.toString('base64') };
+  } else if (mediaType?.endsWith('json') === true) {
+    const parsed: unknown = JSON.parse(response.body.toString('utf8'));
+    if (step.capture !== undefined && typeof parsed === 'object' && parsed !== null && 'id' in parsed && typeof parsed.id === 'string')
+      ids[step.capture] = parsed.id;
+    body = step.generatedIds === true ? withoutGeneratedIds(parsed) : parsed;
+  } else body = { base64: response.body.toString('base64') };
 
   return { status: response.status, mediaType, headers: Object.fromEntries(comparedHeaders.map((name) => [name, header(name)])), body };
 }
 
 async function compareBehavior(dotnet: URL, node: URL): Promise<string[]> {
   const problems: string[] = [];
+  const dotnetIds: Record<string, string> = {};
+  const nodeIds: Record<string, string> = {};
   for (const step of scenario) {
-    const [fromDotnet, fromNode] = await Promise.all([observe(dotnet, step), observe(node, step)]);
+    const [fromDotnet, fromNode] = await Promise.all([observe(dotnet, step, dotnetIds), observe(node, step, nodeIds)]);
     if (!isDeepStrictEqual(fromDotnet, fromNode))
-      problems.push(`${step.name} (${step.method} ${step.path}):\n    .NET: ${json(fromDotnet)}\n    Node: ${json(fromNode)}`);
+      problems.push(`${step.name} (${step.method} ${pathTemplate(step)}):\n    .NET: ${json(fromDotnet)}\n    Node: ${json(fromNode)}`);
   }
   console.log(`Behavior: ${scenario.length} requests, ${scenario.length - problems.length} identical`);
   return problems;
