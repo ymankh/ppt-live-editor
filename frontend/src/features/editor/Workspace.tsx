@@ -12,7 +12,7 @@ import { SlidePanel } from "@/features/slides/SlidePanel";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { insertImage } from "@/features/images/ingress";
 import { NotesEditor } from '@/features/text/NotesEditor';
-import { toast } from "sonner";
+import { notifyError } from "@/features/errors/userMessage";
 import { strings } from "@/strings";
 import { isNumber, isObject } from "@/lib/typeGuards";
 
@@ -47,11 +47,7 @@ export function Workspace({
         if (!event.dataTransfer.files.length) return;
         event.preventDefault();
         for (const file of Array.from(event.dataTransfer.files))
-          void insertImage(file).catch((error:unknown) =>
-            toast.error(
-              t(error instanceof Error ? error.message : strings.common.imageImportFailed),
-            ),
-          );
+          void insertImage(file).catch((error:unknown) => notifyError(error, strings.errors.addImage));
       }}
     >
       <ResizablePanelGroup

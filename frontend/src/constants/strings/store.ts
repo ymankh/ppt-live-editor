@@ -10,7 +10,7 @@ export const storeStrings = {
   insert: "Insert ",
   matchElementSize: "Match element size",
   openPresentation: "Open presentation",
-  presentationNotFound: "Presentation not found",
+  presentationNotFound: "This presentation couldn't be found. It may have been deleted.",
   saveFailed: "Save failed",
   saving: "Saving",
   undefined: "undefined",

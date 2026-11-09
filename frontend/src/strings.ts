@@ -6,6 +6,7 @@ import { commonStrings2 } from './constants/strings/common2';
 import { defaultsStrings } from './constants/strings/defaults';
 import { editorStrings1 } from './constants/strings/editor1';
 import { editorStrings2 } from './constants/strings/editor2';
+import { errorStrings } from './constants/strings/errors';
 import { exportStrings } from './constants/strings/export';
 import { geometryStrings } from './constants/strings/geometry';
 import { homeStrings } from './constants/strings/home';
@@ -31,6 +32,7 @@ export const strings = {
   common: { ...commonStrings1, ...commonStrings2 },
   defaults: defaultsStrings,
   editor: { ...editorStrings1, ...editorStrings2 },
+  errors: errorStrings,
   export: exportStrings,
   geometry: geometryStrings,
   home: homeStrings,

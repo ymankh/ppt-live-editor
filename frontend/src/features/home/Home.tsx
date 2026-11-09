@@ -22,6 +22,7 @@ import {
 } from "@/features/persistence/repository";
 import { SlideRenderer } from "@/features/renderer/SlideRenderer";
 import { importProject } from "@/features/export/export";
+import { notifyError } from "@/features/errors/userMessage";
 import { toast } from "sonner";
 import { applyTheme } from '@/features/theme/applyTheme';
 import { textDocument } from '@/types/model';
@@ -51,9 +52,7 @@ export function Home() {
   const [deleteTarget, setDeleteTarget] = useState<ProjectSummary | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
-    void listProjects().then(setProjects).catch((error: unknown) =>
-      toast.error(translate(error instanceof Error ? error.message : strings.persistence.libraryLoadFailed, useLocale.getState().locale)),
-    );
+    void listProjects().then(setProjects).catch((error: unknown) => notifyError(error, strings.errors.loadLibrary));
   }, []);
   const create = async (blank: boolean, template=0) => {
     try {
@@ -81,7 +80,7 @@ export function Home() {
       await useEditor.getState().loadProject(doc.id);
       void navigate(`${strings.common.edit}${doc.id}`);
     } catch (error) {
-      toast.error(translate(error instanceof Error ? error.message : strings.persistence.createFailed, useLocale.getState().locale));
+      notifyError(error, strings.errors.createPresentation);
     }
   };
   const upload = async (file: File) => {
@@ -92,7 +91,7 @@ export function Home() {
       void navigate(`${strings.common.edit}${doc.id}`);
       toast.success(translate(strings.home.presentationImported, useLocale.getState().locale));
     } catch (error) {
-      toast.error(translate(error instanceof Error ? error.message : strings.home.importFailed, useLocale.getState().locale));
+      notifyError(error, strings.errors.importPresentation);
     }
   };
   const rename = async () => {
@@ -106,7 +105,7 @@ export function Home() {
       await useEditor.getState().saveProject();
       setProjects(await listProjects());
     } catch (error) {
-      toast.error(translate(error instanceof Error ? error.message : strings.home.renameFailed, useLocale.getState().locale));
+      notifyError(error, strings.errors.renamePresentation);
     }
   };
   const remove = async () => {
@@ -117,7 +116,7 @@ export function Home() {
       await deleteProject(project.id);
       setProjects((p) => p.filter((x) => x.id !== project.id));
     } catch (error) {
-      toast.error(translate(error instanceof Error ? error.message : strings.persistence.deleteFailed, useLocale.getState().locale));
+      notifyError(error, strings.errors.deletePresentation);
     }
   };
   return (
@@ -277,7 +276,7 @@ export function Home() {
                       void useEditor.getState().loadProject(project.id).then(async()=>{
                         const doc=structuredClone(useEditor.getState().document);doc.id=crypto.randomUUID();doc.title+=strings.home.copy;doc.createdAt=new Date().toISOString();
                         useEditor.getState().setDocument(doc);await useEditor.getState().saveProject();setProjects(await listProjects());
-                      }).catch((error:unknown)=>toast.error(translate(error instanceof Error?error.message:strings.home.duplicateFailed, useLocale.getState().locale)));
+                      }).catch((error:unknown)=>notifyError(error, strings.errors.duplicatePresentation));
                     }}><Copy size={14}/></button>
                     <button
                       aria-label={`${t(strings.home.delete)}${project.title}`}

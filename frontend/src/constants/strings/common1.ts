@@ -148,7 +148,6 @@ export const commonStrings1 = {
   id: "id",
   image: "image",
   image_1aa4cb0b: "Image",
-  imageImportFailed: "Image import failed",
   image_eb7ede85: "image/",
   imagePng: "image/png",
   inPlace: "in-place",

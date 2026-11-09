@@ -1,5 +1,9 @@
 # Changelog
 
+## Friendly error messages
+- Failed API calls throw `ApiError`, and `userMessage` turns any failure into a short, translated message: no connection, a server problem, a file that is too large, or otherwise what failed. Messages the app defines, such as font upload rules, are kept; status codes, URLs and server wording are never shown. Technical details stay in the browser console.
+- The library, editor, font gate and font settings, image drops and pastes, export, presenter view, account avatar and crash screen use these messages, with Arabic translations. The old terse fallbacks ("Rename failed", "Import failed", …) were retired.
+
 ## Centralized runtime strings
 - Expanded `src/strings.ts` into the single const-object API for all application runtime strings, backed by feature-grouped modules under `src/constants/strings/`.
 - Migrated UI/accessibility copy, errors, history labels, default content, discriminants, CSS classes, routes, storage keys, colors, and template fragments; import/type/directive syntax remains literal.

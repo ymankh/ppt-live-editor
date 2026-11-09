@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { insertImage, pasteText } from "./ingress";
 import { useEditor } from "@/store/editor";
 import { presentationSchema } from "@/features/export/schema";
+import { notifyError } from "@/features/errors/userMessage";
+import { translate, useLocale } from "@/features/localization/locale";
 import { strings } from "@/strings";
 import { isObject } from "@/lib/typeGuards";
 
@@ -21,11 +23,7 @@ export function useImageIngress() {
       );
       if (image) {
         event.preventDefault();
-        void insertImage(image).catch((error:unknown) =>
-          toast.error(
-            error instanceof Error ? error.message : strings.common.imageImportFailed,
-          ),
-        );
+        void insertImage(image).catch((error: unknown) => notifyError(error, strings.errors.addImage));
         return;
       }
       const text = event.clipboardData?.getData(strings.images.textPlain);
@@ -61,7 +59,7 @@ export function useImageIngress() {
           });
           state.select(elements.map((e) => e.id));
         } catch {
-          toast.error(strings.images.unableToPasteTheseElements);
+          toast.error(translate(strings.images.unableToPasteTheseElements, useLocale.getState().locale));
         }
       } else if (text) pasteText(text);
       else useEditor.getState().pasteClipboard();

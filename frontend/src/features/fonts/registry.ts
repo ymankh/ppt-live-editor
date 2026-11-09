@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { request } from '@/lib/api';
+import { userMessage } from '@/features/errors/userMessage';
+import { strings } from '@/strings';
 
 export interface FontRecord { id: string; family: string }
 interface FontRegistry {
   fonts: FontRecord[];
   ready: boolean;
+  /** A friendly, translatable explanation of the last failure. */
   error: string | null;
   initialize: () => Promise<void>;
   uploadFont: (file: File, family: string) => Promise<void>;
@@ -58,7 +61,7 @@ export const useFontRegistry = create<FontRegistry>((set, get) => ({
       for (const face of faces) document.fonts.add(face);
       set({ fonts, ready: true, error: null });
     })().catch((error: unknown) => {
-      set({ ready: false, error: errorMessage(error) });
+      set({ ready: false, error: userMessage(error, strings.errors.loadFontLibrary) });
       throw error;
     }).finally(() => { initialization = undefined; });
     return initialization;
@@ -90,7 +93,7 @@ export const useFontRegistry = create<FontRegistry>((set, get) => ({
       document.fonts.add(face);
       set(state => ({ fonts: [...state.fonts, font], error: null }));
     } catch (error) {
-      set({ error: errorMessage(error) });
+      set({ error: userMessage(error, strings.errors.uploadFont) });
       throw error;
     }
   },

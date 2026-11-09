@@ -11,6 +11,7 @@ import { animateStep, animationGroups, transitionFrames } from './animations';
 import { channelName, playerMessageSchema } from './channel';
 import './player.css';
 import { strings } from "@/strings";
+import { notifyError } from '@/features/errors/userMessage';
 import { translate, useLocale, useTranslation } from '@/features/localization/locale';
 
 
@@ -158,7 +159,7 @@ export function Player() {
     const popup = window.open(strings.common.empty, `${strings.presenter.presenter_f990a125}${presentation.id}`, strings.presenter.popupWidth1280Height800);
     if (!popup) { toast.error(translate(strings.presenter.allowPopUpsToOpenPresenterView, useLocale.getState().locale)); return; }
     try { await saveProject(); popup.location.href = `${strings.presenter.presenter}${presentation.id}`; }
-    catch (error) { popup.close(); toast.error(translate(error instanceof Error ? error.message : String(error), useLocale.getState().locale)); }
+    catch (error) { popup.close(); notifyError(error, strings.errors.openPresenterView); }
   };
   if (!slide) return <div className={strings.presenter.playerEmpty}>{t(strings.presenter.allSlidesAreSkipped)}<button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }}>{t(strings.presenter.backToEditor)}</button></div>;
   return <div className={strings.presenter.playerRoot} ref={stage}>
