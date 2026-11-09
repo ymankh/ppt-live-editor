@@ -12,14 +12,16 @@ import { strings } from "@/strings";
 export function ThemeEditor() {
   const t = useTranslation();
   const current = useEditor((s) => s.document.theme);
-  const [draft, setDraft] = useState(() => structuredClone(current));
+  // A built-in theme's name is shown in the interface language, so a custom theme starts from that name.
+  const startingDraft = () => ({ ...structuredClone(current), name: t(current.name) });
+  const [draft, setDraft] = useState(startingDraft);
   const [editing, setEditing] = useState(false);
   if (!editing)
     return (
       <Button
         variant={strings.common.outline}
         onClick={() => {
-          setDraft(structuredClone(current));
+          setDraft(startingDraft());
           setEditing(true);
         }}
       >{t(strings.theme.createACustomTheme)}</Button>

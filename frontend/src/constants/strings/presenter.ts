@@ -1,7 +1,6 @@
 export const presenterStrings = {
   build: " · Build ",
   enter: " · Enter",
-  link: " link",
   value1000: "-100% 0",
   value120px0: "-120px 0",
   value12deg: "-12deg",
@@ -96,7 +95,6 @@ export const presenterStrings = {
   noPlayableSlides: "No playable slides",
   noopenerNoreferrer: "noopener,noreferrer",
   off: "Off",
-  open: "Open ",
   openAudience: "Open audience",
   openPresenterView: "Open presenter view",
   pagedown: "pagedown",
@@ -165,4 +163,6 @@ export const presenterStrings = {
   waitingForAudience: "Waiting for audience",
   white: "white",
   youVeReachedTheFinalSlide: "You’ve reached the final slide.",
+  // interpolate() fills {name} after translation.
+  openLink: "Open {name} link",
 } as const;

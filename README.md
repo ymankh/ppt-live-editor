@@ -124,15 +124,17 @@ The interface reads only the standard shadcn/ui CSS variables (`--background`, `
 npx shadcn@latest add https://tweakcn.com/r/themes/<theme>.json
 ```
 
-or paste the `:root` and `.dark` blocks from tweakcn's code panel over the existing ones. Load any web font the theme names in `--font-sans` (for example with an `@fontsource` package); keep `'Folio Arabic'` in that list to keep the bundled Arabic font for Arabic interface text.
+or paste the `:root` and `.dark` blocks from tweakcn's code panel over the existing ones. Load any web font the theme names in `--font-sans` (for example with an `@fontsource` package); keep `'IBM Plex Sans Arabic'` after it in that list so Arabic interface text keeps the bundled Arabic font.
 
 The light/dark choice (moon/sun button in the editor) applies to every page and is stored as `folio-theme`; until you choose, the system preference is used. The slideshow stage always uses the theme's dark variables. Slide artwork, template and theme previews, presentation color swatches, the laser pointer and black/white audience screens keep their presentation colors.
 
 ## Language and Arabic editing
 
-Open **Settings** (the gear icon in the editor or project library), then select **English** or **العربية**. The interface switches immediately and remembers the choice in browser-local `folio-locale` storage. Arabic uses an RTL interface; presentation artwork, coordinates, numeric dimensions, and existing document content are not mirrored or translated.
+Open **Settings** (the gear icon in the editor or project library), then select **English** or **العربية**. The interface switches immediately and remembers the choice in browser-local `folio-locale` storage. Arabic uses an RTL interface with Western digits. Existing presentation content, artwork, coordinates, and numeric dimensions are never mirrored or translated, but content the app generates follows the interface language: in Arabic, new presentations, the starter templates, slide layouts, and inserted text boxes, tables, and charts are written in Arabic and laid out right to left.
 
-Text boxes, shape/table text, titles, and speaker notes accept Arabic and mixed Arabic/English content. Paragraph direction follows the first strong character independently of interface language. A bundled, SIL-OFL-licensed Amiri font provides Arabic glyphs without an external font request.
+Text boxes, shape/table text, titles, and speaker notes accept Arabic and mixed Arabic/English content. Paragraph direction follows the first strong character independently of interface language.
+
+Arabic text, in the interface and on slides whose font has no Arabic letters, uses the bundled, SIL-OFL-licensed [IBM Plex Sans Arabic](https://github.com/IBM/plex) (no external font request): a UI typeface designed to sit beside Latin grotesques like Geist, and the typeface of the Saudi DGA national design system. Amiri, a classical Naskh face, stays selectable as the `Folio Arabic` slide font. Following common Arabic interface practice, the Arabic interface uses no letter-spacing (it pulls joined letters apart), sets its smallest labels a step larger than the English interface, shows keyboard shortcuts left to right, and mirrors directional icons (back/next, undo/redo) but not media or alignment icons.
 
 ## Font library
 

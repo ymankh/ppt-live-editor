@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -97,19 +97,14 @@ function FontResolutionSession({ children, onBack }: { children: ReactNode; onBa
                 <option value="">{t('Choose an available font')}</option>
                 {families.filter(candidate => fontFamilyKey(candidate) !== fontFamilyKey(family)).map(candidate => <option key={candidate} value={candidate}>{candidate}</option>)}
               </select>
-              <label className="grid gap-2 text-sm">{t('Or upload this font (.ttf, .otf, .woff, .woff2)')}
-                <input type="file" accept=".ttf,.otf,.woff,.woff2" aria-label={`${t('Upload font')}: ${family}`} onChange={event => {
-                  const file = event.target.files?.[0];
-                  event.target.value = '';
-                  if (!file) return;
-                  setError(null);
-                  setUploading(family);
-                  void useFontRegistry.getState().uploadFont(file, family).catch((cause: unknown) => {
-                    console.error(cause);
-                    setError(userMessage(cause, strings.errors.uploadFont));
-                  }).finally(() => setUploading(null));
-                }} />
-              </label>
+              <FontFileButton description={t('Or upload this font (.ttf, .otf, .woff, .woff2)')} inputLabel={`${t('Upload font')}: ${family}`} onFile={file => {
+                setError(null);
+                setUploading(family);
+                void useFontRegistry.getState().uploadFont(file, family).catch((cause: unknown) => {
+                  console.error(cause);
+                  setError(userMessage(cause, strings.errors.uploadFont));
+                }).finally(() => setUploading(null));
+              }} />
             </>}
           </fieldset>;
         })}
@@ -122,4 +117,20 @@ function FontResolutionSession({ children, onBack }: { children: ReactNode; onBa
       </DialogFooter>
     </DialogContent>
   </Dialog>;
+}
+
+/** The browser's own file button follows the browser language, so the picker is a translated button. */
+function FontFileButton({ description, inputLabel, onFile }: { description: string; inputLabel: string; onFile: (file: File) => void }) {
+  const t = useTranslation();
+  const input = useRef<HTMLInputElement>(null);
+  const descriptionId = useId();
+  return <div className="grid justify-items-start gap-2 text-sm">
+    <span id={descriptionId}>{description}</span>
+    <Button type="button" variant="outline" aria-describedby={descriptionId} onClick={() => input.current?.click()}>{t(strings.inputs.chooseFile)}</Button>
+    <input ref={input} type="file" accept=".ttf,.otf,.woff,.woff2" hidden aria-label={inputLabel} onChange={event => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (file) onFile(file);
+    }} />
+  </div>;
 }

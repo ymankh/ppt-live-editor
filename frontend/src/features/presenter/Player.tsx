@@ -13,6 +13,7 @@ import './player.css';
 import { strings } from "@/strings";
 import { notifyError } from '@/features/errors/userMessage';
 import { translate, useLocale, useTranslation } from '@/features/localization/locale';
+import { interpolate } from '@/features/localization/format';
 
 
 type Stroke = { slideId: string; points: Point[] };
@@ -168,7 +169,7 @@ export function Player() {
     <div className={strings.presenter.playerFit} style={{ width: presentation.slideSize.width * scale, height: presentation.slideSize.height * scale }}>
       <div className={strings.presenter.playerLogical} role={strings.presenter.region} aria-label={t(strings.presenter.audienceSlide)} style={{width:presentation.slideSize.width,height:presentation.slideSize.height,transform:`${strings.common.scale}${scale}${strings.common.symbol_ba5ec51d}`}} onPointerUp={event=>{if(tool===strings.presenter.pointer&&!(event.target instanceof Element&&event.target.closest(strings.presenter.aButton)))next()}}>
         <div ref={content} key={slide.id}><SlideRenderer slide={slide} theme={presentation.theme} logicalSize={presentation.slideSize} width={presentation.slideSize.width} />
-          {slide.elements.filter(element => !element.hidden && element.link).map(element => <button key={element.id} data-link-element={element.id} className={strings.presenter.playerLink} aria-label={`${t(strings.presenter.open)}${element.name}${t(strings.presenter.link)}`}
+          {slide.elements.filter(element => !element.hidden && element.link).map(element => <button key={element.id} data-link-element={element.id} className={strings.presenter.playerLink} aria-label={interpolate(t(strings.presenter.openLink), { name: element.name })}
             style={{ left: element.x, top: element.y, width: element.width, height: element.height, transform: `${strings.common.rotate}${element.rotation}${strings.common.deg}` }}
             onClick={event => { event.stopPropagation(); const link = element.link; if (link?.kind === strings.common.slide) { const target = slides.findIndex(item => item.id === link.slideId); if (target >= 0) jump(target); }
               else if (link?.kind === strings.common.url && /^(https?:|mailto:|tel:)/i.test(link.href)) window.open(link.href, strings.common.blank, strings.presenter.noopenerNoreferrer); }} />)}
@@ -190,7 +191,7 @@ export function Player() {
     </div></div>}
     <nav className={strings.presenter.playerControls} aria-label={t(strings.presenter.presentationControls)}>
       <button onClick={() => { void navigate(`${strings.common.edit}${presentation.id}`); }} title={t(strings.presenter.exitPresentationEsc)}><X size={18} /></button>
-      <button onClick={previous} title={t(strings.presenter.previousSlide)}><ArrowLeft size={18} /></button><span>{index + 1}{strings.common.symbol}{slides.length}</span><button onClick={next} title={t(strings.presenter.nextSlide)}><ArrowRight size={18} /></button>
+      <button onClick={previous} title={t(strings.presenter.previousSlide)}><ArrowLeft size={18} className={strings.ui.rtlMirror} /></button><span>{index + 1}{strings.common.symbol}{slides.length}</span><button onClick={next} title={t(strings.presenter.nextSlide)}><ArrowRight size={18} className={strings.ui.rtlMirror} /></button>
       <i /><button onClick={() => setOverview(value => !value)} title={t(strings.presenter.slideOverviewG)}><Grid2X2 size={18} /></button>
       <button onClick={() => setTool(value => value === strings.presenter.laser ? strings.presenter.pointer : strings.presenter.laser)} className={tool === strings.presenter.laser ? strings.presenter.isActive : strings.common.empty} title={t(strings.presenter.laserPointerHoldL)}><MousePointer2 size={18} /></button>
       <button onClick={() => setTool(value => value === strings.presenter.pen ? strings.presenter.pointer : strings.presenter.pen)} className={tool === strings.presenter.pen ? strings.presenter.isActive : strings.common.empty} title={t(strings.presenter.penHoldPClearInkE)}><PenLine size={18} /></button>

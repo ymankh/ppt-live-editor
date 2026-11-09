@@ -40,10 +40,12 @@ import {
 import "./home.css";
 import { strings } from "@/strings";
 import { translate, useLocale, useTranslation } from "@/features/localization/locale";
+import { formatDate, interpolate } from "@/features/localization/format";
 import { SettingsButton } from '@/features/localization/SettingsDialog';
 
 export function Home() {
   const t = useTranslation();
+  const interfaceLocale = useLocale((state) => state.locale);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [search, setSearch] = useState<string>(strings.common.empty);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -56,10 +58,12 @@ export function Home() {
   }, []);
   const create = async (blank: boolean, template=0) => {
     try {
-      const doc = createPresentation();
+      // Generated titles and slide copy use the interface language at creation time.
+      const locale = useLocale.getState().locale;
+      const doc = createPresentation(locale);
       doc.id = crypto.randomUUID();
       if (blank) {
-        doc.title = strings.home.untitledPresentation;
+        doc.title = translate(strings.home.untitledPresentation, locale);
         doc.slides = [
           {
             id: crypto.randomUUID(),
@@ -72,9 +76,12 @@ export function Home() {
       }
       if(!blank&&template>0){
         const theme=themes[template];if(theme)applyTheme(doc,theme);
-        doc.title=template===1?strings.home.aBoldBeginning:strings.home.theBiggerPicture;
+        doc.title=translate(template===1?strings.home.aBoldBeginning:strings.home.theBiggerPicture, locale);
         const heading=doc.slides[0]?.elements.find(e=>e.type===strings.common.text&&e.fontSize>=100);
-        if(heading?.type===strings.common.text)heading.content=textDocument(template===1?strings.home.ideasThatMoveUs:strings.home.seeThingsDifferently);
+        if(heading?.type===strings.common.text){
+          const copy=translate(template===1?strings.home.ideasThatMoveUs:strings.home.seeThingsDifferently, locale);
+          heading.content=textDocument(copy);heading.name=copy.split(strings.common.newline)[0]??heading.name;
+        }
       }
       await saveProject(doc);
       await useEditor.getState().loadProject(doc.id);
@@ -186,10 +193,10 @@ export function Home() {
                   className={strings.home.templatePreview}
                   style={{ background: templateOption.color }}
                 >
-                  <span>{templateOption.tag}</span>
-                  <b>{templateOption.title}</b>
+                  <span>{t(templateOption.tag)}</span>
+                  <b>{t(templateOption.title)}</b>
                   <i>
-                    <ArrowRight size={28} />
+                    <ArrowRight size={28} className={strings.ui.rtlMirror} />
                   </i>
                 </div>
                 <h3>{t(templateOption.name)}</h3>
@@ -265,8 +272,7 @@ export function Home() {
                     <div>
                       <h3>{project.title}</h3>
                       <p>
-                        {project.slideCount}{t(strings.home.slidesEdited)}{strings.common.space}
-                        {new Date(project.updatedAt).toLocaleDateString(useLocale.getState().locale)}
+                        {interpolate(t(strings.home.projectSummary), { count: project.slideCount, date: formatDate(project.updatedAt, interfaceLocale) })}
                       </p>
                     </div>
                     <button aria-label={`${t(strings.home.rename)}${project.title}`} onClick={()=>{
@@ -274,7 +280,7 @@ export function Home() {
                     }}><Pencil size={14}/></button>
                     <button aria-label={`${t(strings.home.duplicate)}${project.title}`} onClick={()=>{
                       void useEditor.getState().loadProject(project.id).then(async()=>{
-                        const doc=structuredClone(useEditor.getState().document);doc.id=crypto.randomUUID();doc.title+=strings.home.copy;doc.createdAt=new Date().toISOString();
+                        const doc=structuredClone(useEditor.getState().document);doc.id=crypto.randomUUID();doc.title+=translate(strings.home.copy, useLocale.getState().locale);doc.createdAt=new Date().toISOString();
                         useEditor.getState().setDocument(doc);await useEditor.getState().saveProject();setProjects(await listProjects());
                       }).catch((error:unknown)=>notifyError(error, strings.errors.duplicatePresentation));
                     }}><Copy size={14}/></button>

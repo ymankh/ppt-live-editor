@@ -186,6 +186,8 @@ export const uiStrings1 = {
   resizableHandle: "resizable-handle",
   resizablePanel: "resizable-panel",
   resizablePanelGroup: "resizable-panel-group",
+  /** Directional icons (back/next, undo/redo, submenu chevrons) point along the reading direction. */
+  rtlMirror: "rtl:-scale-x-100",
   scrollMy1P1: "scroll-my-1 p-1",
   searchForACommandToRun: "Search for a command to run...",
   selectContent: "select-content",

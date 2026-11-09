@@ -45,7 +45,7 @@
     --sidebar-accent-foreground: oklch(0.633 0.151 38.6);
     --sidebar-border: oklch(0.925 0.006 84.6);
     --sidebar-ring: oklch(0.693 0.158 35);
-    --font-sans: 'Geist Variable', 'Folio Arabic', sans-serif;
+    --font-sans: 'Geist Variable', 'IBM Plex Sans Arabic', sans-serif;
     --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     --shadow-2xs: 0 1px 0 0 oklch(0.3 0.02 60 / 0.05);
@@ -181,7 +181,7 @@
 /* UI direction follows the locale; presentation coordinates never do. */
 .canvas-workspace,
 .renderer-slide-viewport,
-.template-preview,
+.player-fit,
 .project-preview,
 .property-layout-preview,
 .layout-preview,
@@ -220,6 +220,42 @@ html[dir="rtl"] .properties-panel { border-left: 0; border-right: 1px solid var(
 html[dir="rtl"] .slide-list { padding-right: 7px; padding-left: 13px; }
 html[dir="rtl"] .slide-drag-handle { left: auto; right: -4px; }
 html[dir="rtl"] .layout-option { text-align: right; }
+
+/*
+ * Arabic interface typography (slides keep their own typography). Based on the Saudi DGA "Platforms Code" and
+ * UAE design systems and common Arabic UI practice:
+ * - no letter-spacing: tracking pulls Arabic's joined letters apart (Latin-only labels such as the brand keep it);
+ * - Arabic reads about a size smaller than Latin at the same pixel size, so the smallest labels grow a step;
+ * - multi-line Arabic text needs a taller line than Latin.
+ */
+html:lang(ar) .workspace-label { font-size: 11px; letter-spacing: 0; }
+html:lang(ar) .eyebrow { font-size: 12px; letter-spacing: 0; }
+html:lang(ar) .home-intro h1 { letter-spacing: 0; line-height: 1.4; }
+html:lang(ar) .home-intro p { font-size: 14px; line-height: 1.7; }
+html:lang(ar) .section-heading h2 { font-size: 16px; }
+html:lang(ar) .section-heading > span { font-size: 11px; letter-spacing: 0; }
+html:lang(ar) .starter-grid h3,
+html:lang(ar) .blank-project b,
+html:lang(ar) .project-meta h3 { font-size: 13px; }
+html:lang(ar) .starter-grid p,
+html:lang(ar) .blank-project p { font-size: 11.5px; line-height: 1.6; }
+html:lang(ar) .project-meta p { font-size: 11px; }
+html:lang(ar) .home-page > footer { font-size: 11.5px; }
+html:lang(ar) .home-page > footer span { font-size: 10px; letter-spacing: 0; }
+html:lang(ar) .presenter-section-label { font-size: 12px; letter-spacing: 0; }
+html:lang(ar) .panel-kicker { font-size: 12px; letter-spacing: 0; }
+html:lang(ar) .title-line input { letter-spacing: 0; }
+html:lang(ar) :is(.application-menubar [data-slot=menubar-trigger], .secondary-action, .present-action, .notes-heading button,
+  .speaker-notes textarea, .notes-editor, .theme-grid p, .search-projects input, .import-project, .add-slide-button, .layout-option,
+  .toolbar-error, .property-field > span, .property-toggle, .property-layout span, .slide-size-card strong, .slide-size-card span,
+  .properties-empty span, .property-note, .layer-row [data-slot=input], .table-row-detail summary,
+  .property-section > [data-slot=button], .data-dialog-tools [data-slot=button]) { font-size: 12px; }
+html:lang(ar) :is(.notes-heading span, .status-bar) { font-size: 11px; }
+
+/* Keyboard shortcuts are typed left to right in every language (⌘+S, not S+⌘); in RTL menus they sit at the end. */
+kbd,
+[data-slot$="-shortcut"] { direction: ltr; unicode-bidi: isolate; }
+html[dir="rtl"] [data-slot$="-shortcut"] { margin-left: 0; margin-right: auto; }
 
 .canvas-dimensions,
 .canvas-selection-size,

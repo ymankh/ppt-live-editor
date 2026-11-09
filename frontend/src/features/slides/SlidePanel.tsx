@@ -1,4 +1,4 @@
-import { useTranslation } from '@/features/localization/locale';
+import { useLocale, useTranslation, type Locale } from '@/features/localization/locale';
 import { memo, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { nanoid } from 'nanoid';
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type Modifier } from '@dnd-kit/core';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from '@/components/ui/context-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SlideRenderer } from '@/features/renderer/SlideRenderer';
+import { useSortableAccessibility } from '@/components/common/useSortableAccessibility';
 import { createSlide, layouts } from '@/lib/defaults';
 import { useEditor } from '@/store/editor';
 import type { Slide, Theme } from '@/types/model';
@@ -16,7 +17,13 @@ import '../editor/panels.css';
 import { strings } from "@/strings";
 
 
-const layoutPreviews = layouts.map(layout => ({ ...layout, slide: createSlide(layout.id) }));
+/** Layout previews carry generated placeholder copy, so they are built once per interface language. */
+const layoutPreviewCache = new Map<Locale, { id: string; name: string; slide: Slide }[]>();
+function layoutPreviews(locale: Locale) {
+  let previews = layoutPreviewCache.get(locale);
+  if (!previews) layoutPreviewCache.set(locale, previews = layouts.map(layout => ({ ...layout, slide: createSlide(layout.id, locale) })));
+  return previews;
+}
 const slideDragModifiers: Modifier[] = [({ transform }) => ({ ...transform, x: 0 })];
 
 const SlideThumbnail = memo(function SlideThumbnail({ slide, theme }: { slide: Slide; theme: Theme }) {
@@ -53,7 +60,7 @@ function SortableSlide({ slide, theme, index, selected, onSelect, onDuplicate, o
   onDuplicate: () => void; onDelete: () => void; canDelete: boolean;
 }) {
   const t = useTranslation();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: slide.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: slide.id, attributes: { roleDescription: t(strings.editor.sortableRole) } });
   return <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? .45 : 1 }} className={`${strings.slides.slideItem}${selected ? strings.common.isSelected : strings.common.empty}`}>
     <span className={strings.slides.slideNumber}>{index + 1}</span>
     <ContextMenu><ContextMenuTrigger render={<div />} className={strings.slides.slideContext}>
@@ -61,7 +68,7 @@ function SortableSlide({ slide, theme, index, selected, onSelect, onDuplicate, o
         <SlideThumbnail slide={slide} theme={theme} />
       </button>
     </ContextMenuTrigger>
-      <ContextMenuContent><ContextMenuItem onClick={onDuplicate}><Copy size={14} />{t(strings.slides.duplicateSlide)}{selected ? t(strings.common.s) : t(strings.common.empty)}</ContextMenuItem><ContextMenuItem variant={strings.common.destructive} disabled={!canDelete} onClick={onDelete}><Trash2 size={14} />{t(strings.slides.deleteSlide)}{selected ? t(strings.common.s) : t(strings.common.empty)}</ContextMenuItem></ContextMenuContent>
+      <ContextMenuContent><ContextMenuItem onClick={onDuplicate}><Copy size={14} />{t(selected ? strings.slides.duplicateSlides : strings.slides.duplicateSlide)}</ContextMenuItem><ContextMenuItem variant={strings.common.destructive} disabled={!canDelete} onClick={onDelete}><Trash2 size={14} />{t(selected ? strings.slides.deleteSlides : strings.slides.deleteSlide)}</ContextMenuItem></ContextMenuContent>
     </ContextMenu>
     <button type={strings.common.button} className={strings.slides.slideDragHandle} aria-label={`${t(strings.slides.reorderSlide)}${index + 1}`} {...attributes} {...listeners}><GripVertical size={13} /></button>
   </div>;
@@ -69,12 +76,14 @@ function SortableSlide({ slide, theme, index, selected, onSelect, onDuplicate, o
 
 export function SlidePanel() {
   const t = useTranslation();
+  const locale = useLocale(state => state.locale);
   const editor = useEditor();
   const [slideSelection, setSlideSelection] = useState<{ ids: string[]; activeId: string }>({ ids: [], activeId: editor.activeSlideId });
   const setSelectedIds = (ids: string[], activeId = useEditor.getState().activeSlideId) => setSlideSelection({ ids, activeId });
   const [layoutOpen, setLayoutOpen] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const slides = editor.document.slides;
+  const accessibility = useSortableAccessibility(slides.map(slide => slide.id), id => `${t(strings.common.slide_ff1e0604)}${slides.findIndex(slide => slide.id === id) + 1}`);
   const currentIds = [...new Set([editor.activeSlideId, ...(slideSelection.activeId === editor.activeSlideId ? slideSelection.ids : [])])].filter(id => slides.some(slide => slide.id === id));
   const selectSlide = (event: MouseEvent, id: string) => {
     if (event.shiftKey) {
@@ -142,12 +151,12 @@ export function SlidePanel() {
   };
   return <aside className={strings.slides.slidePanel} aria-label={t(strings.common.slides)}>
     <div className={strings.common.panelHeader}><h2>{t(strings.slides.slides)}<span className={strings.slides.slideCount}>{slides.length}</span></h2><Button variant={strings.common.ghost} size={strings.common.iconSm} title={t(strings.slides.chooseASlideLayout)} aria-label={t(strings.slides.chooseSlideLayout)} onClick={() => setLayoutOpen(true)}><Plus size={17} /></Button></div>
-    <div className={strings.slides.slideList}><DndContext sensors={sensors} modifiers={slideDragModifiers} collisionDetection={closestCenter} onDragEnd={reorder}><SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
+    <div className={strings.slides.slideList}><DndContext accessibility={accessibility} sensors={sensors} modifiers={slideDragModifiers} collisionDetection={closestCenter} onDragEnd={reorder}><SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
       {slides.map((slide, index) => <SortableSlide key={slide.id} slide={slide} theme={editor.document.theme} index={index} selected={currentIds.includes(slide.id)} onSelect={event => selectSlide(event, slide.id)} onDuplicate={() => duplicate(slide.id)} onDelete={() => remove(slide.id)} canDelete={(currentIds.includes(slide.id) ? currentIds.length : 1) < slides.length} />)}
     </SortableContext></DndContext></div>
     <div className={strings.slides.slidePanelFooter}><Button variant={strings.common.outline} className={strings.slides.addSlideButton} onClick={() => { editor.addSlide(); setSelectedIds([]); }}><Plus size={16} />{t(strings.common.addSlide)}</Button><Button variant={strings.common.ghost} size={strings.common.icon} aria-label={t(strings.slides.slideLayouts)} title={t(strings.slides.slideLayouts)} onClick={() => setLayoutOpen(true)}><LayoutTemplate size={17} /></Button></div>
     <Dialog open={layoutOpen} onOpenChange={setLayoutOpen}><DialogContent className={strings.slides.layoutDialog}><DialogHeader><DialogTitle>{t(strings.slides.aFreshCanvas)}</DialogTitle><DialogDescription>{t(strings.slides.chooseALayoutToStartYourNextSlide)}</DialogDescription></DialogHeader>
-      <div className={strings.slides.layoutDialogGrid}>{layoutPreviews.map(layout => <button className={strings.slides.layoutOption} key={layout.id} onClick={() => { editor.addSlide(layout.id); setSelectedIds([]); setLayoutOpen(false); }}><div className={strings.slides.layoutPreview}><div><SlideRenderer slide={layout.slide} theme={editor.document.theme} width={1920} /></div></div><span>{t(layout.name)}</span></button>)}</div>
+      <div className={strings.slides.layoutDialogGrid}>{layoutPreviews(locale).map(layout => <button className={strings.slides.layoutOption} key={layout.id} onClick={() => { editor.addSlide(layout.id); setSelectedIds([]); setLayoutOpen(false); }}><div className={strings.slides.layoutPreview}><div><SlideRenderer slide={layout.slide} theme={editor.document.theme} width={1920} /></div></div><span>{t(layout.name)}</span></button>)}</div>
     </DialogContent></Dialog>
   </aside>;
 }

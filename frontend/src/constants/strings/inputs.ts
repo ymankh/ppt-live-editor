@@ -13,4 +13,14 @@ export const inputsStrings = {
   propertyToggleActive: "property-toggle active",
   use: "Use ",
   wAutoP3: "w-auto p-3",
+  // interpolate() fills {label} after translation.
+  colorPicker: "{label} picker",
+  // Accessible names for the color picker's sliders, which react-colorful only provides in English.
+  colorArea: "Color",
+  hue: "Hue",
+  saturationBrightness: "Saturation {saturation}%, Brightness {brightness}%",
+  colorSlider: "[role=\"slider\"]",
+  // File fields use a translated button instead of the browser's own "Choose File" text.
+  chooseFile: "Choose file",
+  noFileChosen: "No file chosen",
 } as const;

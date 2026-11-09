@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { jsPDF } from 'jspdf';
 import { notesTextOptions, registerNotesFont, visualNotesLines, wrapNotesParagraph } from './pdfNotes';
 
-const font = new Uint8Array(readFileSync(resolve(process.cwd(), 'public/fonts/amiri/Amiri-Regular.ttf')));
+const font = new Uint8Array(readFileSync(resolve(process.cwd(), 'public/fonts/ibm-plex-sans-arabic/IBMPlexSansArabic-Regular.ttf')));
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -23,8 +23,8 @@ describe('Arabic PDF speaker notes', () => {
   it('embeds the real licensed local font and shapes Arabic without reversing Latin or numbers', async () => {
     const pdf = await notesPdf();
     const text = 'مرحبا بالعالم — Project 123 (2026)';
-    expect(fetch).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}fonts/amiri/Amiri-Regular.ttf`);
-    expect(pdf.getFont().fontName).toBe('Folio Arabic');
+    expect(fetch).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}fonts/ibm-plex-sans-arabic/IBMPlexSansArabic-Regular.ttf`);
+    expect(pdf.getFont().fontName).toBe('IBM Plex Sans Arabic');
     expect(pdf.getR2L()).toBe(false);
     expect(pdf.processArabic(text)).not.toBe(text);
     const visual = visualNotesLines(pdf, [text], text).join('');

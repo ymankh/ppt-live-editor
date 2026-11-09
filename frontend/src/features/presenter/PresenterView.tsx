@@ -10,10 +10,12 @@ import type { PlayerMessage } from './channel';
 import './player.css';
 import { strings } from "@/strings";
 import { useLocale, useTranslation } from '@/features/localization/locale';
+import { formatTime } from '@/features/localization/format';
 
 
 export function PresenterView() {
   const t = useTranslation();
+  const locale = useLocale(state => state.locale);
   const { id } = useParams();
   const navigate = useNavigate();
   const presentation = useEditor(state => state.document);
@@ -70,11 +72,11 @@ export function PresenterView() {
     <main className={strings.presenter.presenterMain}>
       <section className={strings.presenter.presenterCurrent}><div className={strings.presenter.presenterSectionLabel}>{t(strings.presenter.cURRENTSLIDE)}<span>{index + 1}{strings.common.symbol}{slides.length}{step ? `${t(strings.presenter.build)}${step}` : strings.common.empty}</span></div>
         <div className={strings.presenter.presenterSlide}>{slide ? <SlidePreview slide={slide} theme={presentation.theme} maxWidth={800} /> : <p>{t(strings.presenter.noPlayableSlides)}</p>}{blackout && <div className={strings.presenter.presenterPreviewBlackout} style={{ background: blackout }}>{t(blackout === strings.presenter.black ? strings.presenter.audienceScreenIsBlack : strings.presenter.audienceScreenIsWhite)}</div>}</div>
-        <div className={strings.presenter.presenterNavigation}><Button variant={strings.common.outline} onClick={() => send(strings.presenter.previous)}><ArrowLeft size={16} />{t(strings.presenter.previous_a57b08a4)}</Button><span>{t(strings.presenter.useToNavigate)}</span><Button onClick={() => send(strings.presenter.next)}>{t(strings.presenter.next_1ff57a29)}<ArrowRight size={16} /></Button></div>
+        <div className={strings.presenter.presenterNavigation}><Button variant={strings.common.outline} onClick={() => send(strings.presenter.previous)}><ArrowLeft size={16} className={strings.ui.rtlMirror} />{t(strings.presenter.previous_a57b08a4)}</Button><span>{t(strings.presenter.useToNavigate)}</span><Button onClick={() => send(strings.presenter.next)}>{t(strings.presenter.next_1ff57a29)}<ArrowRight size={16} className={strings.ui.rtlMirror} /></Button></div>
         <div className={strings.presenter.presenterNotes}><div className={strings.presenter.presenterSectionLabel}>{t(strings.presenter.sPEAKERNOTES)}</div><NotesContent value={slide?.notes||t(strings.presenter.noNotesForThisSlideAddSpeakerNotesIn)}/></div>
       </section>
       <aside className={strings.presenter.presenterSidebar}><section><div className={strings.presenter.presenterSectionLabel}>{t(strings.presenter.uPNEXT)}</div><div className={strings.presenter.presenterNext}>{nextSlide ? <SlidePreview slide={nextSlide} theme={presentation.theme} maxWidth={360} /> : <div className={strings.presenter.presenterFinish}>{t(strings.presenter.youVeReachedTheFinalSlide)}<br /><strong>{t(strings.presenter.makeItMemorable)}</strong></div>}</div></section>
-        <section className={strings.presenter.presenterTime}><div className={strings.presenter.presenterSectionLabel}>{t(strings.presenter.eLAPSEDTIME)}<span>{new Date(now).toLocaleTimeString(useLocale.getState().locale, { hour: strings.presenter.value2Digit, minute: strings.presenter.value2Digit })}</span></div><strong>{timerText}</strong><div>
+        <section className={strings.presenter.presenterTime}><div className={strings.presenter.presenterSectionLabel}>{t(strings.presenter.eLAPSEDTIME)}<span>{formatTime(now, locale, { hour: strings.presenter.value2Digit, minute: strings.presenter.value2Digit })}</span></div><strong>{timerText}</strong><div>
           <Button variant={strings.common.outline} size={strings.common.sm} onClick={() => { if (pausedAt) { setPausedDuration(value => value + Date.now() - pausedAt); setPausedAt(null); } else setPausedAt(Date.now()); }}><Pause size={14} />{t(pausedAt ? strings.presenter.resume_d640c742 : strings.presenter.pause)}</Button>
           <Button variant={strings.common.ghost} size={strings.common.sm} onClick={() => { const start = Date.now(); setStartedAt(start); setPausedAt(null); setPausedDuration(0); send(strings.presenter.restart); }}><RotateCcw size={14} />{t(strings.presenter.reset)}</Button></div></section>
         <section><div className={strings.presenter.presenterSectionLabel}>{t(strings.presenter.aUDIENCESCREEN)}</div><div className={strings.presenter.presenterScreenControls}><Button variant={strings.common.outline} onClick={() => send(blackout === strings.presenter.black ? strings.presenter.resume : strings.presenter.black)}><span className={strings.presenter.presenterSwatchBlack} />{t(strings.presenter.black_c6cfe6e4)}</Button><Button variant={strings.common.outline} onClick={() => send(blackout === strings.presenter.white ? strings.presenter.resume : strings.presenter.white)}><span className={strings.presenter.presenterSwatchWhite} />{t(strings.common.white)}</Button></div></section>

@@ -3,6 +3,7 @@ export const appStrings = {
   presentId: "/present/:id",
   presenterId: "/presenter/:id",
   applicationRootIsMissing: "Application root is missing",
+  bottomLeft: "bottom-left",
   bottomRight: "bottom-right",
   my4TextMutedForeground: "my-4 text-muted-foreground",
   p12: "p-12",

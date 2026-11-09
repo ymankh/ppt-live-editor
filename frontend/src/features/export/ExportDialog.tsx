@@ -9,6 +9,7 @@ import { Choice } from '@/components/common/PropertyInputs';
 import { userMessage } from '@/features/errors/userMessage';
 import { strings } from "@/strings";
 import { translate, useLocale, useTranslation } from '@/features/localization/locale';
+import { interpolate } from '@/features/localization/format';
 
 
 type Format = 'project' | 'pptx' | 'pdf' | 'png';
@@ -31,7 +32,7 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const runExport = async () => {
     if (busy) return;
     setBusy(true);
-    const notification = toast.loading(`${t(strings.export.preparing)}${format === strings.export.png ? t(strings.export.slideImages) : format === strings.export.project ? t(strings.export.yourProject) : format.toUpperCase()}${strings.export.symbol_b4935894}`, { description: `${document.slides.length}${t(strings.export.slidesPleaseKeepThisWindowOpen)}` });
+    const notification = toast.loading(`${t(strings.export.preparing)}${format === strings.export.png ? t(strings.export.slideImages) : format === strings.export.project ? t(strings.export.yourProject) : format.toUpperCase()}${strings.export.symbol_b4935894}`, { description: interpolate(t(strings.export.exportProgress), { count: document.slides.length }) });
     try {
       if (format === strings.export.project) await exportProject(document);
       if (format === strings.export.pptx_1512e97a) await exportPptx(document);
@@ -48,13 +49,13 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     <DialogContent className={strings.export.smMaxW520pxP6} showCloseButton={!busy}>
       <DialogHeader><div className={strings.export.mb2FlexH11W11ItemsCenter}><Download size={22} /></div>
         <DialogTitle className={strings.export.textXl}>{t(strings.export.readyToShareYourStory)}</DialogTitle>
-        <DialogDescription>{t(strings.export.chooseAFormatFor)}{document.title}{strings.export.symbol_73a14fb1}</DialogDescription>
+        <DialogDescription>{t(strings.export.chooseAFormatFor)}{document.title}{t(strings.export.symbol_73a14fb1)}</DialogDescription>
       </DialogHeader>
       <div className={strings.export.gridGap2Py2} role={strings.export.radiogroup} aria-label={t(strings.export.exportFormat)}>
         {formats.map(option => <Button key={option.id} variant={strings.common.outline} role={strings.export.radio} aria-checked={format === option.id} disabled={busy} onClick={() => setFormat(option.id)}
           className={`${strings.export.hAutoJustifyStartGap4WhitespaceNormalRounded}${format === option.id ? strings.export.borderPrimaryBgAccentRing1RingPrimary : strings.common.empty}`}>
           <option.icon size={24} className={format === option.id ? strings.export.textPrimary : strings.ui.textMutedForeground} />
-          <span className={strings.export.flexFlex1FlexColGap1}><span className={strings.export.flexItemsCenterGap2FontSemibold}>{t(option.title)}<span className={strings.export.textXsFontNormalTextMutedForeground}>{option.extension}</span></span>
+          <span className={strings.export.flexFlex1FlexColGap1}><span className={strings.export.flexItemsCenterGap2FontSemibold}>{t(option.title)}<span dir="ltr" className={strings.export.textXsFontNormalTextMutedForeground}>{option.extension}</span></span>
             <span className={strings.export.textXsFontNormalTextMutedForeground}>{t(option.detail)}</span></span>
           {format === option.id && <Check size={17} className={strings.export.textPrimary} />}
         </Button>)}
