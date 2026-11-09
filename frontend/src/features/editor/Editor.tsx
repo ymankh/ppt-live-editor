@@ -15,6 +15,7 @@ import {
   Undo2,
 } from "lucide-react";
 import { useEditor } from "@/store/editor";
+import { useAppearance } from "@/store/appearance";
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { Workspace } from "./Workspace";
 import { StatusBar } from './StatusBar';
@@ -55,12 +56,8 @@ export function Editor() {
   const [help, setHelp] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [notes, setNotes] = useState(true);
-  const [dark, setDark] = useState(
-    () =>
-      localStorage.getItem(strings.editor.folioTheme) === strings.common.dark ||
-      (!localStorage.getItem(strings.editor.folioTheme) &&
-        matchMedia(strings.editor.prefersColorSchemeDark).matches),
-  );
+  const dark = useAppearance((state) => state.dark);
+  const toggleDark = useAppearance((state) => state.toggleDark);
   const navigate = useNavigate();
   const index = document.slides.findIndex((s) => s.id === activeId);
   // The save state is shown as an icon only; the words remain available to assistive technology.
@@ -70,10 +67,6 @@ export function Editor() {
     : saveStatus === strings.store.saving ? CloudUpload
     : saveStatus === strings.store.saveFailed ? CloudAlert
     : Cloud;
-  useEffect(() => {
-    window.document.documentElement.classList.toggle(strings.common.dark, dark);
-    localStorage.setItem(strings.editor.folioTheme, dark ? strings.common.dark : strings.common.light);
-  }, [dark]);
   useEffect(() => {
     const handle = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return;
@@ -116,10 +109,6 @@ export function Editor() {
     window.addEventListener(strings.common.keydown, handle);
     return () => window.removeEventListener(strings.common.keydown, handle);
   }, [document.id, index, navigate]);
-  const toggleDark = () => {
-    setDark(!dark);
-    window.document.documentElement.classList.toggle(strings.common.dark, !dark);
-  };
   return (
     <div className={strings.editor.editorApp}>
       <header className={strings.editor.appHeader}>

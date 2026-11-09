@@ -54,7 +54,6 @@ export const commonStrings1 = {
   backward: "backward",
   bar: "bar",
   barHorizontal: "barHorizontal",
-  bgEd7355TextWhiteHoverBgDc6446: "bg-[#ed7355] text-white hover:bg-[#dc6446]",
   blank_ff71cf74: "blank",
   blur: "blur",
   bold: "bold",

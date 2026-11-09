@@ -5,6 +5,7 @@ import './fonts.css'
 import App from './App.tsx'
 import { strings } from "@/strings";
 import '@/features/localization/locale';
+import '@/store/appearance';
 
 
 const root = document.getElementById(strings.app.root);

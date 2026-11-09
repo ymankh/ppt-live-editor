@@ -52,11 +52,11 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       </DialogHeader>
       <div className={strings.export.gridGap2Py2} role={strings.export.radiogroup} aria-label={t(strings.export.exportFormat)}>
         {formats.map(option => <Button key={option.id} variant={strings.common.outline} role={strings.export.radio} aria-checked={format === option.id} disabled={busy} onClick={() => setFormat(option.id)}
-          className={`${strings.export.hAutoJustifyStartGap4WhitespaceNormalRounded}${format === option.id ? strings.export.borderEd7355BgOrange5060Ring1Ring : strings.common.empty}`}>
-          <option.icon size={24} className={format === option.id ? strings.export.textEd7355 : strings.export.textStone400} />
+          className={`${strings.export.hAutoJustifyStartGap4WhitespaceNormalRounded}${format === option.id ? strings.export.borderPrimaryBgAccentRing1RingPrimary : strings.common.empty}`}>
+          <option.icon size={24} className={format === option.id ? strings.export.textPrimary : strings.ui.textMutedForeground} />
           <span className={strings.export.flexFlex1FlexColGap1}><span className={strings.export.flexItemsCenterGap2FontSemibold}>{t(option.title)}<span className={strings.export.textXsFontNormalTextMutedForeground}>{option.extension}</span></span>
             <span className={strings.export.textXsFontNormalTextMutedForeground}>{t(option.detail)}</span></span>
-          {format === option.id && <Check size={17} className={strings.export.textEd7355} />}
+          {format === option.id && <Check size={17} className={strings.export.textPrimary} />}
         </Button>)}
       </div>
       {format === strings.export.pdf_c35b21d6 && <label className={strings.export.flexItemsCenterGap2TextSm}><input type={strings.export.checkbox} checked={notesPages} disabled={busy} onChange={event => setNotesPages(event.target.checked)} />{t(strings.export.includeSpeakerNotesPages)}</label>}
@@ -67,7 +67,7 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       </div>}
       <p className={strings.export.textXsLeadingRelaxedTextMutedForeground}>{t(format === strings.export.pptx_1512e97a ? strings.export.nativePowerPointObjectsRemainEditableSomeGradientsImage : format === strings.export.project ? strings.export.includesYourSlidesSpeakerNotesThemeAndEmbeddedImage : format === strings.export.pdf_c35b21d6 && notesPages ? strings.export.printReadyPagesWithEachSlideAndItsSpeaker : strings.export.exportsIncludeSkippedSlidesAnimationsAreNotIncludedSpeaker)}</p>
       <DialogFooter className={strings.export.mx6Mb6Mt1P4}><Button variant={strings.common.outline} disabled={busy} onClick={() => onOpenChange(false)}>{t(strings.common.cancel)}</Button>
-        <Button className={strings.common.bgEd7355TextWhiteHoverBgDc6446} disabled={busy} onClick={() => void runExport()}>{busy ? <Loader2 className={strings.export.animateSpin} size={16} /> : <Download size={16} />}{t(busy ? strings.export.preparingExport : strings.common.exportPresentation)}</Button>
+        <Button disabled={busy} onClick={() => void runExport()}>{busy ? <Loader2 className={strings.export.animateSpin} size={16} /> : <Download size={16} />}{t(busy ? strings.export.preparingExport : strings.common.exportPresentation)}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>;

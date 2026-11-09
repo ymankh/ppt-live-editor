@@ -11,7 +11,7 @@
 .slide-number { min-width: 13px; padding-top: 8px; text-align: center; font-size: 11px; color: var(--muted-foreground); }
 .slide-context { flex: 1; min-width: 0; }
 /* Thumbnails show slide artwork, so the paper stays white in every UI theme. */
-.slide-thumbnail { display: block; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; position: relative; border: 1px solid var(--border); border-radius: var(--radius-sm); background: white; padding: 0; cursor: pointer; box-shadow: 0 1px 3px var(--shadow-color); }
+.slide-thumbnail { display: block; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; position: relative; border: 1px solid var(--border); border-radius: var(--radius-sm); background: white; padding: 0; cursor: pointer; box-shadow: var(--shadow-xs); }
 .slide-thumbnail-scale { width: 100%; height: 100%; pointer-events: none; }
 .slide-item.is-selected .slide-thumbnail { border: 2px solid var(--primary); box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary) 8%, transparent); }
 .slide-item.is-selected .slide-number { color: var(--primary); font-weight: 600; }
@@ -66,11 +66,11 @@
 .property-grid .property-field { margin-bottom: 7px; }
 .property-stack { display: flex; flex-direction: column; gap: 2px; }
 .color-field { display: flex; align-items: center; gap: 7px; height: 32px; border: 1px solid var(--input); border-radius: var(--radius-sm); padding: 3px 6px; }
-.color-field input[type=color] { width: 23px; height: 23px; border: none; border-radius: var(--radius-xs); padding: 0; cursor: pointer; background: transparent; flex-shrink: 0; }
+.color-field input[type=color] { width: 23px; height: 23px; border: none; border-radius: var(--radius-sm); padding: 0; cursor: pointer; background: transparent; flex-shrink: 0; }
 .color-field input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
-.color-field input[type=color]::-webkit-color-swatch { border: 1px solid color-mix(in oklch, var(--foreground) 15%, transparent); border-radius: var(--radius-xs); }
+.color-field input[type=color]::-webkit-color-swatch { border: 1px solid color-mix(in oklch, var(--foreground) 15%, transparent); border-radius: var(--radius-sm); }
 .color-field [data-slot=input] { border: none; height: 25px; padding: 0 2px; }
-.color-swatch { width: 23px; height: 23px; flex-shrink: 0; border-radius: var(--radius-xs); border: 1px solid color-mix(in oklch, var(--foreground) 15%, transparent); }
+.color-swatch { width: 23px; height: 23px; flex-shrink: 0; border-radius: var(--radius-sm); border: 1px solid color-mix(in oklch, var(--foreground) 15%, transparent); }
 .color-swatch-preset { width: 24px; height: 24px; border-radius: var(--radius-sm); }
 .gradient-stop { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; display: grid; grid-template-columns: 1fr 1fr 22px; gap: 5px; align-items: end; }
 .gradient-stop .property-field { margin-bottom: 0; }
@@ -99,9 +99,9 @@
 .layer-row [data-slot=input] { border: none; box-shadow: none; font-size: 11px; padding: 0 2px; height: 25px; background: transparent; min-width: 0; color: var(--foreground); }
 .layer-type { color: var(--muted-foreground); width: 22px; flex-shrink: 0; font-size: 12px; background: none; border: none; cursor: pointer; }
 .layer-row [data-slot=button] { color: var(--muted-foreground); flex-shrink: 0; }
-.layer-drag-handle { display: grid; place-items: center; flex-shrink: 0; width: 22px; height: 25px; border: none; background: transparent; color: var(--muted-foreground); cursor: grab; touch-action: none; border-radius: var(--radius-xs); }
+.layer-drag-handle { display: grid; place-items: center; flex-shrink: 0; width: 22px; height: 25px; border: none; background: transparent; color: var(--muted-foreground); cursor: grab; touch-action: none; border-radius: var(--radius-sm); }
 .layer-drag-handle:hover { background: var(--muted); color: var(--primary); }
-.layer-row.is-dragging { position: relative; z-index: 1; background: var(--background); box-shadow: 0 3px 10px var(--shadow-color); }
+.layer-row.is-dragging { position: relative; z-index: 1; background: var(--background); box-shadow: var(--shadow-md); }
 .layer-row.is-dragging .layer-drag-handle { cursor: grabbing; }
 .table-size-row { display: flex; align-items: center; gap: 5px; }
 .table-size-row > label { flex: 1; }
