@@ -96,6 +96,8 @@ export function Editor() {
         );
         return;
       }
+      // No command uses Alt, so Alt+T (and similar system or browser shortcuts) is not the T tool key.
+      if (event.altKey) return;
       const combo = normalizeShortcut(event);
       const command = commands.find(
         (c) => c.shortcut?.toUpperCase() === combo.toUpperCase() || c.aliases?.some(alias=>alias.toUpperCase()===combo.toUpperCase()),
