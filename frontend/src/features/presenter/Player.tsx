@@ -89,7 +89,16 @@ export function Player() {
   // On the last build of the last slide there is nothing further: jumping "to the next slide" would
   // clamp back to this one and rewind its builds.
   const next = useCallback(() => { if (blackout) setBlackout(null); else if (step < groups.length - 1) setStep(step + 1); else if (index < slides.length - 1) jump(index + 1); }, [blackout, step, groups.length, jump, index, slides.length]);
-  const previous = useCallback(() => { if (blackout) setBlackout(null); else if (step > 0) setStep(step - 1); else jump(index - 1); }, [blackout, step, jump, index]);
+  const previous = useCallback(() => {
+    if (blackout) setBlackout(null);
+    else if (step > 0) setStep(step - 1);
+    else if (index > 0) {
+      // Going back shows the earlier slide as it was left: fully built, not with its animated content hidden again.
+      const target = slides[Math.min(index, slides.length) - 1];
+      jump(index - 1);
+      if (target) setStep(animationGroups(target).length - 1);
+    }
+  }, [blackout, step, jump, index, slides]);
   const fullscreen = useCallback(() => {
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => toast.error(translate(strings.presenter.couldNotExitFullscreen, useLocale.getState().locale)));
     else void stage.current?.requestFullscreen().catch(() => toast.error(translate(strings.presenter.fullscreenIsUnavailableInThisBrowser, useLocale.getState().locale)));
