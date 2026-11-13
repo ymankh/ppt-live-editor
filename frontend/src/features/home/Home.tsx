@@ -93,6 +93,9 @@ export function Home() {
   const upload = async (file: File) => {
     try {
       const doc = await importProject(file);
+      // An archive keeps the id it was exported with. Saving under that id would silently replace the
+      // presentation it came from, including edits made since the export, so an import is always a new one.
+      doc.id = crypto.randomUUID();
       await saveProject(doc);
       await useEditor.getState().loadProject(doc.id);
       void navigate(`${strings.common.edit}${doc.id}`);
