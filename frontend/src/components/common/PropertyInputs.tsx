@@ -59,9 +59,13 @@ export function NumberField({
   step?: number;
 }) {
   const t = useTranslation();
-  const [draft, setDraft] = useState(String(Number(value.toFixed(2))));
-  useEffect(() => setDraft(String(Number(value.toFixed(2)))), [value]);
+  const shown = String(Number(value.toFixed(2)));
+  const [draft, setDraft] = useState(shown);
+  useEffect(() => setDraft(shown), [shown]);
   const commit = () => {
+    // Leaving the field without changing it is not an edit. Committing anyway would write the shown
+    // (rounded) value back and, with several elements selected, move them all to the first one's value.
+    if (draft === shown) return;
     const number = Number(draft);
     if (draft.trim() && Number.isFinite(number))
       onChange(Math.min(max ?? Infinity, Math.max(min ?? -Infinity, number)));
