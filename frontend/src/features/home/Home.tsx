@@ -299,6 +299,7 @@ export function Home() {
                 <article key={project.id}>
                   <button
                     className={strings.home.projectPreview}
+                    aria-label={`${t(strings.home.open)}${project.title}`}
                     onClick={() => {
                       void navigate(`${strings.common.edit}${project.id}`);
                     }}
@@ -312,10 +313,10 @@ export function Home() {
                         {interpolate(t(project.slideCount === 1 ? strings.home.projectSummaryOne : strings.home.projectSummary), { count: project.slideCount, date: formatDate(project.updatedAt, interfaceLocale) })}
                       </p>
                     </div>
-                    <button aria-label={`${t(strings.home.rename)}${project.title}`} onClick={()=>{
+                    <button aria-label={`${t(strings.home.rename)}${project.title}`} title={t(strings.home.rename).trim()} onClick={()=>{
                       setRenameValue(project.title);setRenameTarget(project);
                     }}><Pencil size={14}/></button>
-                    <button aria-label={`${t(strings.home.duplicate)}${project.title}`} onClick={()=>{
+                    <button aria-label={`${t(strings.home.duplicate)}${project.title}`} title={t(strings.home.duplicate).trim()} onClick={()=>{
                       void useEditor.getState().loadProject(project.id).then(async()=>{
                         const doc=structuredClone(useEditor.getState().document);doc.id=crypto.randomUUID();doc.title+=translate(strings.home.copy, useLocale.getState().locale);doc.createdAt=new Date().toISOString();
                         useEditor.getState().setDocument(doc);await useEditor.getState().saveProject();setProjects(await listProjects());
@@ -323,6 +324,7 @@ export function Home() {
                     }}><Copy size={14}/></button>
                     <button
                       aria-label={`${t(strings.home.delete)}${project.title}`}
+                      title={t(strings.home.delete).trim()}
                       onClick={() => setDeleteTarget(project)}
                     >
                       <Trash2 size={15} />

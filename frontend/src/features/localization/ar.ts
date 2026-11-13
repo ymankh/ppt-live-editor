@@ -877,6 +877,7 @@ export const arabic: Record<string, string> = {
   'Loading your presentations…': 'جارٍ تحميل عروضك التقديمية…',
   'Your presentations could not be loaded.': 'تعذّر تحميل عروضك التقديمية.',
   'No presentations match “{query}”.': 'لا توجد عروض تقديمية تطابق «{query}».',
+  'Open ': 'فتح ',
   '{count} slides · Please keep this window open.': 'عدد الشرائح: {count} · يُرجى إبقاء هذه النافذة مفتوحة.',
   '{count} layers': 'الطبقات ({count})',
   '{count} elements selected': 'العناصر المحددة: {count}',

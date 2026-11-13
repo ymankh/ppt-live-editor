@@ -70,4 +70,5 @@ export const homeStrings = {
   presentationsNotLoaded: "Your presentations could not be loaded.",
   tryAgain: "Try again",
   noMatchingPresentations: "No presentations match “{query}”.",
+  open: "Open ",
 } as const;
