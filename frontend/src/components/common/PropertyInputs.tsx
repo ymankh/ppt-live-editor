@@ -67,9 +67,12 @@ export function NumberField({
     // (rounded) value back and, with several elements selected, move them all to the first one's value.
     if (draft === shown) return;
     const number = Number(draft);
-    if (draft.trim() && Number.isFinite(number))
-      onChange(Math.min(max ?? Infinity, Math.max(min ?? -Infinity, number)));
-    else setDraft(String(value));
+    if (draft.trim() && Number.isFinite(number)) {
+      const next = Math.min(max ?? Infinity, Math.max(min ?? -Infinity, number));
+      // An out-of-range entry that clamps to the current value changes nothing, so show that value again.
+      if (next === value) setDraft(shown);
+      else onChange(next);
+    } else setDraft(shown);
   };
   return (
     <label className={strings.common.propertyField}>
