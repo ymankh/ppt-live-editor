@@ -78,6 +78,16 @@ export function useCanvasGestures(slideElements: SlideElement[], scale: number, 
     return { x: (event.clientX - (rect?.left ?? 0)) / scale, y: (event.clientY - (rect?.top ?? 0)) / scale };
   };
   const begin = (event: PointerEvent<HTMLElement>, kind?: 'resize' | 'rotate', handle?: ResizeHandle, workspace?: HTMLDivElement) => {
+    if (event.button === 2 && !kind && !gesture.current && !(event.target as HTMLElement).closest(strings.canvas.dataEditingTrue)) {
+      // The context menu acts on the selection, so a right-click first selects what is under the
+      // pointer, as a left-click would; otherwise Delete or Cut would hit a different element.
+      const state = useEditor.getState();
+      const id = (event.target as HTMLElement).closest(strings.canvas.dataElementId)?.getAttribute(strings.canvas.dataElementId_47547373);
+      const target = slideElements.find(element => element.id === id);
+      if (!target || target.locked) state.select([]);
+      else if (!state.selection.includes(target.id)) state.select(target.groupId ? slideElements.filter(e => e.groupId === target.groupId && !e.locked && !e.hidden).map(e => e.id) : [target.id]);
+      return;
+    }
     if (event.button !== 0 || gesture.current || (event.target as HTMLElement).closest(strings.canvas.dataEditingTrue)) return;
     const container = workspace ?? event.currentTarget;
     const state = useEditor.getState();
