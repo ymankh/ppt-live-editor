@@ -80,9 +80,11 @@ export async function exportPptx(presentation: Presentation): Promise<void> {
       if (element.hidden) continue;
       const box = { x: inch(element.x), y: inch(element.y), w: inch(element.width), h: inch(element.height), rotate: element.rotation, objectName: element.name };
       const slideLinkId = element.link?.kind === strings.common.slide ? element.link.slideId : undefined;
+      // A link to a slide that was since deleted has no target; pptxgenjs throws on `slide: 0`, failing the whole export.
+      const slideLinkIndex = slideLinkId ? presentation.slides.findIndex(item => item.id === slideLinkId) : -1;
       const link: pptxgen.HyperlinkProps | undefined = element.link?.kind === strings.common.url
         ? (/^(https?:|mailto:|tel:)/i.test(element.link.href) ? { url: element.link.href } : undefined)
-        : slideLinkId ? { slide: presentation.slides.findIndex(item => item.id === slideLinkId) + 1 } : undefined;
+        : slideLinkIndex >= 0 ? { slide: slideLinkIndex + 1 } : undefined;
       const hyperlink = link ? { hyperlink: link } : {};
       if (strings.common.fill in element && element.fill.type === strings.common.image) slide.addImage({ ...box, data: await imageData(element.fill.assetId), transparency: (1 - element.opacity) * 100 });
       switch (element.type) {

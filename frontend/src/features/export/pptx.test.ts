@@ -7,6 +7,13 @@ import { textDocument } from '@/types/model';
 import type { Presentation } from '@/types/model';
 import { exportPptx } from './pptx';
 
+// jsdom cannot read a Blob as a data URL, so image loading is stubbed; the tests here are about the generated PPTX.
+vi.mock('./assets', async (original) => ({
+  ...(await original<typeof import('./assets')>()),
+  fetchAsset: () => Promise.resolve(new Blob()),
+  blobDataUrl: () => Promise.resolve('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='),
+}));
+
 afterEach(() => vi.restoreAllMocks());
 
 async function exportedXml(project: Presentation): Promise<Document> {
@@ -78,5 +85,20 @@ describe('Arabic PPTX export', () => {
       expect(paragraph(xml, text).getElementsByTagName('a:pPr')[0]?.getAttribute('rtl')).toBe('1');
     }
     expect(paragraph(xml, 'English العربية').getElementsByTagName('a:pPr')[0]?.getAttribute('rtl')).not.toBe('1');
+  });
+});
+
+describe('PPTX export links', () => {
+  it('exports an image whose slide link points at a deleted slide, without the link', async () => {
+    const project = createPresentation();
+    const slide = createSlide();
+    const image = createElement('image');
+    image.assetId = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    image.link = { kind: 'slide', slideId: 'slide-that-was-deleted' };
+    slide.elements = [image];
+    project.slides = [slide];
+    const xml = await exportedXml(project);
+    expect(xml.getElementsByTagName('p:pic')).toHaveLength(1);
+    expect(xml.getElementsByTagName('a:hlinkClick')).toHaveLength(0);
   });
 });
