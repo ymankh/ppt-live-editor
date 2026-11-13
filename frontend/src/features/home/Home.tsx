@@ -278,6 +278,8 @@ export function Home() {
                 hidden
                 onChange={(e) => {
                   const f = e.target.files?.[0];
+                  // Reset so choosing the same file again (for example after a failed import) fires a change.
+                  e.target.value = strings.common.empty;
                   if (f) void upload(f);
                 }}
               />
