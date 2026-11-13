@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { EditorContent, useEditor as useTipTap } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
@@ -15,10 +16,14 @@ const extensions = [StarterKit.configure({ link: { openOnClick: false } }), para
 
 export default function TextEditor({ content, onCommit, finish }: RichTextProps & { finish: () => void }) {
   const t = useTranslation();
+  // TipTap adds default attributes when it parses, so the stored content never compares equal to
+  // getJSON(). Compare against what the editor held when it opened instead.
+  const opened = useRef<string | null>(null);
   const editor = useTipTap({
     extensions,
     content,
     autofocus: strings.common.end,
+    onCreate: ({ editor: created }) => { opened.current = JSON.stringify(created.getJSON()); },
     editorProps: {
       attributes: { dir: 'auto' },
       handleKeyDown: (view, event) => {
@@ -35,7 +40,7 @@ export default function TextEditor({ content, onCommit, finish }: RichTextProps 
   return <div className={strings.renderer.rendererEditor} data-editing={strings.common.true} role={strings.common.presentation} onPointerDown={event => event.stopPropagation()} onDoubleClick={event => event.stopPropagation()} onContextMenu={event => event.stopPropagation()} onBlur={event => {
     if (event.currentTarget.contains(event.relatedTarget)) return;
     const updated = editor.getJSON() as TipTapDocument;
-    if (JSON.stringify(updated) !== JSON.stringify(content)) onCommit?.(updated);
+    if (JSON.stringify(updated) !== (opened.current ?? JSON.stringify(content))) onCommit?.(updated);
     finish();
   }}>
     <div className={strings.renderer.rendererTextToolbar} role={strings.common.toolbar} aria-label={t(strings.renderer.textFormatting)} onPointerDown={event => event.preventDefault()}>
