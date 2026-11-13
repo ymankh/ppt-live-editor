@@ -114,12 +114,14 @@ export function SlideCanvas() {
       if (event.code === strings.canvas.space) { event.preventDefault(); event.stopPropagation(); setSpacePan(true); return; }
       if (event.key === strings.common.escape) { gestures.cancel(); useEditor.getState().select([]); event.stopPropagation(); return; }
       if (event.key === strings.canvas.tab) {
-        event.preventDefault(); event.stopPropagation();
         const elements = slide.elements.filter(element => !element.hidden && !element.locked);
         const index = elements.findIndex(element => element.id === selection.at(-1));
-        const next = elements.length ? elements[(index + (event.shiftKey ? -1 : 1) + elements.length) % elements.length] : undefined;
-        const target = event.shiftKey && index < 0 ? elements.at(-1) : next;
-        useEditor.getState().select(target ? [target.id] : []);
+        const target = index < 0 ? (event.shiftKey ? elements.at(-1) : elements[0]) : elements[index + (event.shiftKey ? -1 : 1)];
+        // Past the last (or before the first) element Tab is left to the browser, so keyboard focus
+        // can move on. Wrapping around here kept keyboard users inside the canvas for good.
+        if (!target) { useEditor.getState().select([]); return; }
+        event.preventDefault(); event.stopPropagation();
+        useEditor.getState().select([target.id]);
         return;
       }
       if (!([strings.common.arrowLeft_48e61e2d, strings.common.arrowRight_8e2f7ffb, strings.common.arrowUp_12204d1d, strings.common.arrowDown_9660fb86] as readonly string[]).includes(event.key) || !selection.length) return;
