@@ -151,7 +151,11 @@ export function Player() {
       else if (key === strings.common.p) setHeldTool(strings.presenter.pen);
       else if (key === strings.common.e) setStrokes([]);
       else if (key === strings.presenter.f) fullscreen();
-      else if (key === strings.presenter.escape) { numericJump.current = strings.common.empty; setJumpDigits(strings.common.empty); if (overview) setOverview(false); else if (blackout) setBlackout(null); else void navigate(`${strings.common.edit}${presentation.id}`); }
+      else if (key === strings.presenter.escape) {
+        // Escape first cancels a typed slide number; only a plain Escape leaves the show.
+        if (numericJump.current) { numericJump.current = strings.common.empty; setJumpDigits(strings.common.empty); }
+        else if (overview) setOverview(false); else if (blackout) setBlackout(null); else void navigate(`${strings.common.edit}${presentation.id}`);
+      }
       else return;
       event.preventDefault(); event.stopPropagation();
     };
