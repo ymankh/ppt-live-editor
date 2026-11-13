@@ -6,18 +6,18 @@ A presentation workspace built with React 19, Vite 8, strict TypeScript, Tailwin
 
 - `frontend/` — React/Vite application: `src/`, `public/`, frontend configuration, package manifest/lockfiles, and unit/browser tests. Production output is `frontend/dist/`.
 - `backend/Folio.Api/` — ASP.NET Core 10 controller API and SQLite persistence.
-- `apphost/` — .NET 10 C# Aspire AppHost, pinned to Aspire 13.3.5.
+- `apphost/` — .NET 10 C# Aspire AppHost, pinned to Aspire 13.6.1.
 - Root `aspire.config.json` — selects the AppHost for `aspire run`; there is no root Node package.
 - Root `.cache/` — ignored, isolated test/smoke databases.
 
 ## Run
 
-Requires Node.js 22+, the **.NET 10 SDK**, and the **Aspire CLI**. The AppHost uses Aspire 13.3.5, matching the installed CLI. Docker is not required: the API and Vite run as local processes, and SQLite remains file-backed.
+Requires Node.js 22+, the **.NET 10 SDK**, and the **Aspire CLI**. The AppHost uses Aspire 13.6.1, matching the installed CLI. Docker is not required: the API and Vite run as local processes, and SQLite remains file-backed.
 
 On a new machine, install the CLI and trust the HTTPS development certificate once:
 
 ```sh
-dotnet tool install --global Aspire.Cli --version 13.3.5
+dotnet tool install --global Aspire.Cli --version 13.6.1
 dotnet dev-certs https --trust
 ```
 
