@@ -32,6 +32,7 @@
 .project-controls { display: flex; gap: 15px; align-items: center; }
 .search-projects { display: flex; align-items: center; gap: 9px; padding: 8px 11px; border: 1px solid var(--input); border-radius: var(--radius-md); background: var(--background); color: var(--muted-foreground); }
 .search-projects input { width: 160px; font-size: 11px; background: none; outline: none; color: var(--foreground); }
+.search-projects:focus-within { border-color: var(--ring); box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 30%, transparent); }
 .search-projects input::placeholder { color: var(--muted-foreground); }
 .import-project { display: flex; align-items: center; gap: 7px; min-height: 28px; padding: 0 8px; border-radius: var(--radius-sm); font-size: 11px; cursor: pointer; color: var(--muted-foreground); }
 .import-project:hover { background: var(--muted); color: var(--foreground); }
