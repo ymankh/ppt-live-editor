@@ -70,7 +70,8 @@ export function Home() {
             elements: [],
             background: { type: strings.common.solid, color: strings.common.colorffffff },
             notes: strings.common.empty,
-            transition: { effect: strings.common.none, duration: 400 },
+            // Seconds, like every other slide (see createSlide).
+            transition: { effect: strings.common.none, duration: 0.45 },
           },
         ];
       }
