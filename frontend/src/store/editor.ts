@@ -79,7 +79,8 @@ function flushPendingSave(document: Presentation, saveStatus: string): void {
   void saving.catch(() => undefined);
 }
 
-function clonedElements(elements: SlideElement[], offset: Point = { x: 32, y: 32 }): SlideElement[] {
+/** Copies of elements with fresh ids; grouped copies form their own group instead of joining the source's. */
+export function clonedElements(elements: SlideElement[], offset: Point = { x: 32, y: 32 }): SlideElement[] {
   const groups = new Map<string, string>();
   return elements.map(source => {
     const element = structuredClone(source);

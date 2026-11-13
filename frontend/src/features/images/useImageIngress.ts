@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { insertImage, pasteText } from "./ingress";
-import { useEditor } from "@/store/editor";
+import { clonedElements, useEditor } from "@/store/editor";
 import { presentationSchema } from "@/features/export/schema";
 import { notifyError } from "@/features/errors/userMessage";
 import { translate, useLocale } from "@/features/localization/locale";
@@ -46,12 +46,9 @@ export function useImageIngress() {
             ...state.document,
             slides: [{ ...slide, elements: payload.elements }],
           });
-          const elements = parsed.slides[0]?.elements ?? [];
-          elements.forEach((element) => {
-            element.id = crypto.randomUUID();
-            element.x += 32;
-            element.y += 32;
-          });
+          // The store's cloning also gives grouped copies their own group and fresh nested ids;
+          // re-using the copied groupId would fuse the paste with the original group.
+          const elements = clonedElements(parsed.slides[0]?.elements ?? []);
           state.mutate(strings.common.pasteElements, (draft) => {
             draft.slides
               .find((s) => s.id === state.activeSlideId)

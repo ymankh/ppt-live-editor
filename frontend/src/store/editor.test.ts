@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createElement, createPresentation, createSlide } from '../lib/defaults';
-import { useEditor } from './editor';
+import { clonedElements, useEditor } from './editor';
 import { getLastProject, getProject, saveProject } from '../features/persistence/repository';
 import type { Slide, SlideElement } from '../types/model';
 
@@ -328,5 +328,13 @@ describe('selection and history hygiene', () => {
     expect(useEditor.getState().selection).toEqual([]);
     useEditor.getState().deleteSelection();
     expect(activeSlide().elements).toHaveLength(count);
+  });
+
+  it('gives cloned group members a new shared group instead of the source group', () => {
+    const first = { ...createElement('shape', 'rect'), groupId: 'source-group' }, second = { ...createElement('shape', 'ellipse'), groupId: 'source-group' };
+    const copies = clonedElements([first, second]);
+    expect(copies.map(copy => copy.groupId)).not.toContain('source-group');
+    expect(copies[0]?.groupId).toBe(copies[1]?.groupId);
+    expect(copies.map(copy => copy.id)).not.toEqual([first.id, second.id]);
   });
 });
