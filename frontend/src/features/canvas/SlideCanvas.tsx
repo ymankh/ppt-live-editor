@@ -63,7 +63,8 @@ export function SlideCanvas() {
       const rect = frame.current?.getBoundingClientRect();
       const zoom = useEditor.getState().zoom;
       const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? node.clientHeight : 1);
-      const nextZoom = Math.max(0.25, Math.min(3, zoom * Math.exp(-delta * 0.0015)));
+      // Same bounds as the zoom commands and the zoom slider.
+      const nextZoom = Math.max(0.25, Math.min(4, zoom * Math.exp(-delta * 0.0015)));
       if (nextZoom === zoom) return;
       if (rect) zoomAnchor.current = { x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale, clientX: event.clientX, clientY: event.clientY };
       useEditor.getState().setZoom(nextZoom);
