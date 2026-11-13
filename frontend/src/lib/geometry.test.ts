@@ -21,6 +21,19 @@ describe('slide geometry', () => {
     expect(next.width / next.height).toBeCloseTo(2);
     expect(next.width).toBeGreaterThanOrEqual(8); expect(next.height).toBeGreaterThanOrEqual(8);
   });
+  it('resizes only the axes the handle moves, so a straight line stays straight and a thin rule stays thin', () => {
+    const line = resizeBox({ x: 100, y: 380, width: 640, height: 0, rotation: 0 }, 'e', { x: 100, y: 0 });
+    expect(line).toMatchObject({ x: 100, y: 380, width: 740, height: 0 });
+    // At the end of a level line the corner handle covers the side handle, so it is the one people grab.
+    const corner = resizeBox({ x: 100, y: 380, width: 640, height: 0, rotation: 0 }, 'se', { x: 100, y: 0 });
+    expect(corner).toMatchObject({ x: 100, y: 380, width: 740, height: 0 });
+    const constrained = resizeBox({ x: 100, y: 380, width: 640, height: 0, rotation: 0 }, 'e', { x: 100, y: 0 }, true);
+    expect(constrained).toMatchObject({ y: 380, width: 740, height: 0 });
+    const rule = resizeBox({ x: 140, y: 660, width: 1630, height: 4, rotation: 0 }, 'w', { x: -50, y: 0 });
+    expect(rule).toMatchObject({ x: 90, y: 660, width: 1680, height: 4 });
+    const column = resizeBox({ x: 50, y: 50, width: 0, height: 300, rotation: 0 }, 's', { x: 0, y: 40 });
+    expect(column).toMatchObject({ x: 50, width: 0, height: 340 });
+  });
   it('calculates rotated bounds and multi-element bounds', () => {
     const box = { x: 0, y: 0, width: 200, height: 100, rotation: 90 };
     expect(rotatedBounds(box).width).toBeCloseTo(100);

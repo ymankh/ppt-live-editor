@@ -34,9 +34,15 @@ export function selectionBounds(boxes: Box[]): Box | null {
 export function resizeBox(box: Box, handle: ResizeHandle, delta: Point, preserveAspect = false, minimum = 8): Box {
   const local = rotatePoint(delta, { x: 0, y: 0 }, -box.rotation);
   const west = handle.includes(strings.common.w), east = handle.includes(strings.common.e), north = handle.includes(strings.geometry.n), south = handle.includes(strings.common.s);
-  let width = Math.max(minimum, box.width + (east ? local.x : west ? -local.x : 0));
-  let height = Math.max(minimum, box.height + (south ? local.y : north ? -local.y : 0));
-  if (preserveAspect) {
+  // Only the axes the handle moves are resized (and clamped). Clamping the other axis would give a
+  // horizontal line an 8px height, which tilts it, and would thicken a thin rule.
+  // An axis with no extent (a straight line) may stay at zero: at the end of such a line the corner
+  // handle sits on top of the side handle, so a level drag must not force the minimum onto it either.
+  const horizontal = east || west, vertical = north || south;
+  let width = horizontal ? Math.max(box.width === 0 ? 0 : minimum, box.width + (east ? local.x : -local.x)) : box.width;
+  let height = vertical ? Math.max(box.height === 0 ? 0 : minimum, box.height + (south ? local.y : -local.y)) : box.height;
+  // A box with no extent on one axis (a straight line) has no aspect ratio to preserve.
+  if (preserveAspect && box.width > 0 && box.height > 0) {
     const ratio = Math.max(1, box.width) / Math.max(1, box.height);
     if ((east || west) && (north || south)) {
       if (Math.abs(width / Math.max(1, box.width) - 1) >= Math.abs(height / Math.max(1, box.height) - 1)) height = width / ratio;
