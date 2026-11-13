@@ -240,7 +240,8 @@ export const commands: Command[] = [
     label: strings.commands.fitToScreen,
     shortcut: strings.commands.ctrl0,
     menu: strings.common.view,
-    run: () => s().setZoom(1),
+    // Fitting also recentres: zoom alone would leave a panned or scrolled slide out of view.
+    run: () => { s().setZoom(1); useView.getState().requestFit(); },
   },
   {
     id: strings.commands.save,
