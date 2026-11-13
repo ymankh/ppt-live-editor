@@ -55,3 +55,20 @@
 .blank-project p { font-size: 10px; }
 .home-page > footer { max-width: 1140px; margin: 0 auto; display: flex; justify-content: space-between; padding: 22px 0; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted-foreground); }
 .home-page > footer span { font-size: 8px; letter-spacing: 1px; }
+/* Narrow windows: fewer columns, and rows that wrap instead of squeezing or overflowing. */
+.home-intro, .section-heading { flex-wrap: wrap; gap: 14px 24px; }
+.project-controls { flex-wrap: wrap; }
+@media (max-width: 900px) {
+  .starter-grid, .project-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Keep the card title clear of the arrow badge on narrower cards. */
+  .template-preview b { font-size: 28px; }
+  .template-preview i { width: 56px; height: 56px; inset-inline-end: 18px; bottom: 18px; }
+  .home-page > footer { margin: 0 30px; }
+}
+@media (max-width: 600px) {
+  .starter-grid, .project-grid { grid-template-columns: 1fr; }
+  .home-page > header { gap: 16px; }
+  .workspace-label { display: none; }
+  .home-page main { padding: 36px 20px; }
+  .home-page > footer { margin: 0 20px; flex-wrap: wrap; gap: 8px; }
+}
