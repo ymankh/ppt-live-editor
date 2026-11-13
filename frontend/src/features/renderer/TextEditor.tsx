@@ -32,7 +32,7 @@ export default function TextEditor({ content, onCommit, finish }: RichTextProps 
     },
   });
   if (!editor) return null;
-  return <div className={strings.renderer.rendererEditor} data-editing={strings.common.true} role={strings.common.presentation} onPointerDown={event => event.stopPropagation()} onDoubleClick={event => event.stopPropagation()} onBlur={event => {
+  return <div className={strings.renderer.rendererEditor} data-editing={strings.common.true} role={strings.common.presentation} onPointerDown={event => event.stopPropagation()} onDoubleClick={event => event.stopPropagation()} onContextMenu={event => event.stopPropagation()} onBlur={event => {
     if (event.currentTarget.contains(event.relatedTarget)) return;
     const updated = editor.getJSON() as TipTapDocument;
     if (JSON.stringify(updated) !== JSON.stringify(content)) onCommit?.(updated);
