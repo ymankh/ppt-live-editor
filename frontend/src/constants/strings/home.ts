@@ -63,6 +63,7 @@ export const homeStrings = {
   yourPresentations: "Your presentations",
   // interpolate() fills the {placeholders} after translation.
   projectSummary: "{count} slides · Edited {date}",
+  projectSummaryOne: "{count} slide · Edited {date}",
   alert: "alert",
   libraryNote: "library-note",
   loadingPresentations: "Loading your presentations…",

@@ -309,7 +309,7 @@ export function Home() {
                     <div>
                       <h3>{project.title}</h3>
                       <p>
-                        {interpolate(t(strings.home.projectSummary), { count: project.slideCount, date: formatDate(project.updatedAt, interfaceLocale) })}
+                        {interpolate(t(project.slideCount === 1 ? strings.home.projectSummaryOne : strings.home.projectSummary), { count: project.slideCount, date: formatDate(project.updatedAt, interfaceLocale) })}
                       </p>
                     </div>
                     <button aria-label={`${t(strings.home.rename)}${project.title}`} onClick={()=>{

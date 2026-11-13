@@ -873,6 +873,7 @@ export const arabic: Record<string, string> = {
   '{name} color': 'لون {name}',
   '{name} value {number}': '{name}، القيمة {number}',
   '{count} slides · Edited {date}': 'عدد الشرائح: {count} · آخر تعديل {date}',
+  '{count} slide · Edited {date}': 'عدد الشرائح: {count} · آخر تعديل {date}',
   'Loading your presentations…': 'جارٍ تحميل عروضك التقديمية…',
   'Your presentations could not be loaded.': 'تعذّر تحميل عروضك التقديمية.',
   'No presentations match “{query}”.': 'لا توجد عروض تقديمية تطابق «{query}».',
