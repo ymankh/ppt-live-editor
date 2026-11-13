@@ -43,6 +43,29 @@ import { translate, useLocale, useTranslation } from "@/features/localization/lo
 import { formatDate, interpolate } from "@/features/localization/format";
 import { SettingsButton } from '@/features/localization/SettingsDialog';
 
+/** The first slide, scaled to the card's measured width so it fills the card at every size and slide ratio. */
+function ProjectPreview({ project }: { project: ProjectSummary }) {
+  const host = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const node = host.current;
+    if (!node) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) setWidth(entry.contentRect.width);
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={host} style={{ width: strings.common.value100, aspectRatio: `${project.slideSize.width}${strings.common.symbol}${project.slideSize.height}` }}>
+      {project.preview && width > 0 && (
+        <SlideRenderer slide={project.preview} theme={project.theme} logicalSize={project.slideSize} width={width} />
+      )}
+    </div>
+  );
+}
+
 export function Home() {
   const t = useTranslation();
   const interfaceLocale = useLocale((state) => state.locale);
@@ -255,22 +278,7 @@ export function Home() {
                       void navigate(`${strings.common.edit}${project.id}`);
                     }}
                   >
-                    {project.preview && (
-                      <div
-                        style={{
-                          width: 1920,
-                          height: 1080,
-                          transform: strings.home.scale16,
-                          transformOrigin: strings.home.topLeft,
-                        }}
-                      >
-                        <SlideRenderer
-                          slide={project.preview}
-                          theme={project.theme}
-                          logicalSize={project.slideSize}
-                        />
-                      </div>
-                    )}
+                    <ProjectPreview project={project} />
                   </button>
                   <div className={strings.home.projectMeta}>
                     <div>

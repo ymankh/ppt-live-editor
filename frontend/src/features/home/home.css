@@ -36,13 +36,14 @@
 .import-project { display: flex; align-items: center; gap: 7px; font-size: 11px; cursor: pointer; color: var(--muted-foreground); }
 .project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 .project-grid article { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); color: var(--card-foreground); }
-.project-preview { display: block; width: 100%; height: 173px; overflow: hidden; background: var(--muted); }
+/* The preview takes the slide's own aspect ratio and is scaled to the card width (see ProjectPreview). */
+.project-preview { display: block; width: 100%; overflow: hidden; background: var(--muted); }
 .project-meta { display: flex; align-items: center; justify-content: space-between; padding: 15px; }
 .project-meta h3 { font-size: 12px; font-weight: 500; }
 .project-meta p { margin-top: 5px; font-size: 9px; color: var(--muted-foreground); }
 .project-meta button { color: var(--muted-foreground); }
 .project-meta button:hover { color: var(--foreground); }
-.blank-project { height: 238px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; border: 1px dashed var(--input); border-radius: var(--radius-lg); color: var(--muted-foreground); }
+.blank-project { min-height: 238px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; border: 1px dashed var(--input); border-radius: var(--radius-lg); color: var(--muted-foreground); }
 .blank-project > span { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: var(--secondary); color: var(--secondary-foreground); }
 .blank-project b { font-size: 12px; font-weight: 500; }
 .blank-project p { font-size: 10px; }
