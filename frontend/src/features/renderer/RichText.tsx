@@ -65,6 +65,8 @@ export function RichText({ content, interactive = false, onCommit, style }: Rich
     tabIndex: 0,
     [strings.common.ariaLabel]: t(strings.renderer.editText),
     onDoubleClick: (event: MouseEvent<HTMLDivElement>) => { event.stopPropagation(); setEditing(true); },
+    // On the editing canvas a click selects (and a double-click edits) the text; it must not follow the link.
+    onClickCapture: (event: MouseEvent<HTMLDivElement>) => { if (event.target instanceof Element && event.target.closest(strings.renderer.anchorSelector)) event.preventDefault(); },
     onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget || !([strings.common.enter, strings.common.f2, strings.common.space] as readonly string[]).includes(event.key)) return;
       event.preventDefault(); event.stopPropagation(); setEditing(true);

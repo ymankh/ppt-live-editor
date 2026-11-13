@@ -1,4 +1,5 @@
 export const rendererStrings = {
+  anchorSelector: "a",
   c: " C",
   h: " H",
   l: " L",
