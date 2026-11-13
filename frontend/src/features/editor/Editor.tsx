@@ -77,6 +77,9 @@ export function Editor() {
           ([strings.common.iNPUT, strings.common.tEXTAREA, strings.editor.sELECT] as readonly string[]).includes(target.tagName))
       )
         return;
+      // Editor shortcuts belong to the canvas: with a dialog or menu open, Delete or a tool key
+      // must not change the slide behind it.
+      if (target instanceof Element && target.closest(strings.editor.overlaySelector)) return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === strings.editor.k_8254c329) {
         event.preventDefault();
         setPalette((v) => !v);

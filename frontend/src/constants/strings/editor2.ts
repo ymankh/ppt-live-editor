@@ -6,6 +6,7 @@ export const editorStrings2 = {
   keyboardShortcuts: "Keyboard shortcuts",
   lavender: "Lavender",
   layerName: "Layer name",
+  overlaySelector: "[role=\"dialog\"],[role=\"alertdialog\"],[role=\"menu\"],[role=\"listbox\"]",
   layerDragHandle: "layer-drag-handle",
   layerList: "layer-list",
   layerRow: "layer-row ",
