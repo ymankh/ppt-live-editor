@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/menubar";
 import "./editor.css";
 import { strings } from "@/strings";
+import { formatShortcut } from '@/lib/shortcuts';
 import { SettingsButton } from '@/features/localization/SettingsDialog';
 import { useTranslation } from '@/features/localization/locale';
 
@@ -165,7 +166,7 @@ export function Editor() {
                       >
                         {c.id===strings.common.undo&&past.length?`${t(strings.editor.undo)}${t(past.at(-1)?.label??strings.common.empty)}`:c.id===strings.common.redo&&future.length?`${t(strings.editor.redo)}${t(future.at(-1)?.label??strings.common.empty)}`:t(c.label)}
                         <MenubarShortcut>
-                          {c.shortcut?.replace(strings.common.ctrl, strings.common.symbol_70b4b62a)}
+                          {formatShortcut(c.shortcut)}
                         </MenubarShortcut>
                       </MenubarItem>
                     ))}

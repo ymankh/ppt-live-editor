@@ -22,6 +22,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { strings } from "@/strings";
+import { formatShortcut } from '@/lib/shortcuts';
 
 interface Props {
   palette: boolean;
@@ -64,7 +65,7 @@ export function ShellDialogs({
                     }}
                   >
                     {t(c.label)}
-                    <CommandShortcut>{c.shortcut}</CommandShortcut>
+                    <CommandShortcut>{formatShortcut(c.shortcut)}</CommandShortcut>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -96,7 +97,7 @@ export function ShellDialogs({
               .map((c) => (
                 <div key={c.id}>
                   <span>{t(c.label)}</span>
-                  <kbd>{c.shortcut?.replace(strings.common.ctrl, strings.common.symbol_70b4b62a)}</kbd>
+                  <kbd>{formatShortcut(c.shortcut)}</kbd>
                 </div>
               ))}
           </div>
