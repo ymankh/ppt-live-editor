@@ -32,7 +32,7 @@ public sealed record ProjectDocument(string Id, string Json, string SummaryJson,
             {
                 if (!HasString(element, "id", out _) || !HasString(element, "type", out _) || !ValidImageReference(element))
                 {
-                    error = "Each element must be an object with an ID and type; images must have an asset ID.";
+                    error = "Each element must be an object with an ID and type; images must have a string asset ID.";
                     return false;
                 }
             }
@@ -41,7 +41,7 @@ public sealed record ProjectDocument(string Id, string Json, string SummaryJson,
         var assets = new HashSet<string>(StringComparer.Ordinal);
         if (!CollectAssets(document, assets))
         {
-            error = "Asset references must be nonempty strings.";
+            error = "Asset references must be strings.";
             return false;
         }
         var title = titleValue.GetString()!;
@@ -77,9 +77,12 @@ public sealed record ProjectDocument(string Id, string Json, string SummaryJson,
     private static bool TryTimestamp(string value, out DateTimeOffset timestamp) =>
         DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out timestamp);
 
+    // An image fill or element starts with an empty assetId until the person picks an image (the editor
+    // writes ""), so the reference must be a string but may be blank. Rejecting blank made every autosave
+    // fail from the moment "Image" was chosen as a fill type.
     private static bool ValidImageReference(JsonElement value) =>
         !value.TryGetProperty("type", out var type) || type.ValueKind != JsonValueKind.String || type.GetString() != "image" ||
-        HasString(value, "assetId", out _);
+        (value.TryGetProperty("assetId", out var assetId) && assetId.ValueKind == JsonValueKind.String);
 
     // Scan all nested assetId fields, including table fills and future element kinds,
     // so preserving unknown JSON fields cannot discard their asset ownership.
@@ -94,7 +97,8 @@ public sealed record ProjectDocument(string Id, string Json, string SummaryJson,
                     if (property.Value.ValueKind != JsonValueKind.String)
                         return false;
                     var assetId = property.Value.GetString()!;
-                    if (string.IsNullOrWhiteSpace(assetId)) return false;
+                    // Blank means no image chosen yet: nothing to own.
+                    if (string.IsNullOrWhiteSpace(assetId)) continue;
                     if (!assetId.StartsWith("data:", StringComparison.OrdinalIgnoreCase) &&
                         !assetId.StartsWith("blob:", StringComparison.OrdinalIgnoreCase) &&
                         !assetId.StartsWith("http:", StringComparison.OrdinalIgnoreCase) &&
