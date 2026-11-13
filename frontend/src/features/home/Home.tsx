@@ -307,7 +307,7 @@ export function Home() {
                   </button>
                   <div className={strings.home.projectMeta}>
                     <div>
-                      <h3>{project.title}</h3>
+                      <h3 title={project.title}>{project.title}</h3>
                       <p>
                         {interpolate(t(project.slideCount === 1 ? strings.home.projectSummaryOne : strings.home.projectSummary), { count: project.slideCount, date: formatDate(project.updatedAt, interfaceLocale) })}
                       </p>
