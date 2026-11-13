@@ -180,7 +180,10 @@ export const useEditor = create<EditorState>()(immer((set, get) => ({
     const state = get();
     state.mutate(strings.store.deleteElements, draft => {
       const slide = draft.slides.find(item => item.id === state.activeSlideId);
-      if (slide) slide.elements = slide.elements.filter(element => !state.selection.includes(element.id) || element.locked);
+      if (!slide) return;
+      const remaining = slide.elements.filter(element => !state.selection.includes(element.id) || element.locked);
+      // Assigning an identical list would still record an undo step and clear redo.
+      if (remaining.length !== slide.elements.length) slide.elements = remaining;
     });
   },
   duplicateSelection() {
@@ -220,7 +223,8 @@ export const useEditor = create<EditorState>()(immer((set, get) => ({
       const ids = new Set(selected.map(element => element.id));
       if (operation === strings.common.front || operation === strings.common.back) {
         const rest = slide.elements.filter(element => !ids.has(element.id));
-        slide.elements = operation === strings.common.front ? [...rest, ...selected] : [...selected, ...rest];
+        const ordered = operation === strings.common.front ? [...rest, ...selected] : [...selected, ...rest];
+        if (ordered.some((element, index) => element.id !== slide.elements[index]?.id)) slide.elements = ordered;
       } else if (operation === strings.common.forward || operation === strings.common.backward) {
         const direction = operation === strings.common.forward ? 1 : -1;
         for (let i = direction === 1 ? slide.elements.length - 2 : 1; direction === 1 ? i >= 0 : i < slide.elements.length; i -= direction) {

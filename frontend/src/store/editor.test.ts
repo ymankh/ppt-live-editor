@@ -330,6 +330,20 @@ describe('selection and history hygiene', () => {
     expect(activeSlide().elements).toHaveLength(count);
   });
 
+  it('records no history for commands that change nothing', () => {
+    const front = activeSlide().elements.at(-1);
+    if (!front) throw new Error('Expected an element in test slide');
+    useEditor.getState().select([front.id]);
+    useEditor.getState().arrange('front');
+    expect(useEditor.getState().past).toHaveLength(0);
+    useEditor.getState().updateElement(front.id, { locked: true });
+    const history = useEditor.getState().past.length;
+    useEditor.getState().select([front.id]);
+    useEditor.getState().deleteSelection();
+    expect(useEditor.getState().past).toHaveLength(history);
+    expect(activeSlide().elements.some(element => element.id === front.id)).toBe(true);
+  });
+
   it('gives cloned group members a new shared group instead of the source group', () => {
     const first = { ...createElement('shape', 'rect'), groupId: 'source-group' }, second = { ...createElement('shape', 'ellipse'), groupId: 'source-group' };
     const copies = clonedElements([first, second]);
