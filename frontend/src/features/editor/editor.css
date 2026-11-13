@@ -56,7 +56,7 @@
 .theme-grid span { display: flex; gap: 4px; }
 .theme-grid i { height: 10px; width: 10px; border-radius: 50%; }
 .theme-grid p { display: flex; justify-content: space-between; padding: 7px 3px 1px; font-size: 11px; }
-@media (max-width: 1150px) { .app-header { padding: 0 15px; gap: 12px; } .header-actions { gap: 7px; } .application-menubar { gap: 11px !important; } .app-header .avatar { display: none; } .speaker-notes { height: 90px; } .status-right > button:first-child { display: none; } }
+@media (max-width: 1150px) { .app-header { padding: 0 15px; gap: 12px; } .header-actions { gap: 7px; } .application-menubar { gap: 11px !important; } .app-header .avatar { display: none; } .speaker-notes { height: 90px; } }
 /* Below this the header actions keep their icons and drop their words (still read by assistive technology). */
 @media (max-width: 900px) { .title-line input { width: 120px; } .header-actions .secondary-action, .header-actions .present-action { font-size: 0; gap: 0; padding: 0 9px; } }
 button { cursor: pointer; }
