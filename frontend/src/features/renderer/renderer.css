@@ -6,8 +6,11 @@
 .renderer-text-frame { display: flex; flex-direction: column; box-sizing: border-box; }
 .renderer-rich-text { width: 100%; line-height: 1.3; min-width: 0; overflow-wrap: break-word; white-space: pre-wrap; }
 .renderer-rich-text p, .renderer-rich-text .renderer-heading { margin: 0; min-height: 1em; }
-.renderer-rich-text ul, .renderer-rich-text ol { margin: 0; padding-left: 1.35em; }
-.renderer-rich-text blockquote { border-left: 4px solid currentColor; padding-left: 18px; margin: 14px 0; }
+/* Tailwind's reset removes list markers; slide text needs them back. Logical padding keeps the indent on the start side for right-to-left lists. */
+.renderer-rich-text ul, .renderer-rich-text ol { margin: 0; padding-inline-start: 1.35em; }
+.renderer-rich-text ul { list-style: disc; }
+.renderer-rich-text ol { list-style: decimal; }
+.renderer-rich-text blockquote { border-inline-start: 4px solid currentColor; padding-inline-start: 18px; margin: 14px 0; }
 .renderer-rich-text pre { white-space: pre-wrap; }
 .renderer-rich-text a { text-decoration: underline; }
 .renderer-rich-text mark { color: inherit; padding: 0 3px; }
