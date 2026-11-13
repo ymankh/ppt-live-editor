@@ -34,6 +34,8 @@
 .search-projects input { width: 160px; font-size: 11px; background: none; outline: none; color: var(--foreground); }
 .search-projects input::placeholder { color: var(--muted-foreground); }
 .import-project { display: flex; align-items: center; gap: 7px; font-size: 11px; cursor: pointer; color: var(--muted-foreground); }
+.library-note { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; font-size: 12px; color: var(--muted-foreground); }
+.library-note button { color: var(--primary); font-weight: 500; text-decoration: underline; }
 .project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 .project-grid article { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); color: var(--card-foreground); }
 /* The preview takes the slide's own aspect ratio and is scaled to the card width (see ProjectPreview). */

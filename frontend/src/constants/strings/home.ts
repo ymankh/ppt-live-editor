@@ -63,4 +63,10 @@ export const homeStrings = {
   yourPresentations: "Your presentations",
   // interpolate() fills the {placeholders} after translation.
   projectSummary: "{count} slides · Edited {date}",
+  alert: "alert",
+  libraryNote: "library-note",
+  loadingPresentations: "Loading your presentations…",
+  presentationsNotLoaded: "Your presentations could not be loaded.",
+  tryAgain: "Try again",
+  noMatchingPresentations: "No presentations match “{query}”.",
 } as const;

@@ -43,6 +43,8 @@ import { translate, useLocale, useTranslation } from "@/features/localization/lo
 import { formatDate, interpolate } from "@/features/localization/format";
 import { SettingsButton } from '@/features/localization/SettingsDialog';
 
+type LibraryStatus = 'loading' | 'ready' | 'error';
+
 /** The first slide, scaled to the card's measured width so it fills the card at every size and slide ratio. */
 function ProjectPreview({ project }: { project: ProjectSummary }) {
   const host = useRef<HTMLDivElement>(null);
@@ -70,15 +72,31 @@ export function Home() {
   const t = useTranslation();
   const interfaceLocale = useLocale((state) => state.locale);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [status, setStatus] = useState<LibraryStatus>('loading');
   const [search, setSearch] = useState<string>(strings.common.empty);
   const importInputRef = useRef<HTMLInputElement>(null);
   const [renameTarget, setRenameTarget] = useState<ProjectSummary | null>(null);
   const [renameValue, setRenameValue] = useState<string>(strings.common.empty);
   const [deleteTarget, setDeleteTarget] = useState<ProjectSummary | null>(null);
   const navigate = useNavigate();
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    void listProjects().then(setProjects).catch((error: unknown) => notifyError(error, strings.errors.loadLibrary));
-  }, []);
+    let cancelled = false;
+    setStatus('loading');
+    void listProjects().then((loaded) => {
+      if (cancelled) return;
+      setProjects(loaded);
+      setStatus('ready');
+    }).catch((error: unknown) => {
+      if (cancelled) return;
+      // Without this the page would look like an empty library, with no way to retry.
+      setStatus('error');
+      notifyError(error, strings.errors.loadLibrary);
+    });
+    return () => { cancelled = true; };
+  }, [attempt]);
+  const query = search.trim().toLowerCase();
+  const visibleProjects = projects.filter((p) => p.title.toLowerCase().includes(query));
   const create = async (blank: boolean, template=0) => {
     try {
       // Generated titles and slide copy use the interface language at creation time.
@@ -265,11 +283,18 @@ export function Home() {
               />
             </div>
           </div>
+          {status === 'loading' && <p className={strings.home.libraryNote} role={strings.common.status}>{t(strings.home.loadingPresentations)}</p>}
+          {status === 'error' && (
+            <p className={strings.home.libraryNote} role={strings.home.alert}>
+              {t(strings.home.presentationsNotLoaded)}
+              <button type="button" onClick={() => setAttempt((value) => value + 1)}>{t(strings.home.tryAgain)}</button>
+            </p>
+          )}
+          {status === 'ready' && query && visibleProjects.length === 0 && (
+            <p className={strings.home.libraryNote} role={strings.common.status}>{interpolate(t(strings.home.noMatchingPresentations), { query: search.trim() })}</p>
+          )}
           <div className={strings.home.projectGrid}>
-            {projects
-              .filter((p) =>
-                p.title.toLowerCase().includes(search.toLowerCase()),
-              )
+            {visibleProjects
               .map((project) => (
                 <article key={project.id}>
                   <button
