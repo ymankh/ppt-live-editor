@@ -5,7 +5,8 @@
 .brand-mark svg { width: 18px; height: 18px; }
 .document-heading { display: flex; align-items: center; gap: 20px; min-width: 0; flex: 1; }
 .title-line { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.title-line input { font-size: 14px; font-weight: 600; background: transparent; outline: none; width: 170px; color: inherit; letter-spacing: -.4px; }
+.title-line input { font-size: 14px; font-weight: 600; background: transparent; outline: none; width: 170px; color: inherit; letter-spacing: -.4px; border-radius: var(--radius-sm); }
+.title-line input:focus-visible { box-shadow: 0 0 0 2px var(--ring); }
 .saved-tag { display: flex; align-items: center; color: var(--muted-foreground); }
 .saved-tag.is-failed { color: var(--destructive); }
 /* When the header runs out of room the menu bar scrolls sideways; the actions never cover it. */
