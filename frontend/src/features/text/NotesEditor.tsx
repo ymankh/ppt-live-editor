@@ -8,7 +8,9 @@ import { strings } from "@/strings";
 import { paragraphDirection } from './paragraphDirection';
 import { useTranslation } from '@/features/localization/locale';
 
-const extensions=[StarterKit,paragraphDirection];
+// Notes keep paragraphs, lists, quotes and basic emphasis (see notesHtml). Headings, code, rules and
+// links are switched off so the editor cannot show structure that is then dropped when notes are saved.
+const extensions=[StarterKit.configure({heading:false,code:false,codeBlock:false,horizontalRule:false,link:false}),paragraphDirection];
 export function NotesEditor({slideId,value}:{slideId:string;value:string}){
  const t=useTranslation();
  const dirty=useRef(false);const source=useRef({slideId,value});source.current={slideId,value};

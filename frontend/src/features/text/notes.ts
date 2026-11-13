@@ -7,7 +7,19 @@ export function notesHtml(source:string):string{
  const allowed:Record<string,true>={P:true,BR:true,STRONG:true,EM:true,U:true,S:true,UL:true,OL:true,LI:true,BLOCKQUOTE:true};
  for(const element of Array.from(document.body.querySelectorAll(strings.common.symbol_684888c0)).reverse()){
   if(([strings.text.sCRIPT, strings.text.sTYLE, strings.text.iFRAME, strings.text.oBJECT, strings.text.eMBED] as readonly string[]).includes(element.tagName)){element.remove();continue}
-  if(!allowed[element.tagName]){element.replaceWith(...Array.from(element.childNodes));continue}
+  if(!allowed[element.tagName]){
+   // Block structure the notes do not keep (headings, code blocks from older notes or pasted HTML)
+   // becomes paragraphs. Unwrapping it inline would run separate lines together into one.
+   if(/^(H[1-6]|PRE)$/.test(element.tagName)){
+    const paragraph=document.createElement('p');paragraph.setAttribute('dir','auto');
+    for(const node of Array.from(element.childNodes)){
+     if(element.tagName!=='PRE'||node.nodeType!==Node.TEXT_NODE){paragraph.append(node);continue}
+     (node.textContent??'').split('\n').forEach((line,index)=>{if(index>0)paragraph.append(document.createElement('br'));paragraph.append(line)});
+    }
+    element.replaceWith(paragraph);
+   }else element.replaceWith(...Array.from(element.childNodes));
+   continue;
+  }
   for(const attribute of Array.from(element.attributes))element.removeAttribute(attribute.name);
   if (['P', 'LI', 'BLOCKQUOTE'].includes(element.tagName)) element.setAttribute('dir', 'auto');
  }
