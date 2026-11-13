@@ -32,10 +32,13 @@
 .speaker-notes textarea::placeholder { color: var(--muted-foreground); opacity: .8; }
 .status-bar { height: 34px; flex-shrink: 0; background: var(--background); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 18px; font-size: 10px; color: var(--muted-foreground); }
 .status-bar > div { display: flex; align-items: center; gap: 11px; }
+.status-bar > .status-right { gap: 5px; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
 .status-divider { height: 13px; border-left: 1px solid var(--border); margin: 0 3px; }
 .aspect-badge { font-size: 9px; background: var(--secondary); color: var(--secondary-foreground); padding: 2px 5px; border-radius: var(--radius-sm); }
-.status-right button { display: flex; align-items: center; gap: 7px; }
+/* 24px targets: the 14px icons alone are too small to hit reliably. */
+.status-right button { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 24px; min-height: 24px; padding: 0 4px; border-radius: var(--radius-sm); }
+.status-right button:hover { background: var(--muted); color: var(--foreground); }
 .status-right kbd { font-size: 9px; color: var(--muted-foreground); border: 1px solid var(--border); padding: 1px 4px; border-radius: var(--radius-sm); }
 .status-right input { width: 93px; accent-color: var(--primary); height: 3px; }
 .zoom-label { min-width: 29px; text-align: center; color: var(--muted-foreground); }
