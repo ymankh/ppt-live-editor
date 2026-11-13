@@ -318,3 +318,15 @@ describe('project lifecycle', () => {
     }
   });
 });
+
+describe('selection and history hygiene', () => {
+  it('drops an element from the selection when it is hidden, so Delete cannot remove it', () => {
+    const element = firstElement();
+    const count = activeSlide().elements.length;
+    useEditor.getState().select([element.id]);
+    useEditor.getState().updateElement(element.id, { hidden: true });
+    expect(useEditor.getState().selection).toEqual([]);
+    useEditor.getState().deleteSelection();
+    expect(activeSlide().elements).toHaveLength(count);
+  });
+});

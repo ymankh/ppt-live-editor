@@ -105,7 +105,8 @@ export const useEditor = create<EditorState>()(immer((set, get) => ({
     const updated = produce(document, draft => { draft.updatedAt = new Date().toISOString(); });
     const activeSlideId = updated.slides.some(slide => slide.id === state.activeSlideId) ? state.activeSlideId : updated.slides[0]?.id ?? strings.common.empty;
     const selectedSlide = updated.slides.find(slide => slide.id === activeSlideId);
-    const selection = state.selection.filter(id => selectedSlide?.elements.some(element => element.id === id));
+    // A hidden element cannot stay selected: it has no selection box, yet Delete would still remove it.
+    const selection = state.selection.filter(id => selectedSlide?.elements.some(element => element.id === id && !element.hidden));
     const entry: HistoryEntry = { label, patches, inverse, beforeSelection: [...state.selection], afterSelection: selection, beforeSlide: state.activeSlideId, afterSlide: activeSlideId };
     if (state.transaction) {
       set({ document: updated, activeSlideId, selection, saveStatus: strings.store.unsaved, future: [], transaction: { ...state.transaction, patches: [...state.transaction.patches, ...patches], inverse: [...inverse, ...state.transaction.inverse], afterSelection: selection, afterSlide: activeSlideId } });
