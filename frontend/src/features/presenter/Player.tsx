@@ -86,7 +86,9 @@ export function Player() {
     return () => animation.cancel();
   }, [slide]);
   const jump = useCallback((nextIndex: number) => { setIndex(Math.max(0, Math.min(slides.length - 1, nextIndex))); setStep(0); setBlackout(null); setOverview(false); }, [slides.length]);
-  const next = useCallback(() => { if (blackout) setBlackout(null); else if (step < groups.length - 1) setStep(step + 1); else jump(index + 1); }, [blackout, step, groups.length, jump, index]);
+  // On the last build of the last slide there is nothing further: jumping "to the next slide" would
+  // clamp back to this one and rewind its builds.
+  const next = useCallback(() => { if (blackout) setBlackout(null); else if (step < groups.length - 1) setStep(step + 1); else if (index < slides.length - 1) jump(index + 1); }, [blackout, step, groups.length, jump, index, slides.length]);
   const previous = useCallback(() => { if (blackout) setBlackout(null); else if (step > 0) setStep(step - 1); else jump(index - 1); }, [blackout, step, jump, index]);
   const fullscreen = useCallback(() => {
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => toast.error(translate(strings.presenter.couldNotExitFullscreen, useLocale.getState().locale)));
