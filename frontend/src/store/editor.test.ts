@@ -285,4 +285,36 @@ describe('project lifecycle', () => {
     await state.saveProject();
     expect(useEditor.getState().saveStatus).toBe('Saved');
   });
+
+  it('opens a presentation without rewriting its edit date or saving it back', () => {
+    vi.useFakeTimers();
+    try {
+      const opened = { ...createPresentation(), updatedAt: '2026-01-01T00:00:00.000Z' };
+      vi.mocked(saveProject).mockClear();
+      useEditor.getState().setDocument(opened);
+      vi.advanceTimersByTime(5000);
+      const state = useEditor.getState();
+      expect(state.document.updatedAt).toBe('2026-01-01T00:00:00.000Z');
+      expect(state.saveStatus).toBe('Saved');
+      expect(state.past).toHaveLength(0);
+      expect(saveProject).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('saves edits still waiting on autosave before another presentation replaces them', async () => {
+    vi.useFakeTimers();
+    try {
+      useEditor.getState().mutate('Rename', draft => { draft.title = 'Edited moments ago'; });
+      const edited = useEditor.getState().document;
+      vi.mocked(saveProject).mockClear();
+      useEditor.getState().setDocument(createPresentation());
+      await vi.advanceTimersByTimeAsync(0);
+      expect(saveProject).toHaveBeenCalledTimes(1);
+      expect(saveProject).toHaveBeenCalledWith(edited);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

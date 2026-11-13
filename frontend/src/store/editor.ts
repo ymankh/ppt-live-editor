@@ -70,6 +70,15 @@ let saveQueue: Promise<void> = Promise.resolve();
 let loadVersion = 0;
 const initial = createPresentation();
 
+/** Saves edits that are still waiting on the autosave timer, or whose last save failed, so replacing the open document cannot drop them. */
+function flushPendingSave(document: Presentation, saveStatus: string): void {
+  if (saveTimer === undefined && saveStatus !== strings.store.saveFailed) return;
+  if (saveTimer !== undefined) { window.clearTimeout(saveTimer); saveTimer = undefined; }
+  const saving = saveQueue.catch(() => undefined).then(() => persistProject(document));
+  saveQueue = saving;
+  void saving.catch(() => undefined);
+}
+
 function clonedElements(elements: SlideElement[], offset: Point = { x: 32, y: 32 }): SlideElement[] {
   const groups = new Map<string, string>();
   return elements.map(source => {
@@ -291,11 +300,11 @@ export const useEditor = create<EditorState>()(immer((set, get) => ({
   },
   setDocument(document) {
     ++loadVersion;
-    get().cancelTransaction();
-    get().mutate(strings.store.openPresentation, draft => { Object.assign(draft, document); });
-    set({ openRevision: get().openRevision + 1, activeSlideId: document.slides[0]?.id ?? strings.common.empty, selection: [], past: [], future: [], transaction: null });
+    flushPendingSave(get().document, get().saveStatus);
+    // Opening is not an edit: it must not stamp a new updatedAt or write the document back.
+    set({ document, openRevision: get().openRevision + 1, activeSlideId: document.slides[0]?.id ?? strings.common.empty, selection: [], past: [], future: [], transaction: null, saveStatus: strings.common.saved });
   },
-  newProject() { get().setDocument(createPresentation()); },
+  newProject() { get().setDocument(createPresentation()); void get().saveProject().catch(() => undefined); },
   async saveProject() {
     get().commitTransaction();
     if (saveTimer !== undefined) { window.clearTimeout(saveTimer); saveTimer = undefined; }
@@ -315,6 +324,8 @@ export const useEditor = create<EditorState>()(immer((set, get) => ({
 
 useEditor.subscribe((state, previous) => {
   if (state.document === previous.document && state.transaction === previous.transaction) return;
+  // setDocument has already flushed any pending save; a freshly opened document has nothing to save.
+  if (state.openRevision !== previous.openRevision) return;
   if (saveTimer !== undefined) window.clearTimeout(saveTimer);
   if (state.transaction || isUndefined(window)) return;
   saveTimer = window.setTimeout(() => { void useEditor.getState().saveProject().catch(() => undefined); }, 650);
